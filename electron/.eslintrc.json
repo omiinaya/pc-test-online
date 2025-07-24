@@ -1,0 +1,11 @@
+{
+  "extends": ["../.eslintrc.json"],
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "rules": {
+    "node/no-unpublished-require": "off",
+    "no-console": "off"
+  }
+}

@@ -1,0 +1,24 @@
+node_modules/
+dist/
+output/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+frontend/docs/
+frontend/docs/**
+frontend/docs/**/*
+backend/dist/
+bootable-iso/output/
+bootable-iso/alpine-extended/
+*.iso
+*.img
+# Electron specific ignores
+out/

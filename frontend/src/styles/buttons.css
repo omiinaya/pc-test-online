@@ -1,0 +1,84 @@
+/* Shared Action Button Styles */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-default);
+  border: none;
+  color: white;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Button Variants */
+.action-button.danger {
+  background-color: #dc3545;
+}
+
+.action-button.success {
+  background-color: #1e7e34 !important; /* Darker green for better contrast */
+  color: #ffffff !important; /* Ensure pure white text */
+  border: 2px solid #155724; /* Darker border */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow */
+  font-weight: 700; /* Bolder text */
+}
+
+.action-button.skip {
+  background-color: #e6ac00; /* Darker yellow for better contrast */
+  color: #000000; /* Pure black for maximum contrast on yellow */
+  font-weight: 700;
+  border: 2px solid #cc9a00; /* Darker border */
+  text-shadow: none;
+}
+
+.action-button.skip:disabled {
+  background-color: #ffe082;
+  color: #888;
+  border-color: #e0c200;
+}
+
+.action-button.primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: 1px solid var(--primary-color);
+  font-weight: 600;
+}
+
+.action-button.secondary {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.action-button.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+}
+
+/* Button Sizes */
+.action-button.small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.action-button.large {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}

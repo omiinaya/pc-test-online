@@ -1,0 +1,102 @@
+/* MMIT Testing App - Shared CSS Variables */
+:root {
+  /* Colors */
+  --primary-color: #ff6b00;
+  --primary-color-rgb: 255, 107, 0;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --skip-color: #ffc107;
+  
+  /* Backgrounds */
+  --background-dark: #0f0f0f; /* Slightly darker for better contrast */
+  --background-medium: #252527; /* Slightly darker */
+  --background-light: #1a1a1a; /* Slightly darker */
+  
+  /* Borders */
+  --border-color: #333;
+  --border-color-light: #444;
+  --border-color-dark: #262626;
+  --border-color-custom: #1a1a1a;
+  
+  /* Text */
+  --text-primary: #ffffff; /* Pure white for maximum contrast */
+  --text-secondary: #e0e0e0; /* Lighter than before for better contrast */
+  --text-tertiary: #c0c0c0; /* Improved from #a0a0a0 */
+  --text-muted: #f0f0f0; /* Lighter for better contrast */
+  
+  /* Border Radius */
+  --border-radius: 8px;
+  --border-radius-small: 4px;
+  --border-radius-medium: 6px;
+  --border-radius-large: 12px;
+  --border-radius-xl: 16px;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 2.5rem;
+  
+  /* Transitions */
+  --transition-instant: all var(--animation-instant) ease;
+  --transition-default: all 0.2s ease;
+  --transition-fast: all 0.1s ease;
+  --transition-slow: all 0.3s ease;
+  --transition-morphing: all var(--animation-morphing) ease-in-out;
+  --transition-width: width var(--animation-slow) ease;
+  --transition-transform: transform var(--animation-normal) ease;
+  --transition-opacity: opacity var(--animation-normal) ease;
+  
+  /* Shadows */
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 4px 25px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 25px rgba(0, 0, 0, 0.3);
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Z-Index */
+  --z-index-dropdown: 1000;
+  --z-index-modal: 1050;
+  --z-index-tooltip: 1100;
+  
+  /* Container Sizes */
+  --container-max-width: 600px;
+  --container-padding: var(--spacing-lg);
+  
+  /* Animation Durations */
+  --animation-instant: 0.05s;
+  --animation-fast: 0.1s;
+  --animation-normal: 0.2s;
+  --animation-slow: 0.3s;
+  --animation-slower: 0.5s;
+  --animation-extra-slow: 0.8s;
+  --animation-morphing: 1s;
+  --animation-celebration: 2s;
+  
+  /* Surface Colors */
+  --surface-primary: #2c2c2e;
+  --surface-secondary: #1a1a1a;
+  --surface-tertiary: #444;
+  --surface-quaternary: #333;
+  
+  /* Primary Color Variations */
+  --primary-color-dark: #e65c00;
+}
