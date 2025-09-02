@@ -880,94 +880,90 @@ export default {
                 <div class="brand-icon">📋</div>
                 <h2>Tests</h2>
             </div>
-            <nav class="test-nav">
-                <ul>
-                    <li
-                        :class="{ active: activeTest === 'webcam' }"
-                        @click="debouncedSetActiveTest('webcam')"
-                    >
-                        <div class="test-icon">📹</div>
-                        <span class="test-name">Camera Test</span>
-                        <span class="status-indicator" :class="getTestStatusClass('webcam')"></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'microphone' }"
-                        @click="debouncedSetActiveTest('microphone')"
-                    >
-                        <div class="test-icon">🎤</div>
-                        <span class="test-name">Mic Test</span>
-                        <span
-                            class="status-indicator"
-                            :class="getTestStatusClass('microphone')"
-                        ></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'speakers' }"
-                        @click="debouncedSetActiveTest('speakers')"
-                    >
-                        <div class="test-icon">🔊</div>
-                        <span class="test-name">Speaker Test</span>
-                        <span
-                            class="status-indicator"
-                            :class="getTestStatusClass('speakers')"
-                        ></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'keyboard' }"
-                        @click="debouncedSetActiveTest('keyboard')"
-                    >
-                        <div class="test-icon">⌨️</div>
-                        <span class="test-name">Keyboard Test</span>
-                        <span
-                            class="status-indicator"
-                            :class="getTestStatusClass('keyboard')"
-                        ></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'mouse' }"
-                        @click="debouncedSetActiveTest('mouse')"
-                    >
-                        <div class="test-icon">🖱️</div>
-                        <span class="test-name">Mouse Test</span>
-                        <span class="status-indicator" :class="getTestStatusClass('mouse')"></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'touch' }"
-                        @click="debouncedSetActiveTest('touch')"
-                    >
-                        <div class="test-icon">👆</div>
-                        <span class="test-name">Touch Test</span>
-                        <span class="status-indicator" :class="getTestStatusClass('touch')"></span>
-                    </li>
-                    <li
-                        :class="{ active: activeTest === 'battery' }"
-                        @click="debouncedSetActiveTest('battery')"
-                    >
-                        <div class="test-icon">🔋</div>
-                        <span class="test-name">Battery Test</span>
-                        <span
-                            class="status-indicator"
-                            :class="getTestStatusClass('battery')"
-                        ></span>
-                    </li>
-                    <li
-                        :class="{
-                            active: activeTest === 'testsCompleted',
-                            disabled: !allTestsCompleted,
-                        }"
-                        @click="handleTestsCompletedClick"
-                    >
-                        <div class="test-icon">✅</div>
-                        <span class="test-name">Tests Completed</span>
-                        <span
-                            class="status-indicator"
-                            :class="{
-                                'completed-success': allTestsCompleted,
-                                pending: !allTestsCompleted,
-                            }"
-                        ></span>
-                    </li>
-                </ul>
+            <nav class="test-navigation">
+              <ul class="test-navigation__list">
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'webcam' }"
+                  @click="debouncedSetActiveTest('webcam')"
+                >
+                  <span class="test-navigation__icon">📹</span>
+                  <span class="test-navigation__name">Camera Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('webcam')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'microphone' }"
+                  @click="debouncedSetActiveTest('microphone')"
+                >
+                  <span class="test-navigation__icon">🎤</span>
+                  <span class="test-navigation__name">Mic Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('microphone')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'speakers' }"
+                  @click="debouncedSetActiveTest('speakers')"
+                >
+                  <span class="test-navigation__icon">🔊</span>
+                  <span class="test-navigation__name">Speaker Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('speakers')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'keyboard' }"
+                  @click="debouncedSetActiveTest('keyboard')"
+                >
+                  <span class="test-navigation__icon">⌨️</span>
+                  <span class="test-navigation__name">Keyboard Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('keyboard')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'mouse' }"
+                  @click="debouncedSetActiveTest('mouse')"
+                >
+                  <span class="test-navigation__icon">🖱️</span>
+                  <span class="test-navigation__name">Mouse Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('mouse')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'touch' }"
+                  @click="debouncedSetActiveTest('touch')"
+                >
+                  <span class="test-navigation__icon">👆</span>
+                  <span class="test-navigation__name">Touch Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('touch')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{ 'test-navigation__item--active': activeTest === 'battery' }"
+                  @click="debouncedSetActiveTest('battery')"
+                >
+                  <span class="test-navigation__icon">🔋</span>
+                  <span class="test-navigation__name">Battery Test</span>
+                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('battery')"></span>
+                </li>
+                <li
+                  class="test-navigation__item"
+                  :class="{
+                    'test-navigation__item--active': activeTest === 'testsCompleted',
+                    'test-navigation__item--disabled': !allTestsCompleted,
+                  }"
+                  @click="handleTestsCompletedClick"
+                >
+                  <span class="test-navigation__icon">✅</span>
+                  <span class="test-navigation__name">Tests Completed</span>
+                  <span
+                    class="test-navigation__status"
+                    :class="{
+                      'test-navigation__status--completed-success': allTestsCompleted,
+                      'test-navigation__status--pending': !allTestsCompleted,
+                    }"
+                  ></span>
+                </li>
+              </ul>
             </nav>
         </aside>
 
@@ -1140,7 +1136,7 @@ export default {
 
         <!-- Floating Action Buttons (positioned relative to footer) -->
         <div class="floating-action-buttons">
-            <button @click="resetTests" class="floating-btn reset-btn" title="Reset Tests">
+            <button @click="resetTests" class="button button--secondary button--small" title="Reset Tests">
                 <svg
                     width="18"
                     height="18"
@@ -1158,8 +1154,8 @@ export default {
                 <button
                     :disabled="!allTestsCompleted"
                     @click="toggleExportMenu"
-                    class="floating-btn export-btn"
-                    :class="{ disabled: !allTestsCompleted }"
+                    class="button button--primary button--small"
+                    :class="{ 'button--disabled': !allTestsCompleted }"
                     title="Export Report"
                 >
                     <svg
@@ -1178,7 +1174,7 @@ export default {
                 </button>
                 <transition name="expand-fade">
                     <div v-if="showExportMenu" class="export-options-floating">
-                        <button @click="exportAsPDF" class="export-option-floating">
+                        <button @click="exportAsPDF" class="button button--text export-option-floating">
                             <svg
                                 class="export-icon"
                                 width="16"
@@ -1198,7 +1194,7 @@ export default {
                             </svg>
                             Export as PDF
                         </button>
-                        <button @click="exportAsJSON" class="export-option-floating">
+                        <button @click="exportAsJSON" class="button button--text export-option-floating">
                             <svg
                                 class="export-icon"
                                 width="16"
@@ -1217,7 +1213,7 @@ export default {
                             </svg>
                             Export as JSON
                         </button>
-                        <button @click="exportAsCSV" class="export-option-floating">
+                        <button @click="exportAsCSV" class="button button--text export-option-floating">
                             <svg
                                 class="export-icon"
                                 width="16"
@@ -1290,29 +1286,6 @@ export default {
     position: relative; /* Required for absolute positioning of action buttons */
 }
 
-.icon-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.icon-action-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
 
 /* Transition animations */
 .expand-fade-enter-active,
@@ -1385,16 +1358,16 @@ export default {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
 }
 
-.test-nav {
+.test-navigation {
     flex-grow: 1;
 }
-.test-nav ul {
+.test-navigation__list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.test-nav li {
+.test-navigation__item {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
@@ -1406,51 +1379,73 @@ export default {
         border-color var(--animation-normal) ease,
         color var(--animation-normal) ease;
     border: 1px solid transparent;
-    color: #e0e0e0; /* Improved contrast from #a0a0a0 */
+    color: #e0e0e0;
     background: none;
 }
 
-.test-nav li:hover {
-    background-color: #2a2a2a; /* Darker background for better contrast */
-    color: #ffffff; /* Pure white text */
+.test-navigation__item:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
 }
 
-.test-nav li.active {
+.test-navigation__item--active {
     background-color: rgba(255, 107, 0, 0.08);
     border-color: rgba(255, 107, 0, 0.5);
     color: #ff9854;
 }
 
-/* Specific styling for Tests Completed item to ensure maximum contrast */
-.test-nav li .test-name {
-    color: #ffffff !important;
-    font-weight: 600; /* Bolder text for better contrast */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Stronger shadow */
+.test-navigation__item--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.test-nav li.disabled .test-name {
-    color: #ffffff !important; /* Keep white for better contrast */
-    opacity: 0.6; /* Use opacity instead of color change for disabled state */
-    font-weight: 600; /* Maintain bold weight */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Maintain strong shadow */
+.test-navigation__item--disabled:hover {
+    background-color: transparent;
+    color: #e0e0e0;
 }
 
-.test-nav .test-icon {
+.test-navigation__icon {
     font-size: 1.2rem;
     margin-right: 0.8rem;
     width: 20px;
     text-align: center;
 }
 
-.test-nav .test-name {
-    color: #ffffff !important;
+.test-navigation__name {
+    color: #ffffff;
     font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    flex-grow: 1;
 }
 
-.sidebar .test-name {
-    color: #ffffff !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
+.test-navigation__status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+    transition:
+        background-color var(--animation-slow) ease,
+        box-shadow var(--animation-slow) ease;
+    box-shadow: 0 0 6px transparent;
+}
+
+.test-navigation__status--pending {
+    background-color: #555;
+}
+
+.test-navigation__status--completed-success {
+    background-color: #28a745;
+    box-shadow: 0 0 6px #28a745;
+}
+
+.test-navigation__status--completed-fail {
+    background-color: #dc3545;
+    box-shadow: 0 0 6px #dc3545;
+}
+
+.test-navigation__status--skipped {
+    background-color: #ffc107;
+    box-shadow: 0 0 6px #ffc107;
 }
 
 .status-indicator {

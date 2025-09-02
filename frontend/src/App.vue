@@ -952,33 +952,41 @@ export default {
                 </div>
                 <h2>MMIT Lab</h2>
             </div>
-            <nav class="test-nav">
-                <ul>
+            <nav class="test-navigation">
+                <ul class="test-navigation__list">
                     <li
                         v-for="test in availableTests"
                         :key="test"
-                        :class="{ active: activeTest === test }"
+                        :class="[
+                            'test-navigation__item',
+                            { 'test-navigation__item--active': activeTest === test }
+                        ]"
                         @click="debouncedSetActiveTest(test)"
                     >
-                        <div class="test-icon">{{ testIconMap[test] }}</div>
-                        <span class="test-name">{{ testNameMap[test] }}</span>
-                        <span class="status-indicator" :class="getTestStatusClass(test)"></span>
+                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
+                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="`test-navigation__status--${getTestStatusClass(test)}`"
+                        ></span>
                     </li>
                     <li
-                        :class="{
-                            active: activeTest === 'testsCompleted',
-                            disabled: !allTestsCompleted,
-                        }"
+                        :class="[
+                            'test-navigation__item',
+                            {
+                                'test-navigation__item--active': activeTest === 'testsCompleted',
+                                'test-navigation__item--disabled': !allTestsCompleted
+                            }
+                        ]"
                         @click="handleTestsCompletedClick"
                     >
-                        <div class="test-icon">✅</div>
-                        <span class="test-name">Tests Completed</span>
+                        <div class="test-navigation__icon">✅</div>
+                        <span class="test-navigation__name">Tests Completed</span>
                         <span
-                            class="status-indicator"
-                            :class="{
-                                'completed-success': allTestsCompleted,
-                                pending: !allTestsCompleted,
-                            }"
+                            class="test-navigation__status"
+                            :class="allTestsCompleted
+                                ? 'test-navigation__status--completed-success'
+                                : 'test-navigation__status--pending'"
                         ></span>
                     </li>
                 </ul>
@@ -1155,7 +1163,7 @@ export default {
             <div class="sidebar-action-buttons">
                 <button
                     @click="resetTests"
-                    class="action-btn-with-text reset-btn"
+                    class="button button--secondary button--small"
                     title="Reset Tests"
                 >
                     <svg
@@ -1175,8 +1183,8 @@ export default {
                     <button
                         :disabled="!allTestsCompleted"
                         @click="toggleExportMenu"
-                        class="action-btn-with-text export-btn"
-                        :class="{ disabled: !allTestsCompleted }"
+                        class="button button--primary button--small"
+                        :class="{ 'button--disabled': !allTestsCompleted }"
                         title="Export Report"
                     >
                         <svg
@@ -1195,7 +1203,7 @@ export default {
                     </button>
                     <transition name="expand-fade">
                         <div v-if="showExportMenu" class="export-options-sidebar">
-                            <button @click="exportAsPDF" class="export-option-sidebar">
+                            <button @click="exportAsPDF" class="button button--text export-option-sidebar">
                                 <svg
                                     class="export-icon"
                                     width="16"
@@ -1215,7 +1223,7 @@ export default {
                                 </svg>
                                 Export as PDF
                             </button>
-                            <button @click="exportAsJSON" class="export-option-sidebar">
+                            <button @click="exportAsJSON" class="button button--text export-option-sidebar">
                                 <svg
                                     class="export-icon"
                                     width="16"
@@ -1234,7 +1242,7 @@ export default {
                                 </svg>
                                 Export as JSON
                             </button>
-                            <button @click="exportAsCSV" class="export-option-sidebar">
+                            <button @click="exportAsCSV" class="button button--text export-option-sidebar">
                                 <svg
                                     class="export-icon"
                                     width="16"
@@ -1295,13 +1303,13 @@ export default {
         <!-- Mobile Footer with Test Actions and Navigation -->
         <footer class="mobile-footer">
             <div class="mobile-action-buttons" v-if="activeTest !== 'testsCompleted'">
-                <button @click="onTestFailed(activeTest)" class="mobile-action-btn fail">
+                <button @click="onTestFailed(activeTest)" class="button button--danger button--medium">
                     Not Working
                 </button>
-                <button @click="onTestCompleted(activeTest)" class="mobile-action-btn pass">
+                <button @click="onTestCompleted(activeTest)" class="button button--success button--medium">
                     Working
                 </button>
-                <button @click="onTestSkipped(activeTest)" class="mobile-action-btn skip">
+                <button @click="onTestSkipped(activeTest)" class="button button--skip button--medium">
                     Skip
                 </button>
             </div>
@@ -1504,7 +1512,7 @@ export default {
                     <div class="sidebar-action-buttons">
                         <button
                             @click="resetTests"
-                            class="action-btn-with-text reset-btn"
+                            class="button button--secondary button--small"
                             title="Reset Tests"
                         >
                             <svg
@@ -1523,8 +1531,8 @@ export default {
                             <button
                                 :disabled="!allTestsCompleted"
                                 @click="toggleExportMenu"
-                                class="action-btn-with-text export-btn"
-                                :class="{ disabled: !allTestsCompleted }"
+                                class="button button--primary button--small"
+                                :class="{ 'button--disabled': !allTestsCompleted }"
                                 title="Export Report"
                             >
                                 <svg
@@ -1657,29 +1665,6 @@ export default {
     position: relative; /* Required for absolute positioning of action buttons */
 }
 
-.icon-action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.icon-action-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
 
 /* Transition animations */
 .expand-fade-enter-active,
@@ -1752,16 +1737,16 @@ export default {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
 }
 
-.test-nav {
+.test-navigation {
     flex-grow: 1;
 }
-.test-nav ul {
+.test-navigation__list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.test-nav li {
+.test-navigation__item {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
@@ -1773,51 +1758,73 @@ export default {
         border-color var(--animation-normal) ease,
         color var(--animation-normal) ease;
     border: 1px solid transparent;
-    color: #e0e0e0; /* Improved contrast from #a0a0a0 */
+    color: #e0e0e0;
     background: none;
 }
 
-.test-nav li:hover {
-    background-color: #2a2a2a; /* Darker background for better contrast */
-    color: #ffffff; /* Pure white text */
+.test-navigation__item:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
 }
 
-.test-nav li.active {
+.test-navigation__item--active {
     background-color: rgba(255, 107, 0, 0.08);
     border-color: rgba(255, 107, 0, 0.5);
     color: #ff9854;
 }
 
-/* Specific styling for Tests Completed item to ensure maximum contrast */
-.test-nav li .test-name {
-    color: #ffffff !important;
-    font-weight: 600; /* Bolder text for better contrast */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Stronger shadow */
+.test-navigation__item--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.test-nav li.disabled .test-name {
-    color: #ffffff !important; /* Keep white for better contrast */
-    opacity: 0.6; /* Use opacity instead of color change for disabled state */
-    font-weight: 600; /* Maintain bold weight */
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); /* Maintain strong shadow */
+.test-navigation__item--disabled:hover {
+    background-color: transparent;
+    color: #e0e0e0;
 }
 
-.test-nav .test-icon {
+.test-navigation__icon {
     font-size: 1.2rem;
     margin-right: 0.8rem;
     width: 20px;
     text-align: center;
 }
 
-.test-nav .test-name {
-    color: #ffffff !important;
+.test-navigation__name {
+    color: #ffffff;
     font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    flex-grow: 1;
 }
 
-.sidebar .test-name {
-    color: #ffffff !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
+.test-navigation__status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+    transition:
+        background-color var(--animation-slow) ease,
+        box-shadow var(--animation-slow) ease;
+    box-shadow: 0 0 6px transparent;
+}
+
+.test-navigation__status--pending {
+    background-color: #555;
+}
+
+.test-navigation__status--completed-success {
+    background-color: #28a745;
+    box-shadow: 0 0 6px #28a745;
+}
+
+.test-navigation__status--completed-fail {
+    background-color: #dc3545;
+    box-shadow: 0 0 6px #dc3545;
+}
+
+.test-navigation__status--skipped {
+    background-color: #ffc107;
+    box-shadow: 0 0 6px #ffc107;
 }
 
 .status-indicator {
@@ -2173,67 +2180,6 @@ export default {
 .export-menu-sidebar {
     position: relative;
     flex: 1;
-}
-
-.action-btn-with-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    height: 44px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    flex: 1;
-}
-
-.action-btn-with-text:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.action-btn-with-text.reset-btn {
-    background: rgba(113, 128, 150, 0.15);
-    border-color: rgba(113, 128, 150, 0.3);
-    color: #cbd5e1;
-}
-
-.action-btn-with-text.reset-btn:hover {
-    background: rgba(113, 128, 150, 0.25);
-    border-color: rgba(113, 128, 150, 0.4);
-}
-
-.action-btn-with-text.export-btn {
-    background: rgba(255, 107, 0, 0.15);
-    border-color: rgba(255, 107, 0, 0.3);
-    color: #ff9966;
-}
-
-.action-btn-with-text.export-btn:hover:not(.disabled) {
-    background: rgba(255, 107, 0, 0.25);
-    border-color: rgba(255, 107, 0, 0.4);
-}
-
-.action-btn-with-text.export-btn.disabled {
-    background: rgba(107, 114, 128, 0.1);
-    border-color: rgba(107, 114, 128, 0.2);
-    color: #6b7280;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.action-btn-with-text.export-btn.disabled:hover {
-    transform: none;
-    box-shadow: none;
 }
 
 .export-options-sidebar {

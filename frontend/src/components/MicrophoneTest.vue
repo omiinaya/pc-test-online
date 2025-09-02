@@ -461,9 +461,6 @@ export default {
     box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
 }
 
-.action-button {
-    min-width: 140px;
-}
 
 .compatibility-warnings {
     background: var(--warning-bg, #fff8e1);

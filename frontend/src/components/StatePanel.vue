@@ -204,7 +204,7 @@ export default {
                 <button
                     v-if="showRetryButton"
                     @click="$emit('retry')"
-                    class="action-button btn-primary"
+                    class="button button--primary button--medium"
                     :disabled="actionDisabled"
                 >
                     <svg
@@ -230,7 +230,7 @@ export default {
                 <button
                     v-if="showActionButton"
                     @click="$emit('action-clicked')"
-                    class="action-button btn-primary"
+                    class="button button--primary button--medium"
                     :disabled="actionDisabled"
                 >
                     <slot name="action-icon">
@@ -336,10 +336,6 @@ export default {
     margin-top: var(--spacing-md);
 }
 
-/* Component-specific button overrides */
-.action-button {
-    min-width: 140px;
-}
 
 .spinning {
     animation: spin var(--animation-morphing) linear infinite;

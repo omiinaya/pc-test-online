@@ -321,7 +321,7 @@ export default {
                 <div class="actions-section">
                     <button
                         @click="measureVitals"
-                        class="action-button primary"
+                        class="button button--primary button--medium"
                         :disabled="measuring"
                     >
                         <svg
@@ -359,7 +359,7 @@ export default {
                         {{ measuring ? 'Measuring...' : 'Refresh Metrics' }}
                     </button>
 
-                    <router-link to="/" class="action-button secondary">
+                    <router-link to="/" class="button button--secondary button--medium">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="20"
@@ -575,45 +575,6 @@ export default {
     flex-wrap: wrap;
 }
 
-.action-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius-medium);
-    font-size: 1rem;
-    font-weight: var(--font-weight-semibold);
-    text-decoration: none;
-    cursor: pointer;
-    transition: var(--transition-default);
-}
-
-.action-button.primary {
-    background: var(--primary-color);
-    color: white;
-}
-
-.action-button.primary:hover:not(:disabled) {
-    background: var(--primary-color-hover);
-    transform: translateY(-1px);
-}
-
-.action-button.secondary {
-    background: var(--surface-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.action-button.secondary:hover {
-    background: var(--surface-quaternary);
-    transform: translateY(-1px);
-}
-
-.action-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
 
 .loading-icon {
     animation: spin 1s linear infinite;
@@ -677,10 +638,5 @@ export default {
         align-items: center;
     }
 
-    .action-button {
-        width: 100%;
-        max-width: 300px;
-        justify-content: center;
-    }
 }
 </style>

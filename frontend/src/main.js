@@ -5,7 +5,7 @@ import AppLayout from './AppLayout.vue';
 // Import shared styles
 import './styles/variables.css';
 import './styles/utilities.css';
-import './styles/buttons.css';
+import './styles/components/Button.css';
 
 const app = createApp(AppLayout);
 app.use(router);

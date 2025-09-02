@@ -226,6 +226,25 @@ export default {
             testResults.resetTest();
         };
 
+        // Helper method to convert old style classes to BEM modifiers
+        const getKeyModifierClass = (style) => {
+            if (!style) return '';
+            const styleMap = {
+                'utility': 'keyboard__key--utility',
+                'key-space': 'keyboard__key--space',
+                'key-backspace': 'keyboard__key--backspace',
+                'key-tab': 'keyboard__key--tab',
+                'key-caps': 'keyboard__key--caps',
+                'key-enter': 'keyboard__key--enter',
+                'key-shift-left': 'keyboard__key--shift-left',
+                'key-shift-right': 'keyboard__key--shift-right',
+                'key-backslash': 'keyboard__key--backslash',
+                'key-blank': 'keyboard__key--blank',
+                'key-blank-f': 'keyboard__key--blank-f'
+            };
+            return styleMap[style] || '';
+        };
+
         // Watch for global resets
         useGlobalReset(resetTest);
 
@@ -259,6 +278,7 @@ export default {
 
             // Methods
             resetTest,
+            getKeyModifierClass,
         };
     },
 };
@@ -284,28 +304,29 @@ export default {
                     <li>Skip this test if you're on a mobile device</li>
                     <li>Return to the test menu to continue with other device tests</li>
                 </ul>
-                <button class="action-button primary" @click="$emit('test-skipped')">
+                <button class="button button--primary button--medium" @click="$emit('test-skipped')">
                     Skip Keyboard Test
                 </button>
             </div>
         </div>
 
         <!-- Keyboard test for non-mobile devices -->
-        <div v-else class="keyboard-container">
-            <div class="keyboard-section function-row">
-                <div class="keyboard-row">
+        <div v-else class="keyboard">
+            <div class="keyboard__section keyboard__section--function">
+                <div class="keyboard__row">
                     <div
                         v-for="key in keyboardLayout.functions[0]"
                         :key="key.code"
                         :data-code="key.code"
-                        class="key"
+                        class="keyboard__key"
                         :class="[
-                            key.style,
+                            getKeyModifierClass(key.style),
                             {
-                                pressed: key.pressed,
-                                active: key.active,
-                                tested: key.tested,
-                                releasing: key.releasing,
+                                'keyboard__key--pressed': key.pressed,
+                                'keyboard__key--active': key.active,
+                                'keyboard__key--tested': key.tested,
+                                'keyboard__key--releasing': key.releasing,
+                                'keyboard__key--blank': key.code === 'blank',
                             },
                         ]"
                     >
@@ -314,25 +335,26 @@ export default {
                 </div>
             </div>
 
-            <div class="keyboard-section main-section">
-                <div class="main-keys">
+            <div class="keyboard__section keyboard__section--main">
+                <div class="keyboard__main-keys">
                     <div
                         v-for="(row, rowIndex) in keyboardLayout.main"
                         :key="`row-${rowIndex}`"
-                        class="keyboard-row"
+                        class="keyboard__row"
                     >
                         <div
                             v-for="key in row"
                             :key="key.code"
                             :data-code="key.code"
-                            class="key"
+                            class="keyboard__key"
                             :class="[
-                                key.style,
+                                getKeyModifierClass(key.style),
                                 {
-                                    pressed: key.pressed,
-                                    active: key.active,
-                                    tested: key.tested,
-                                    releasing: key.releasing,
+                                    'keyboard__key--pressed': key.pressed,
+                                    'keyboard__key--active': key.active,
+                                    'keyboard__key--tested': key.tested,
+                                    'keyboard__key--releasing': key.releasing,
+                                    'keyboard__key--blank': key.code === 'blank',
                                 },
                             ]"
                         >
@@ -341,25 +363,26 @@ export default {
                     </div>
                 </div>
 
-                <div class="side-section">
-                    <div class="nav-keys">
+                <div class="keyboard__side-section">
+                    <div class="keyboard__nav-keys">
                         <div
                             v-for="(row, rowIndex) in keyboardLayout.navigation"
                             :key="`nav-row-${rowIndex}`"
-                            class="keyboard-row"
+                            class="keyboard__row"
                         >
                             <div
                                 v-for="key in row"
                                 :key="key.code"
                                 :data-code="key.code"
-                                class="key"
+                                class="keyboard__key"
                                 :class="[
-                                    key.style,
+                                    getKeyModifierClass(key.style),
                                     {
-                                        pressed: key.pressed,
-                                        active: key.active,
-                                        tested: key.tested,
-                                        releasing: key.releasing,
+                                        'keyboard__key--pressed': key.pressed,
+                                        'keyboard__key--active': key.active,
+                                        'keyboard__key--tested': key.tested,
+                                        'keyboard__key--releasing': key.releasing,
+                                        'keyboard__key--blank': key.code === 'blank',
                                     },
                                 ]"
                             >
@@ -374,26 +397,26 @@ export default {
 </template>
 
 <style scoped>
-@keyframes keyPress {
+@keyframes keyboard__key-press {
     0% {
-        transform: translateY(0);
+        transform: translateY(0) translateZ(0);
         border-bottom-width: 3px;
     }
 
     100% {
-        transform: translateY(2px);
+        transform: translateY(2px) translateZ(0);
         border-bottom-width: 1px;
     }
 }
 
-@keyframes keyRelease {
+@keyframes keyboard__key-release {
     0% {
-        transform: translateY(2px);
+        transform: translateY(2px) translateZ(0);
         border-bottom-width: 1px;
     }
 
     100% {
-        transform: translateY(0);
+        transform: translateY(0) translateZ(0);
         border-bottom-width: 3px;
     }
 }
@@ -446,7 +469,7 @@ export default {
     color: #e0e0e0;
 }
 
-.keyboard-container {
+.keyboard {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -456,55 +479,54 @@ export default {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-large);
     width: 100%;
-    padding-top:10%;
-    padding-bottom:10%;
-
+    padding-top: 10%;
+    padding-bottom: 10%;
     min-width: auto;
     box-sizing: border-box;
     justify-content: center;
     margin: 0 auto;
 }
 
-.keyboard-section {
+.keyboard__section {
     display: flex;
     gap: 8px;
 }
 
-.keyboard-section.function-row {
+.keyboard__section--function {
     margin-bottom: 8px;
 }
 
-.main-section {
+.keyboard__section--main {
     display: flex;
     gap: 16px;
 }
 
-.main-keys {
+.keyboard__main-keys {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 3px;
 }
 
-.side-section {
+.keyboard__side-section {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.nav-keys {
+.keyboard__nav-keys {
     display: flex;
     flex-direction: column;
     gap: 3px;
 }
 
-.keyboard-row {
+.keyboard__row {
     display: flex;
     gap: 3px;
     width: 100%;
 }
 
-.key {
+.keyboard__key {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -521,89 +543,93 @@ export default {
     border-bottom: 2px solid var(--border-color);
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 10px;
-    transition: background-color var(--animation-instant) cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--animation-fast) cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
     position: relative;
     top: 0;
     box-sizing: border-box;
+    will-change: transform, background-color;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
-.key.tested {
+.keyboard__key--tested {
     background-color: var(--primary-color);
 }
 
-.key.pressed {
-    animation: keyPress var(--animation-fast) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.keyboard__key--pressed {
+    animation: keyboard__key-press var(--animation-fast) cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.key.releasing {
-    animation: keyRelease var(--animation-fast) cubic-bezier(0.2, 0, 0.4, 1) forwards;
+.keyboard__key--releasing {
+    animation: keyboard__key-release var(--animation-fast) cubic-bezier(0.2, 0, 0.4, 1) forwards;
 }
 
-.key.active {
+.keyboard__key--active {
     background-color: var(--primary-color);
-    animation: keyPress var(--animation-fast) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: keyboard__key-press var(--animation-fast) cubic-bezier(0.4, 0, 0.2, 1) forwards;
     box-shadow: 0 0 5px rgba(255, 107, 0, 0.5);
+    z-index: 1;
 }
 
-.key.utility {
+.keyboard__key--utility {
     background-color: var(--surface-quaternary);
     color: var(--text-secondary);
 }
 
-.key.utility.tested {
+.keyboard__key--utility.keyboard__key--tested {
     background-color: var(--primary-color);
     color: var(--text-primary);
 }
 
-.key.utility.pressed,
-.key.utility.active {
+.keyboard__key--utility.keyboard__key--pressed,
+.keyboard__key--utility.keyboard__key--active {
     background-color: var(--primary-color);
     color: var(--text-primary);
 }
 
-.key.utility.releasing {
+.keyboard__key--utility.keyboard__key--releasing {
     color: var(--text-primary);
 }
 
-.key-space {
+.keyboard__key--space {
     min-width: 160px;
     flex-grow: 6;
     max-width: 280px;
 }
 
-.key-backspace,
-.key-caps,
-.key-enter {
+.keyboard__key--backspace,
+.keyboard__key--caps,
+.keyboard__key--enter {
     min-width: 65px;
     flex-grow: 2.2;
     max-width: 95px;
 }
 
-.key-tab {
+.keyboard__key--tab {
     min-width: 50px;
     flex-grow: 1.8;
     max-width: 75px;
 }
 
-.key-shift-left,
-.key-shift-right {
+.keyboard__key--shift-left,
+.keyboard__key--shift-right {
     min-width: 80px;
     flex-grow: 2.8;
     max-width: 110px;
 }
 
-.key-blank,
-.key-blank-f {
-    background-color: transparent !important;
-    border-color: transparent !important;
+.keyboard__key--blank,
+.keyboard__key--blank-f {
+    background-color: transparent;
+    border-color: transparent;
     pointer-events: none;
-    box-shadow: none !important;
-    color: transparent !important;
-    min-width: 0 !important;
-    flex-basis: 0 !important;
-    width: 0 !important;
-    padding: 0 !important;
+    box-shadow: none;
+    color: transparent;
+    min-width: 0;
+    flex-basis: 0;
+    width: 0;
+    padding: 0;
 }
 
 /* --- Controls Bar --- */
@@ -618,88 +644,39 @@ export default {
     margin-top: auto;
 }
 
-/* --- Common Elements --- */
-.action-button {
-    min-width: 140px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius-medium);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    cursor: pointer;
-    transition: var(--transition-default);
-    border: none;
-    color: var(--text-primary);
-}
-
-.action-button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-medium);
-}
-
-.action-button.primary {
-    background-color: var(--primary-color);
-}
-
-.action-button.primary:hover {
-    background-color: var(--primary-color-dark);
-}
-
-.action-button.success {
-    background-color: var(--success-color) !important;
-    color: var(--text-primary) !important;
-    border: 2px solid #17642b;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
-.action-button.success:hover {
-    background-color: #218838;
-}
-
-.action-button.danger {
-    background-color: #dc3545;
-}
-
-.action-button.danger:hover {
-    background-color: #c82333;
-}
-
 /* Responsive Design - Better scaling for different screen sizes */
 @media (max-width: 1080px) {
-    .keyboard-container {
+    .keyboard {
         max-width: min(90vw, 800px);
         padding: var(--spacing-sm);
     }
 
-    .key {
+    .keyboard__key {
         height: clamp(24px, 2vh, 32px);
         min-width: clamp(24px, 2.2vw, 40px);
         max-width: clamp(28px, 3vw, 48px);
         font-size: clamp(7px, 0.6vw, 10px);
     }
 
-    .key-space {
+    .keyboard__key--space {
         min-width: clamp(120px, 10vw, 240px);
         max-width: clamp(160px, 12vw, 280px);
     }
 
-    .key-backspace,
-    .key-caps,
-    .key-enter {
+    .keyboard__key--backspace,
+    .keyboard__key--caps,
+    .keyboard__key--enter {
         min-width: clamp(50px, 4vw, 80px);
         max-width: clamp(60px, 5vw, 95px);
     }
 
-    .key-tab {
+    .keyboard__key--tab {
         min-width: clamp(40px, 3.5vw, 65px);
         max-width: clamp(50px, 4.5vw, 75px);
     }
 
-    .key-shift-left,
-    .key-shift-right {
+    .keyboard__key--shift-left,
+    .keyboard__key--shift-right {
         min-width: clamp(60px, 5vw, 95px);
         max-width: clamp(70px, 6vw, 110px);
     }
@@ -707,24 +684,24 @@ export default {
 
 /* Enhanced responsiveness for larger screens */
 @media (min-width: 1600px) {
-    .keyboard-container {
+    .keyboard {
         max-width: min(90vw, 1600px);
         padding: var(--spacing-lg);
     }
 
-    .key {
+    .keyboard__key {
         height: clamp(35px, 2.5vh, 45px);
         font-size: clamp(11px, 0.8vw, 14px);
     }
 }
 
 @media (min-width: 2000px) {
-    .keyboard-container {
+    .keyboard {
         max-width: min(85vw, 1800px);
         padding: var(--spacing-xl);
     }
 
-    .key {
+    .keyboard__key {
         height: clamp(40px, 2.8vh, 50px);
         font-size: clamp(12px, 0.9vw, 16px);
     }
@@ -774,9 +751,5 @@ export default {
 
 .mobile-notice li {
     margin-bottom: var(--spacing-sm);
-}
-
-.mobile-notice .action-button {
-    margin-top: var(--spacing-lg);
 }
 </style>

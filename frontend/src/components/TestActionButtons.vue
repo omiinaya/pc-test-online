@@ -32,7 +32,7 @@ export default {
     <div class="controls-bar" :style="controlsBarStyle">
         <button
             @click="$emit('not-working')"
-            class="action-button danger"
+            class="button button--danger button--medium"
             :disabled="actionsDisabled"
         >
             <svg
@@ -52,7 +52,7 @@ export default {
             </svg>
             <span>Fail</span>
         </button>
-        <button @click="$emit('skip')" class="action-button skip" :disabled="actionsDisabled">
+        <button @click="$emit('skip')" class="button button--skip button--medium" :disabled="actionsDisabled">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -70,7 +70,7 @@ export default {
             </svg>
             <span>Skip</span>
         </button>
-        <button @click="$emit('working')" class="action-button success" :disabled="actionsDisabled">
+        <button @click="$emit('working')" class="button button--success button--medium" :disabled="actionsDisabled">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"

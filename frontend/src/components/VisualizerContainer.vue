@@ -72,11 +72,11 @@ export default {
 
 <template>
     <div
-        class="visualizer-container"
+        class="visualizer"
         :class="[
-            { 'full-width': fullWidth },
-            { 'flex-centered': flexCentered },
-            { 'keyboard-mode': keyboardMode },
+            { 'visualizer--full-width': fullWidth },
+            { 'visualizer--flex-centered': flexCentered },
+            { 'visualizer--keyboard-mode': keyboardMode },
             containerClass,
         ]"
         :style="containerStyle"
@@ -86,7 +86,7 @@ export default {
 </template>
 
 <style scoped>
-.visualizer-container {
+.visualizer {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -96,50 +96,61 @@ export default {
     position: relative;
     overflow: hidden;
 
-    /* Smooth transitions for size changes - Using normalized animation speeds */
+    /* GPU-accelerated transitions for 60fps performance */
     transition:
-        min-height var(--transition-morphing),
-        max-width var(--transition-morphing),
-        padding var(--transition-morphing),
-        height var(--transition-morphing),
+        transform var(--transition-morphing) ease-out,
+        opacity var(--transition-morphing) ease-out,
         box-shadow var(--animation-slower) ease-out;
+    
+    /* Will-change hints for browser optimization */
+    will-change: transform, opacity;
 }
 
-.visualizer-container.full-width {
+.visualizer--full-width {
     max-width: none;
     width: 100%;
 }
 
-.visualizer-container.flex-centered {
+.visualizer--flex-centered {
     align-items: center;
     justify-content: center;
 }
 
-.visualizer-container.keyboard-mode {
-    /* Ensure keyboard gets appropriate width */
-    padding: 1.5rem !important;
-    max-width: 800px !important;
+.visualizer--keyboard-mode {
+    /* Ensure keyboard gets appropriate width with proper specificity */
+    padding: 1.5rem;
+    max-width: 800px;
 }
 
-/* Responsive adjustments */
+/* Responsive design with consistent breakpoints */
 @media (max-width: 768px) {
-    .visualizer-container {
+    .visualizer {
         margin: var(--spacing-md) auto;
         padding: var(--spacing-md);
-        /* Keep consistent transitions on mobile too */
+        /* GPU-accelerated transitions on mobile */
         transition:
-            min-height var(--transition-morphing),
-            max-width var(--transition-morphing),
-            padding var(--transition-morphing),
-            height var(--transition-morphing),
+            transform var(--transition-morphing) ease-out,
+            opacity var(--transition-morphing) ease-out,
             box-shadow var(--animation-slower) ease-out;
+    }
+    
+    .visualizer--keyboard-mode {
+        padding: var(--spacing-md);
+        max-width: none;
+    }
+}
+
+/* Tablet breakpoint */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .visualizer--keyboard-mode {
+        max-width: 700px;
     }
 }
 
 /* Accessibility: Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-    .visualizer-container {
-        transition-duration: var(--animation-slow) !important;
+    .visualizer {
+        transition-duration: var(--animation-slow);
     }
 }
 </style>
