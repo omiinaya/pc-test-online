@@ -70,15 +70,23 @@ export default {
                     return false;
                 }
 
-                // Setup audio context and analyser
-                audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
-                analyser.value = audioContext.value.createAnalyser();
+                // Setup audio context and analyser only if not already created
+                if (!audioContext.value || audioContext.value.state === 'closed') {
+                    audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Handle suspended state (common in browsers with autoplay restrictions)
+                    if (audioContext.value.state === 'suspended') {
+                        await audioContext.value.resume();
+                    }
+                }
 
-                const source = audioContext.value.createMediaStreamSource(deviceTest.stream.value);
-                source.connect(analyser.value);
-
-                analyser.value.fftSize = 2048;
-                dataArray.value = new Uint8Array(analyser.value.frequencyBinCount);
+                if (!analyser.value) {
+                    analyser.value = audioContext.value.createAnalyser();
+                    const source = audioContext.value.createMediaStreamSource(deviceTest.stream.value);
+                    source.connect(analyser.value);
+                    analyser.value.fftSize = 2048;
+                    dataArray.value = new Uint8Array(analyser.value.frequencyBinCount);
+                }
 
                 // Start visualization
                 startVisualization();

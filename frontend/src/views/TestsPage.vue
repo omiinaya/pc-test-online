@@ -42,6 +42,15 @@ export default {
                 battery: null,
             },
             skippedTests: [],
+            testIconMap: {
+                webcam: '📷',
+                microphone: '🎤',
+                speakers: '🔊',
+                keyboard: '⌨️',
+                mouse: '🖱️',
+                touch: '👆',
+                battery: '🔋',
+            },
             testNameMap: {
                 webcam: 'Camera',
                 microphone: 'Mic',
@@ -152,20 +161,20 @@ export default {
         passedTests() {
             return Object.keys(this.results).filter(
                 test => this.results[test] === true && !this.skippedTests.includes(test)
-            );
+            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         failedTests() {
             return Object.keys(this.results).filter(
                 test => this.results[test] === false && !this.skippedTests.includes(test)
-            );
+            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         pendingTests() {
             return Object.keys(this.results).filter(
                 test => this.results[test] === null && !this.skippedTests.includes(test)
-            );
+            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         skippedTestsList() {
-            return this.skippedTests;
+            return this.skippedTests.map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         anyTestsFailed() {
             return Object.values(this.results).some(r => r === false);
@@ -199,6 +208,29 @@ export default {
                 .map(t => (typeof t.duration === 'number' ? t.duration : 0))
                 .reduce((a, b) => a + b, 0);
         },
+        // Format individual test timing for display
+        formattedTimings() {
+            const formatted = {};
+            Object.keys(this.timings).forEach(test => {
+                const timing = this.timings[test];
+                // Ensure timing object exists and has proper structure
+                if (timing && typeof timing === 'object') {
+                    if (typeof timing.duration === 'number' && timing.duration > 0) {
+                        formatted[test] = `${timing.duration.toFixed(2)}s`;
+                    } else if (this.results[test] !== null || this.skippedTests.includes(test)) {
+                        // Test completed but no timing data (skipped or quick completion)
+                        formatted[test] = '0.00s';
+                    } else {
+                        // Test pending or in progress
+                        formatted[test] = '';
+                    }
+                } else {
+                    // Fallback for invalid timing data
+                    formatted[test] = '';
+                }
+            });
+            return formatted;
+        },
         // Container styles for smooth morphing based on active test
         currentContainerStyles() {
             const styleMap = {
@@ -215,6 +247,81 @@ export default {
         },
     },
     methods: {
+        // Safe access to test name mapping with comprehensive error handling
+        getTestName(test) {
+            // Validate that testNameMap exists and is an object
+            if (!this.testNameMap || typeof this.testNameMap !== 'object') {
+                console.warn('testNameMap is not properly defined, using fallback mapping');
+                const fallbackMap = {
+                    webcam: 'Camera',
+                    microphone: 'Mic',
+                    speakers: 'Speaker',
+                    keyboard: 'Keyboard',
+                    mouse: 'Mouse',
+                    touch: 'Touch',
+                    battery: 'Battery',
+                };
+                return fallbackMap[test] || this.getSafeFallback(test);
+            }
+            
+            // Validate that test parameter is a valid primitive
+            if (test === null || test === undefined || typeof test !== 'string' && typeof test !== 'number') {
+                console.warn(`Invalid test parameter: ${typeof test}`, test);
+                return this.getSafeFallback(test);
+            }
+            
+            // Get the name from the map, ensuring it's a string
+            const name = this.testNameMap[test];
+            
+            // Return the mapped name if it's a valid string, otherwise fallback
+            if (typeof name === 'string' && name.trim().length > 0) {
+                return name;
+            }
+            
+            return this.getSafeFallback(test);
+        },
+
+        // Helper method to provide safe fallback values
+        getSafeFallback(test) {
+            // Handle Vue Proxy objects and complex types safely
+            let testStr = 'unknown';
+            
+            try {
+                if (test === null || test === undefined) {
+                    testStr = 'unknown';
+                } else if (typeof test === 'string') {
+                    testStr = test;
+                } else if (typeof test === 'number') {
+                    testStr = test.toString();
+                } else if (typeof test === 'object') {
+                    // Handle Vue Proxy objects - try to access underlying value
+                    if (test.__v_skip) {
+                        // This is likely a Vue reactive object, try to get raw value
+                        testStr = 'reactive-object';
+                    } else {
+                        // Try to stringify or get a meaningful representation
+                        testStr = JSON.stringify(test).slice(0, 50);
+                    }
+                } else {
+                    // Fallback for other types
+                    testStr = String(test);
+                }
+            } catch (error) {
+                // If any conversion fails, use a safe fallback
+                console.warn('Error converting test to string:', error);
+                testStr = 'conversion-error';
+            }
+            
+            // Return a meaningful fallback that won't cause conversion issues
+            if (testStr === 'unknown' || testStr === 'null' || testStr === 'undefined' ||
+                testStr === 'reactive-object' || testStr === 'conversion-error') {
+                return 'Unknown Test';
+            }
+            
+            // Capitalize and format the test key as a fallback
+            return testStr.charAt(0).toUpperCase() + testStr.slice(1);
+        },
+
         // Debounced test switching to prevent rapid component changes and lag
         debouncedSetActiveTest(testType) {
             // If we're already switching, ignore new requests
@@ -247,9 +354,11 @@ export default {
 
         setActiveTest(testType) {
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
-            if (this.activeTest !== testType || this.timings[testType].start === null) {
-                this.timings[testType].start = Date.now();
-                this.timings[testType].end = null;
+            if (this.timings[testType]) {
+                if (this.activeTest !== testType || this.timings[testType].start === null) {
+                    this.timings[testType].start = Date.now();
+                    this.timings[testType].end = null;
+                }
             }
             this.activeTest = testType;
         },
@@ -264,7 +373,7 @@ export default {
             this.timings[testType].end = Date.now();
 
             // Validate timing data before calculation
-            if (this.timings[testType].start && this.timings[testType].end) {
+            if (this.timings[testType] && this.timings[testType].start && this.timings[testType].end) {
                 const sessionDuration =
                     (this.timings[testType].end - this.timings[testType].start) / 1000;
                 // Ensure duration is reasonable (between 0 and 10 minutes)
@@ -273,7 +382,7 @@ export default {
                 } else {
                     this.timings[testType].duration = 0;
                 }
-            } else {
+            } else if (this.timings[testType]) {
                 this.timings[testType].duration = 0;
             }
 
@@ -291,7 +400,7 @@ export default {
             this.timings[testType].end = Date.now();
 
             // Validate timing data before calculation
-            if (this.timings[testType].start && this.timings[testType].end) {
+            if (this.timings[testType] && this.timings[testType].start && this.timings[testType].end) {
                 const sessionDuration =
                     (this.timings[testType].end - this.timings[testType].start) / 1000;
                 // Ensure duration is reasonable (between 0 and 10 minutes)
@@ -300,7 +409,7 @@ export default {
                 } else {
                     this.timings[testType].duration = 0;
                 }
-            } else {
+            } else if (this.timings[testType]) {
                 this.timings[testType].duration = 0;
             }
 
@@ -331,6 +440,7 @@ export default {
                     this.timings[testType].duration = 0;
                 }
             } else if (
+                this.timings[testType] &&
                 this.timings[testType].end === null &&
                 typeof this.timings[testType].start === 'number'
             ) {
@@ -343,7 +453,7 @@ export default {
                 } else {
                     this.timings[testType].duration = 0;
                 }
-            } else {
+            } else if (this.timings[testType]) {
                 this.timings[testType].duration = 0;
             }
             this.results[testType] = null; // Keep as pending, but filtered out of summary
@@ -785,6 +895,25 @@ export default {
             this.exportResults();
             this.showExportMenu = false;
         },
+        // Check if a test has timing data to display with comprehensive error handling
+        hasTimingData(test) {
+            try {
+                // Ensure test parameter is a valid primitive
+                if (test === null || test === undefined || typeof test !== 'string' && typeof test !== 'number') {
+                    return false;
+                }
+                
+                // Safely access the timing value
+                const timingValue = this.formattedTimings[test];
+                
+                // Handle cases where timing value might be undefined, null, or non-string
+                return typeof timingValue === 'string' && timingValue !== '' && timingValue !== '0.00s';
+            } catch (error) {
+                console.warn('Error checking timing data for test:', test, error);
+                return false;
+            }
+        },
+
         exportAsCSV() {
             // Prepare CSV header
             const header = ['Test Name', 'Status', 'Run Count', 'Duration (s)'];
@@ -1000,138 +1129,50 @@ export default {
             />
         </main>
 
-        <!-- Right Sidebar -->
+        <!-- Right Sidebar - Simple Navigation Style -->
         <aside class="sidebar right-sidebar">
             <div class="sidebar-header">
                 <div class="brand-icon">📋</div>
                 <h2>Summary</h2>
             </div>
-            <div class="sidebar-summary-top">
-                <div class="detailed-summary">
-                    <div class="summary-overview">
-                        <div class="completion-badge" :class="summaryClass">
-                            <span class="completion-text"
-                                >Completed: {{ completedTestsCount }}/{{ totalTestsCount }}</span
-                            >
-                        </div>
-                    </div>
-                    <!-- Consolidated Results Card -->
-                    <div class="result-list unified">
-                        <!-- Pending Tests -->
-                        <div v-if="pendingTests.length > 0" class="result-section">
-                            <div class="result-section-header">
-                                <span class="result-label pending"
-                                    >Pending: {{ pendingTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in pendingTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                </li>
-                            </ul>
-                        </div>
+            <nav class="test-navigation">
+                <ul class="test-navigation__list">
+                    <!-- Summary Overview -->
+                    <li class="test-navigation__item">
+                        <span class="test-navigation__status" :class="`test-navigation__status--${summaryClass}`"></span>
+                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
+                        <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
+                    </li>
 
-                        <!-- Failed Tests -->
-                        <div v-if="failedTests.length > 0" class="result-section">
-                            <div v-if="pendingTests.length > 0" class="section-divider"></div>
-                            <div class="result-section-header">
-                                <span class="result-label failed"
-                                    >Failed: {{ failedTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in failedTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span v-if="runCounts[test] > 0" class="summary-count"
-                                            >{{ runCounts[test] }}x</span
-                                        >
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                    <!-- Pending Tests -->
+                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
+                        <span class="test-navigation__status test-navigation__status--pending"></span>
+                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                    </li>
 
-                        <!-- Skipped Tests -->
-                        <div v-if="skippedTestsList.length > 0" class="result-section">
-                            <div
-                                v-if="pendingTests.length > 0 || failedTests.length > 0"
-                                class="section-divider"
-                            ></div>
-                            <div class="result-section-header">
-                                <span class="result-label skipped"
-                                    >Skipped: {{ skippedTestsList.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li
-                                    v-for="test in skippedTestsList"
-                                    :key="test"
-                                    class="summary-row"
-                                >
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span class="summary-count">{{ runCounts[test] }}x</span>
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                    <!-- Failed Tests -->
+                    <li v-for="test in failedTests" :key="test" class="test-navigation__item">
+                        <span class="test-navigation__status test-navigation__status--completed-fail"></span>
+                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                    </li>
 
-                        <!-- Passed Tests -->
-                        <div v-if="passedTests.length > 0" class="result-section">
-                            <div
-                                v-if="
-                                    pendingTests.length > 0 ||
-                                    failedTests.length > 0 ||
-                                    skippedTestsList.length > 0
-                                "
-                                class="section-divider"
-                            ></div>
-                            <div class="result-section-header">
-                                <span class="result-label passed"
-                                    >Passed: {{ passedTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in passedTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span v-if="runCounts[test] > 0" class="summary-count"
-                                            >{{ runCounts[test] }}x</span
-                                        >
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div v-if="completedTestsCount > 0" class="summary-total-time">
-                        <div class="total-time-container">
-                            <span class="total-time-label">Total Time:</span>
-                            <span class="total-time-value">{{ totalTimeSpent.toFixed(2) }}s</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <!-- Skipped Tests -->
+                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
+                        <span class="test-navigation__status test-navigation__status--skipped"></span>
+                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                    </li>
+
+                    <!-- Passed Tests -->
+                    <li v-for="test in passedTests" :key="test" class="test-navigation__item">
+                        <span class="test-navigation__status test-navigation__status--completed-success"></span>
+                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                    </li>
+                </ul>
+            </nav>
         </aside>
 
     </div>
@@ -1346,6 +1387,24 @@ export default {
 .test-navigation__status--skipped {
     background-color: #ffc107;
     box-shadow: 0 0 6px #ffc107;
+}
+
+.test-navigation__timing {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all var(--animation-normal) ease;
+}
+
+.test-navigation__item:hover .test-navigation__timing {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .status-indicator {
@@ -1578,112 +1637,5 @@ export default {
     margin-bottom: 1rem;
 }
 
-.sidebar-summary-top {
-    margin-bottom: 1rem;
-}
-
-.summary-table {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.summary-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto; /* Label takes remaining space, counter and timer are auto-sized */
-    gap: 0.5rem;
-    align-items: center;
-    padding: 0.1rem;
-    min-height: 40px; /* Consistent row height */
-}
-
-.summary-row:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateX(4px);
-}
-
-.summary-name {
-    grid-column: 1;
-    text-align: left;
-    font-weight: 500;
-    color: #e2e8f0;
-    font-size: 0.9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-left: 1.25rem;
-    white-space: nowrap;
-}
-
-.summary-meta {
-    grid-column: 2 / 4; /* Spans both counter and timer columns */
-    display: grid;
-    grid-template-columns: 32px 48px; /* Fixed widths for perfect alignment */
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: end;
-}
-
-.summary-time {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.8rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    background: rgba(148, 163, 184, 0.1);
-    padding: 0.27rem;
-    border-radius: 4px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    width: 48px; /* Fixed width for perfect column alignment */
-    box-sizing: border-box;
-}
-
-.summary-count {
-    text-align: center;
-    background: linear-gradient(135deg, #f59e0b, #fbbf24);
-    color: #1a1a1a;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 0.17rem 0.4rem;
-    border-radius: 4px;
-    width: 32px; /* Fixed width for perfect column alignment */
-    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
-    box-sizing: border-box;
-}
-
-.summary-total-time {
-    margin-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.total-time-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border-radius: 6px;
-    border: 1px solid #475569;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.total-time-label {
-    font-weight: 600;
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    letter-spacing: 0.025em;
-}
-
-.total-time-value {
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-weight: 700;
-    color: #f1f5f9;
-    font-size: 1rem;
-    background: rgba(241, 245, 249, 0.1);
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid rgba(241, 245, 249, 0.2);
-}
 
 </style>

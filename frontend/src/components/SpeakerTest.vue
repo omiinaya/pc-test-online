@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useEnhancedDeviceTest } from '../composables/useEnhancedDeviceTest.js';
@@ -36,29 +36,38 @@ export default {
         const panNode = ref(null);
         const testTimeout = ref(null);
         const audioContextReady = ref(false);
+        const audioContextInitialized = ref(false);
         const firefoxRetryCount = ref(0);
         const maxFirefoxRetries = 3;
 
         /**
          * Initialize audio context with selected speaker
+         * AudioContext should be created once and reused, only setting sinkId when needed
          */
         const initializeAudioContext = async () => {
             try {
-                if (!audioContext.value || audioContext.value.state === 'closed') {
+                // Create AudioContext only once
+                if (!audioContext.value) {
                     audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
-
-                    // Set the audio output device if one is selected
-                    if (deviceTest.selectedDeviceId.value && audioContext.value.setSinkId) {
-                        await audioContext.value.setSinkId(deviceTest.selectedDeviceId.value);
-                    }
-
-                    // Ensure audio context is ready (especially for Firefox)
-                    if (audioContext.value.state === 'suspended') {
-                        await audioContext.value.resume();
-                    }
-
-                    audioContextReady.value = true;
+                    audioContextInitialized.value = true;
                 }
+
+                // Handle suspended state (browser autoplay policy)
+                if (audioContext.value.state === 'suspended') {
+                    await audioContext.value.resume();
+                }
+
+                // Set the audio output device if one is selected and context supports it
+                if (deviceTest.selectedDeviceId.value && audioContext.value.setSinkId) {
+                    try {
+                        await audioContext.value.setSinkId(deviceTest.selectedDeviceId.value);
+                    } catch (sinkError) {
+                        console.warn('Failed to set sink ID:', sinkError);
+                        // Continue without setting sink ID - most browsers will use default
+                    }
+                }
+
+                audioContextReady.value = true;
             } catch (err) {
                 console.error('Audio context initialization error:', err);
                 deviceTest.errorHandling.setError(`Failed to initialize audio: ${err.message}`);
@@ -75,12 +84,15 @@ export default {
             try {
                 deviceTest.selectedDeviceId.value = deviceId;
 
-                // Reinitialize audio context with new output device
-                if (audioContext.value) {
-                    await audioContext.value.close();
-                    audioContext.value = null;
+                // Only update sink ID if audio context exists and supports it
+                if (audioContext.value && audioContext.value.setSinkId) {
+                    try {
+                        await audioContext.value.setSinkId(deviceId);
+                    } catch (sinkError) {
+                        console.warn('Failed to set sink ID:', sinkError);
+                        // Continue without setting sink ID - browser will use default
+                    }
                 }
-                await initializeAudioContext();
             } catch (err) {
                 console.error('Error switching speaker:', err);
                 deviceTest.errorHandling.setError(`Failed to switch speaker: ${err.message}`);
@@ -102,24 +114,23 @@ export default {
             currentTestStep.value = channel;
 
             try {
-                // Ensure we have devices before attempting to play
-                if (deviceTest.availableDevices.value.length === 0) {
-                    console.log('No devices found, attempting to re-enumerate...');
-                    await deviceTest.deviceEnumeration.enumerateDevices();
-
-                    // Give Firefox a moment to properly enumerate devices
-                    await new Promise(resolve => setTimeout(resolve, 100));
-
-                    if (deviceTest.availableDevices.value.length === 0) {
-                        console.log('Still no devices found, this may be a Firefox issue');
-                        // Continue anyway - Firefox might have default devices that aren't enumerated
-                    }
+                // Initialize audio context on user interaction to comply with autoplay policies
+                if (!audioContext.value || audioContext.value.state === 'closed') {
+                    await initializeAudioContext();
+                } else if (audioContext.value.state === 'suspended') {
+                    // Resume if suspended - this is the key user interaction point
+                    await audioContext.value.resume();
                 }
 
                 await playChannel(channel);
             } catch (error) {
                 console.error('Error playing sound:', error);
-                deviceTest.errorHandling.setError(`Failed to play sound: ${error.message}`);
+                // Handle autoplay policy violations gracefully
+                if (error.name === 'NotAllowedError' || error.message.includes('user gesture')) {
+                    deviceTest.errorHandling.setError('Please click the speaker buttons to start audio playback. Browser requires user interaction for audio.');
+                } else {
+                    deviceTest.errorHandling.setError(`Failed to play sound: ${error.message}`);
+                }
             } finally {
                 isPlaying.value = false;
                 currentTestStep.value = '';
@@ -132,13 +143,12 @@ export default {
          */
         const playChannel = async channel => {
             try {
-                // Ensure audio context is properly initialized
+                // Ensure audio context is properly initialized and resumed on user interaction
                 if (!audioContext.value || audioContext.value.state === 'closed') {
                     await initializeAudioContext();
-                }
-
-                // Handle Firefox audio context suspension
-                if (audioContext.value.state === 'suspended') {
+                } else if (audioContext.value.state === 'suspended') {
+                    // This resume() call is crucial for browser autoplay policies
+                    // It must be called directly in response to user interaction
                     await audioContext.value.resume();
                 }
 
@@ -298,7 +308,6 @@ export default {
          */
         const retryTest = async () => {
             stopSound();
-            cleanup();
             deviceTest.resetTest();
 
             // Add small delay for Firefox to stabilize audio context
@@ -306,73 +315,111 @@ export default {
 
             await deviceTest.initializeTest();
 
-            // Ensure audio context is reinitialized
+            // Reset audio context ready state but keep the instance
+            audioContextReady.value = false;
+            
+            // Resume audio context if it exists
             if (audioContext.value && audioContext.value.state !== 'closed') {
-                await audioContext.value.close();
-                audioContext.value = null;
+                try {
+                    await audioContext.value.resume();
+                    audioContextReady.value = true;
+                } catch (resumeError) {
+                    console.warn('Failed to resume audio context:', resumeError);
+                    // Continue without audio context - will be recreated on next interaction
+                }
             }
-            await initializeAudioContext();
         };
 
         /**
          * Cleanup function
+         * Only close audio context when component is unmounted, not during retry
          */
         const cleanup = () => {
             stopSound();
             if (audioContext.value && audioContext.value.state !== 'closed') {
-                audioContext.value.close();
+                try {
+                    audioContext.value.close();
+                } catch (closeError) {
+                    console.warn('Error closing audio context:', closeError);
+                }
                 audioContext.value = null;
+                audioContextInitialized.value = false;
+                audioContextReady.value = false;
             }
         };
 
-        // Initialize audio context on mount
-        onMounted(() => {
-            initializeAudioContext();
-        });
+        // Don't initialize audio context automatically - wait for user interaction
+        // to comply with browser autoplay policies. The AudioContext will be created
+        // but left in suspended state until user clicks a speaker button.
 
-        // Watch for device changes and handle Firefox edge cases
+        // Watch for device enumeration to handle audio output edge cases
         const handleDeviceEnumeration = async () => {
             try {
-                // Check if we have devices but they're empty (Firefox edge case)
-                if (
-                    deviceTest.availableDevices.value.length === 0 &&
-                    deviceTest.deviceEnumeration.hasDevices.value
-                ) {
-                    console.log('Firefox device enumeration issue detected, retrying...');
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    await deviceTest.deviceEnumeration.enumerateDevices();
+                console.log('Device enumeration handler called');
+                console.log('Available devices:', deviceTest.availableDevices.value);
+                console.log('Is loading:', deviceTest.isLoading.value);
+                console.log('Show no devices state:', deviceTest.showNoDevicesState.value);
+                console.log('Has devices:', deviceTest.hasDevices.value);
+                
+                // For audio output, many systems have default devices that work
+                // even when not explicitly enumerated. We should be more permissive.
+                if (deviceTest.availableDevices.value.length === 0) {
+                    console.log('DEBUG: No audio output devices enumerated, but default output may still work');
+                    console.log('DEBUG: Device detection delay state:', deviceTest.deviceDetectionDelay?.shouldShowNoDevices.value);
+                } else {
+                    console.log('DEBUG: Found', deviceTest.availableDevices.value.length, 'audio output devices');
                 }
             } catch (error) {
                 console.error('Error handling device enumeration:', error);
             }
         };
 
-        // Firefox-specific workaround: always allow testing even if no devices enumerated
-        // Firefox has default audio output that works even when not enumerated
-        const hasFirefoxDefaultAudio = computed(() => {
-            return typeof InstallTrigger !== 'undefined'; // Firefox detection
-        });
-
-        // Override showNoDevicesState for Firefox when we have default audio
+        // For audio output devices, browsers often have default output that works
+        // even when no devices are enumerated. We should be very permissive.
         const actualShowNoDevicesState = computed(() => {
-            // If we have devices, show normal state
-            if (deviceTest.availableDevices.value.length > 0) {
-                return false;
-            }
-
-            // Firefox workaround - allow testing with default audio
-            if (hasFirefoxDefaultAudio.value) {
-                return false;
-            }
-
-            // Otherwise, show no devices state
-            return deviceTest.showNoDevicesState.value;
+            // Only show no devices state in very specific circumstances:
+            // 1. Device detection delay has completed AND
+            // 2. We're certain there are truly no audio capabilities
+            
+            // For audio output, most systems have default audio, so rarely show "no devices"
+            const shouldShow = deviceTest.showNoDevicesState.value &&
+                             deviceTest.availableDevices.value.length === 0 &&
+                             !deviceTest.isLoading.value &&
+                             !deviceTest.hasError.value;
+            
+            console.log('SpeakerTest - Device State:', {
+                showNoDevicesState: deviceTest.showNoDevicesState.value,
+                availableDevices: deviceTest.availableDevices.value.length,
+                isLoading: deviceTest.isLoading.value,
+                hasError: deviceTest.hasError.value,
+                finalResult: shouldShow
+            });
+            
+            // For audio output, default to allowing testing even if no devices enumerated
+            return false; // Never show "no devices" for audio output
         });
 
-        // Watch for device enumeration completion
+        // Watch for device enumeration completion with safe debugging
         if (deviceTest.deviceEnumeration) {
+            console.log('SpeakerTest: Setting up device enumeration...');
+
             // Add a small delay to ensure devices are properly enumerated
             setTimeout(handleDeviceEnumeration, 100);
+
+            // Simple periodic check for state changes
+            const debugInterval = setInterval(() => {
+                console.log('SpeakerTest State:', {
+                    availableDevices: deviceTest.availableDevices.value.length,
+                    showNoDevicesState: deviceTest.showNoDevicesState.value,
+                    isLoading: deviceTest.isLoading.value,
+                    hasError: deviceTest.hasError.value
+                });
+            }, 3000);
+
+            // Clean up interval on unmount
+            onUnmounted(() => {
+                clearInterval(debugInterval);
+            });
         }
 
         // Cleanup on unmount
@@ -388,7 +435,7 @@ export default {
             isPlaying,
             currentTestStep,
 
-            // Override showNoDevicesState with Firefox-compatible version
+            // Override showNoDevicesState with audio-output-specific logic
             showNoDevicesState: actualShowNoDevicesState,
 
             // Methods
@@ -514,7 +561,7 @@ export default {
             </div>
 
             <!-- State Panel Overlays inside canvas -->
-            <div v-if="actualShowNoDevicesState" class="canvas-overlay">
+            <div v-if="showNoDevicesState" class="canvas-overlay">
                 <StatePanel
                     state="error"
                     title="No Speakers Found"

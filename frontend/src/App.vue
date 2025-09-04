@@ -1038,139 +1038,59 @@ export default {
             @export-csv="exportAsCSV"
         />
 
-        <!-- Right Sidebar -->
+        <!-- Right Sidebar - Simple Navigation Style -->
         <aside class="sidebar right-sidebar">
             <div class="sidebar-header">
                 <div class="brand-icon">📋</div>
                 <h2>Summary</h2>
             </div>
-            <div class="sidebar-summary-top">
-                <div class="detailed-summary">
-                    <div class="summary-overview">
-                        <div class="completion-badge" :class="summaryClass">
-                            <span class="completion-text"
-                                >Completed: {{ completedTestsCount }}/{{ totalTestsCount }}</span
-                            >
-                        </div>
-                    </div>
-                    <!-- Consolidated Results Card -->
-                    <div class="result-list unified">
-                        <!-- Pending Tests -->
-                        <div v-if="pendingTests.length > 0" class="result-section">
-                            <div class="result-section-header">
-                                <span class="result-label pending"
-                                    >Pending: {{ pendingTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in pendingTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                </li>
-                            </ul>
-                        </div>
+            <nav class="test-navigation">
+                <ul class="test-navigation__list">
+                    <!-- Summary Overview -->
+                    <li class="test-navigation__item">
+                        <div class="test-navigation__icon">📋</div>
+                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="`test-navigation__status--${summaryClass}`"
+                        ></span>
+                    </li>
 
-                        <!-- Failed Tests -->
-                        <div v-if="failedTests.length > 0" class="result-section">
-                            <div v-if="pendingTests.length > 0" class="section-divider"></div>
-                            <div class="result-section-header">
-                                <span class="result-label failed"
-                                    >Failed: {{ failedTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in failedTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span v-if="runCounts[test] > 0" class="summary-count"
-                                            >{{ runCounts[test] }}x</span
-                                        >
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                    <!-- Pending Tests -->
+                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
+                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
+                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
+                        <span class="test-navigation__status test-navigation__status--pending"></span>
+                    </li>
 
-                        <!-- Skipped Tests -->
-                        <div v-if="skippedTestsList.length > 0" class="result-section">
-                            <div
-                                v-if="pendingTests.length > 0 || failedTests.length > 0"
-                                class="section-divider"
-                            ></div>
-                            <div class="result-section-header">
-                                <span class="result-label skipped"
-                                    >Skipped: {{ skippedTestsList.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li
-                                    v-for="test in skippedTestsList"
-                                    :key="test"
-                                    class="summary-row"
-                                >
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span class="summary-count">{{ runCounts[test] }}x</span>
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                    <!-- Failed Tests -->
+                    <li v-for="test in failedTests" :key="test" class="test-navigation__item">
+                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
+                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
+                        <span class="test-navigation__status test-navigation__status--completed-fail"></span>
+                    </li>
 
-                        <!-- Passed Tests -->
-                        <div v-if="passedTests.length > 0" class="result-section">
-                            <div
-                                v-if="
-                                    pendingTests.length > 0 ||
-                                    failedTests.length > 0 ||
-                                    skippedTestsList.length > 0
-                                "
-                                class="section-divider"
-                            ></div>
-                            <div class="result-section-header">
-                                <span class="result-label passed"
-                                    >Passed: {{ passedTests.length }}</span
-                                >
-                            </div>
-                            <ul class="summary-table">
-                                <li v-for="test in passedTests" :key="test" class="summary-row">
-                                    <span class="summary-name">{{ testNameMap[test] }}</span>
-                                    <div class="summary-meta">
-                                        <span v-if="runCounts[test] > 0" class="summary-count"
-                                            >{{ runCounts[test] }}x</span
-                                        >
-                                        <span
-                                            v-if="timings[test].duration !== null"
-                                            class="summary-time"
-                                            >{{
-                                                timings[test].duration.toFixed(2).padStart(5, '0')
-                                            }}s</span
-                                        >
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div v-if="completedTestsCount > 0" class="summary-total-time">
-                        <div class="total-time-container">
-                            <span class="total-time-label">Total Time:</span>
-                            <span class="total-time-value">{{ totalTimeSpent.toFixed(2) }}s</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <!-- Skipped Tests -->
+                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
+                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
+                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
+                        <span class="test-navigation__status test-navigation__status--skipped"></span>
+                    </li>
 
+                    <!-- Passed Tests -->
+                    <li v-for="test in passedTests" :key="test" class="test-navigation__item">
+                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
+                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
+                        <span class="test-navigation__status test-navigation__status--completed-success"></span>
+                    </li>
+
+                    <!-- Total Time -->
+                    <li v-if="completedTestsCount > 0" class="test-navigation__item">
+                        <div class="test-navigation__icon">⏱️</div>
+                        <span class="test-navigation__name">Total Time: {{ totalTimeSpent.toFixed(2) }}s</span>
+                    </li>
+                </ul>
+            </nav>
         </aside>
     </div>
     <div v-else class="mobile-layout">
@@ -1262,157 +1182,154 @@ export default {
                         </button>
                     </div>
                     <div class="mobile-summary-body">
-                        <div class="sidebar-summary-top">
-                            <div class="detailed-summary">
-                                <div class="summary-overview">
-                                    <div class="completion-badge" :class="summaryClass">
-                                        <span class="completion-text"
-                                            >Completed: {{ completedTestsCount }}/{{
-                                                totalTestsCount
-                                            }}</span
+                        <div class="test-summary">
+                            <div class="test-summary__overview">
+                                <div class="test-summary__badge" :class="`test-summary__badge--${summaryClass}`">
+                                    <span class="test-summary__completion-text"
+                                        >Completed: {{ completedTestsCount }}/{{
+                                            totalTestsCount
+                                        }}</span
+                                    >
+                                </div>
+                            </div>
+                            
+                            <div class="test-summary__results">
+                                <div v-if="pendingTests.length > 0" class="test-summary__section">
+                                    <div class="test-summary__section-header">
+                                        <span class="test-summary__section-label test-summary__section-label--pending"
+                                            >Pending: {{ pendingTests.length }}</span
                                         >
                                     </div>
+                                    <ul class="test-summary__list">
+                                        <li
+                                            v-for="test in pendingTests"
+                                            :key="test"
+                                            class="test-summary__item"
+                                        >
+                                            <span class="test-summary__name">{{
+                                                testNameMap[test]
+                                            }}</span>
+                                        </li>
+                                    </ul>
                                 </div>
-                                <div class="result-list unified">
-                                    <div v-if="pendingTests.length > 0" class="result-section">
-                                        <div class="result-section-header">
-                                            <span class="result-label pending"
-                                                >Pending: {{ pendingTests.length }}</span
-                                            >
-                                        </div>
-                                        <ul class="summary-table">
-                                            <li
-                                                v-for="test in pendingTests"
-                                                :key="test"
-                                                class="summary-row"
-                                            >
-                                                <span class="summary-name">{{
-                                                    testNameMap[test]
-                                                }}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div v-if="failedTests.length > 0" class="result-section">
-                                        <div
-                                            v-if="pendingTests.length > 0"
-                                            class="section-divider"
-                                        ></div>
-                                        <div class="result-section-header">
-                                            <span class="result-label failed"
-                                                >Failed: {{ failedTests.length }}</span
-                                            >
-                                        </div>
-                                        <ul class="summary-table">
-                                            <li
-                                                v-for="test in failedTests"
-                                                :key="test"
-                                                class="summary-row"
-                                            >
-                                                <span class="summary-name">{{
-                                                    testNameMap[test]
-                                                }}</span>
-                                                <div class="summary-meta">
-                                                    <span
-                                                        v-if="runCounts[test] > 0"
-                                                        class="summary-count"
-                                                        >{{ runCounts[test] }}x</span
-                                                    ><span
-                                                        v-if="timings[test].duration !== null"
-                                                        class="summary-time"
-                                                        >{{
-                                                            timings[test].duration
-                                                                .toFixed(2)
-                                                                .padStart(5, '0')
-                                                        }}s</span
-                                                    >
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div v-if="skippedTestsList.length > 0" class="result-section">
-                                        <div
-                                            v-if="pendingTests.length > 0 || failedTests.length > 0"
-                                            class="section-divider"
-                                        ></div>
-                                        <div class="result-section-header">
-                                            <span class="result-label skipped"
-                                                >Skipped: {{ skippedTestsList.length }}</span
-                                            >
-                                        </div>
-                                        <ul class="summary-table">
-                                            <li
-                                                v-for="test in skippedTestsList"
-                                                :key="test"
-                                                class="summary-row"
-                                            >
-                                                <span class="summary-name">{{
-                                                    testNameMap[test]
-                                                }}</span>
-                                                <div class="summary-meta">
-                                                    <span class="summary-count"
-                                                        >{{ runCounts[test] }}x</span
-                                                    ><span
-                                                        v-if="timings[test].duration !== null"
-                                                        class="summary-time"
-                                                        >{{
-                                                            timings[test].duration
-                                                                .toFixed(2)
-                                                                .padStart(5, '0')
-                                                        }}s</span
-                                                    >
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div v-if="passedTests.length > 0" class="result-section">
-                                        <div
-                                            v-if="
-                                                pendingTests.length > 0 ||
-                                                failedTests.length > 0 ||
-                                                skippedTestsList.length > 0
-                                            "
-                                            class="section-divider"
-                                        ></div>
-                                        <div class="result-section-header">
-                                            <span class="result-label passed"
-                                                >Passed: {{ passedTests.length }}</span
-                                            >
-                                        </div>
-                                        <ul class="summary-table">
-                                            <li
-                                                v-for="test in passedTests"
-                                                :key="test"
-                                                class="summary-row"
-                                            >
-                                                <span class="summary-name">{{
-                                                    testNameMap[test]
-                                                }}</span>
-                                                <div class="summary-meta">
-                                                    <span
-                                                        v-if="runCounts[test] > 0"
-                                                        class="summary-count"
-                                                        >{{ runCounts[test] }}x</span
-                                                    ><span
-                                                        v-if="timings[test].duration !== null"
-                                                        class="summary-time"
-                                                        >{{
-                                                            timings[test].duration
-                                                                .toFixed(2)
-                                                                .padStart(5, '0')
-                                                        }}s</span
-                                                    >
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div v-if="completedTestsCount > 0" class="summary-total-time">
-                                    <div class="total-time-container">
-                                        <span class="total-time-label">Total Time:</span
-                                        ><span class="total-time-value"
-                                            >{{ totalTimeSpent.toFixed(2) }}s</span
+                                <div v-if="failedTests.length > 0" class="test-summary__section">
+                                    <div v-if="pendingTests.length > 0" class="test-summary__divider"></div>
+                                    <div class="test-summary__section-header">
+                                        <span class="test-summary__section-label test-summary__section-label--failed"
+                                            >Failed: {{ failedTests.length }}</span
                                         >
                                     </div>
+                                    <ul class="test-summary__list">
+                                        <li
+                                            v-for="test in failedTests"
+                                            :key="test"
+                                            class="test-summary__item"
+                                        >
+                                            <span class="test-summary__name">{{
+                                                testNameMap[test]
+                                            }}</span>
+                                            <div class="test-summary__meta">
+                                                <span
+                                                    v-if="runCounts[test] > 0"
+                                                    class="test-summary__count"
+                                                    >{{ runCounts[test] }}x</span
+                                                ><span
+                                                    v-if="timings[test].duration !== null"
+                                                    class="test-summary__time"
+                                                    >{{
+                                                        timings[test].duration
+                                                            .toFixed(2)
+                                                            .padStart(5, '0')
+                                                    }}s</span
+                                                >
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div v-if="skippedTestsList.length > 0" class="test-summary__section">
+                                    <div
+                                        v-if="pendingTests.length > 0 || failedTests.length > 0"
+                                        class="test-summary__divider"
+                                    ></div>
+                                    <div class="test-summary__section-header">
+                                        <span class="test-summary__section-label test-summary__section-label--skipped"
+                                            >Skipped: {{ skippedTestsList.length }}</span
+                                        >
+                                    </div>
+                                    <ul class="test-summary__list">
+                                        <li
+                                            v-for="test in skippedTestsList"
+                                            :key="test"
+                                            class="test-summary__item"
+                                        >
+                                            <span class="test-summary__name">{{
+                                                testNameMap[test]
+                                            }}</span>
+                                            <div class="test-summary__meta">
+                                                <span class="test-summary__count"
+                                                    >{{ runCounts[test] }}x</span
+                                                ><span
+                                                    v-if="timings[test].duration !== null"
+                                                    class="test-summary__time"
+                                                    >{{
+                                                        timings[test].duration
+                                                            .toFixed(2)
+                                                            .padStart(5, '0')
+                                                    }}s</span
+                                                >
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div v-if="passedTests.length > 0" class="test-summary__section">
+                                    <div
+                                        v-if="
+                                            pendingTests.length > 0 ||
+                                            failedTests.length > 0 ||
+                                            skippedTestsList.length > 0
+                                        "
+                                        class="test-summary__divider"
+                                    ></div>
+                                    <div class="test-summary__section-header">
+                                        <span class="test-summary__section-label test-summary__section-label--passed"
+                                            >Passed: {{ passedTests.length }}</span
+                                        >
+                                    </div>
+                                    <ul class="test-summary__list">
+                                        <li
+                                            v-for="test in passedTests"
+                                            :key="test"
+                                            class="test-summary__item"
+                                        >
+                                            <span class="test-summary__name">{{
+                                                testNameMap[test]
+                                            }}</span>
+                                            <div class="test-summary__meta">
+                                                <span
+                                                    v-if="runCounts[test] > 0"
+                                                    class="test-summary__count"
+                                                    >{{ runCounts[test] }}x</span
+                                                ><span
+                                                    v-if="timings[test].duration !== null"
+                                                    class="test-summary__time"
+                                                    >{{
+                                                        timings[test].duration
+                                                            .toFixed(2)
+                                                            .padStart(5, '0')
+                                                    }}s</span
+                                                >
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div v-if="completedTestsCount > 0" class="test-summary__total-time">
+                                <div class="test-summary__total-container">
+                                    <span class="test-summary__total-label">Total Time:</span
+                                    ><span class="test-summary__total-value"
+                                        >{{ totalTimeSpent.toFixed(2) }}s</span
+                                    >
                                 </div>
                             </div>
                         </div>
@@ -1971,6 +1888,7 @@ export default {
     border-radius: 6px;
     border: 1px solid rgba(241, 245, 249, 0.2);
 }
+
 
 
 /* Mobile Layout Styles */
