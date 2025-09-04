@@ -10,6 +10,7 @@ import TestsCompleted from './components/TestsCompleted.vue';
 import VisualizerContainer from './components/VisualizerContainer.vue';
 import TestActionButtons from './components/TestActionButtons.vue';
 import TestHeader from './components/TestHeader.vue';
+import AppFooter from './components/AppFooter.vue';
 import { resetAllTestStates } from './composables/useTestState.js';
 import { useCSSCompatibility } from './composables/useCSSCompatibility';
 // Dynamic imports for PDF libraries to reduce initial bundle size
@@ -28,6 +29,7 @@ export default {
         VisualizerContainer,
         TestActionButtons,
         TestHeader,
+        AppFooter,
     },
     data() {
         return {
@@ -1026,6 +1028,16 @@ export default {
             />
         </main>
 
+        <!-- App Footer with Action Buttons -->
+        <AppFooter
+            :show-export-menu="showExportMenu"
+            @reset-tests="resetTests"
+            @toggle-export-menu="toggleExportMenu"
+            @export-pdf="exportAsPDF"
+            @export-json="exportAsJSON"
+            @export-csv="exportAsCSV"
+        />
+
         <!-- Right Sidebar -->
         <aside class="sidebar right-sidebar">
             <div class="sidebar-header">
@@ -1159,110 +1171,6 @@ export default {
                 </div>
             </div>
 
-            <!-- Sidebar Action Buttons -->
-            <div class="sidebar-action-buttons">
-                <button
-                    @click="resetTests"
-                    class="button button--secondary button--small"
-                    title="Reset Tests"
-                >
-                    <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <polyline points="1 4 1 10 7 10"></polyline>
-                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                    </svg>
-                    <span>Reset</span>
-                </button>
-                <div class="export-menu-sidebar">
-                    <button
-                        :disabled="!allTestsCompleted"
-                        @click="toggleExportMenu"
-                        class="button button--primary button--small"
-                        :class="{ 'button--disabled': !allTestsCompleted }"
-                        title="Export Report"
-                    >
-                        <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        <span>Export</span>
-                    </button>
-                    <transition name="expand-fade">
-                        <div v-if="showExportMenu" class="export-options-sidebar">
-                            <button @click="exportAsPDF" class="button button--text export-option-sidebar">
-                                <svg
-                                    class="export-icon"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                    ></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                                Export as PDF
-                            </button>
-                            <button @click="exportAsJSON" class="button button--text export-option-sidebar">
-                                <svg
-                                    class="export-icon"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                    ></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <path d="M12 18v-6"></path>
-                                    <circle cx="12" cy="18" r="1"></circle>
-                                </svg>
-                                Export as JSON
-                            </button>
-                            <button @click="exportAsCSV" class="button button--text export-option-sidebar">
-                                <svg
-                                    class="export-icon"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 1-2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <path d="M8 12h8"></path>
-                                    <path d="M8 16h8"></path>
-                                </svg>
-                                Export as CSV
-                            </button>
-                        </div>
-                    </transition>
-                </div>
-            </div>
         </aside>
     </div>
     <div v-else class="mobile-layout">
@@ -1507,107 +1415,6 @@ export default {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="sidebar-action-buttons">
-                        <button
-                            @click="resetTests"
-                            class="button button--secondary button--small"
-                            title="Reset Tests"
-                        >
-                            <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <polyline points="1 4 1 10 7 10"></polyline>
-                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg
-                            ><span>Reset</span>
-                        </button>
-                        <div class="export-menu-sidebar">
-                            <button
-                                :disabled="!allTestsCompleted"
-                                @click="toggleExportMenu"
-                                class="button button--primary button--small"
-                                :class="{ 'button--disabled': !allTestsCompleted }"
-                                title="Export Report"
-                            >
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line></svg
-                                ><span>Export</span>
-                            </button>
-                            <transition name="expand-fade"
-                                ><div v-if="showExportMenu" class="export-options-sidebar">
-                                    <button @click="exportAsPDF" class="export-option-sidebar">
-                                        <svg
-                                            class="export-icon"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                            ></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                                            <polyline points="10 9 9 9 8 9"></polyline>
-                                        </svg>
-                                        Export as PDF</button
-                                    ><button @click="exportAsJSON" class="export-option-sidebar">
-                                        <svg
-                                            class="export-icon"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                            ></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <path d="M12 18v-6"></path>
-                                            <circle cx="12" cy="18" r="1"></circle>
-                                        </svg>
-                                        Export as JSON</button
-                                    ><button @click="exportAsCSV" class="export-option-sidebar">
-                                        <svg
-                                            class="export-icon"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 1-2-2V8z"
-                                            ></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <path d="M8 12h8"></path>
-                                            <path d="M8 16h8"></path>
-                                        </svg>
-                                        Export as CSV
-                                    </button>
-                                </div></transition
-                            >
                         </div>
                     </div>
                 </div>
@@ -2165,59 +1972,6 @@ export default {
     border: 1px solid rgba(241, 245, 249, 0.2);
 }
 
-/* Sidebar Action Buttons */
-.sidebar-action-buttons {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 10;
-}
-
-.export-menu-sidebar {
-    position: relative;
-    flex: 1;
-}
-
-.export-options-sidebar {
-    position: absolute;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 0.5rem;
-    background: rgba(30, 30, 30, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    backdrop-filter: blur(8px);
-    min-width: 140px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    overflow: hidden;
-}
-
-.export-option-sidebar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.6rem 0.8rem;
-    background: transparent;
-    border: none;
-    color: #e2e8f0;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.export-option-sidebar:hover {
-    background: rgba(255, 255, 255, 255, 0.1);
-}
-
-.export-option-sidebar .export-icon {
-    flex-shrink: 0;
-    opacity: 0.7;
-}
 
 /* Mobile Layout Styles */
 .mobile-layout {
