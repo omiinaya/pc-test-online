@@ -1145,28 +1145,28 @@ export default {
                     </li>
 
                     <!-- Pending Tests -->
-                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
+                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item test-navigation__item--pending">
                         <span class="test-navigation__status test-navigation__status--pending"></span>
                         <span class="test-navigation__name">{{ getTestName(test) }}</span>
                         <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                     </li>
 
                     <!-- Failed Tests -->
-                    <li v-for="test in failedTests" :key="test" class="test-navigation__item">
+                    <li v-for="test in failedTests" :key="test" class="test-navigation__item test-navigation__item--failed">
                         <span class="test-navigation__status test-navigation__status--completed-fail"></span>
                         <span class="test-navigation__name">{{ getTestName(test) }}</span>
                         <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                     </li>
 
                     <!-- Skipped Tests -->
-                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
+                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item test-navigation__item--skipped">
                         <span class="test-navigation__status test-navigation__status--skipped"></span>
                         <span class="test-navigation__name">{{ getTestName(test) }}</span>
                         <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                     </li>
 
                     <!-- Passed Tests -->
-                    <li v-for="test in passedTests" :key="test" class="test-navigation__item">
+                    <li v-for="test in passedTests" :key="test" class="test-navigation__item test-navigation__item--passed">
                         <span class="test-navigation__status test-navigation__status--completed-success"></span>
                         <span class="test-navigation__name">{{ getTestName(test) }}</span>
                         <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
@@ -1343,6 +1343,31 @@ export default {
 .test-navigation__item--disabled:hover {
     background-color: transparent;
     color: #e0e0e0;
+}
+
+/* Right sidebar status highlighting */
+.test-navigation__item--pending {
+    background-color: rgba(59, 130, 246, 0.08); /* Light blue */
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #93c5fd;
+}
+
+.test-navigation__item--failed {
+    background-color: rgba(220, 53, 69, 0.08); /* Light red */
+    border-color: rgba(220, 53, 69, 0.5);
+    color: #fca5a5;
+}
+
+.test-navigation__item--skipped {
+    background-color: rgba(255, 193, 7, 0.08); /* Light yellow */
+    border-color: rgba(255, 193, 7, 0.5);
+    color: #fde68a;
+}
+
+.test-navigation__item--passed {
+    background-color: rgba(40, 167, 69, 0.08); /* Light green */
+    border-color: rgba(40, 167, 69, 0.5);
+    color: #86efac;
 }
 
 .test-navigation__icon {
