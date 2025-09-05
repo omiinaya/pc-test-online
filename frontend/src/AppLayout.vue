@@ -13,6 +13,9 @@ export default {
     data() {
         return {
             showFallback: false,
+            footerState: {
+                showExportMenu: false,
+            },
         };
     },
     mounted() {
@@ -27,6 +30,44 @@ export default {
                 this.showFallback = true;
             }
         }, 100);
+        
+        // Set up global event handlers for AppFooter actions
+        this.setupGlobalEventHandlers();
+    },
+    methods: {
+        handleFooterUpdate(payload) {
+            // Update footer state based on emitted events from child components
+            if (payload && typeof payload === 'object') {
+                if ('showExportMenu' in payload) {
+                    this.footerState.showExportMenu = payload.showExportMenu;
+                }
+            }
+        },
+        handleResetTests() {
+            // Dispatch a global event that TestsPage can listen to
+            window.dispatchEvent(new CustomEvent('app-footer-reset-tests'));
+        },
+        handleToggleExportMenu() {
+            this.footerState.showExportMenu = !this.footerState.showExportMenu;
+        },
+        handleExportPdf() {
+            // Dispatch a global event that TestsPage can listen to
+            window.dispatchEvent(new CustomEvent('app-footer-export-pdf'));
+        },
+        handleExportJson() {
+            // Dispatch a global event that TestsPage can listen to
+            window.dispatchEvent(new CustomEvent('app-footer-export-json'));
+        },
+        handleExportCsv() {
+            // Dispatch a global event that TestsPage can listen to
+            window.dispatchEvent(new CustomEvent('app-footer-export-csv'));
+        },
+        setupGlobalEventHandlers() {
+            // Set up event listeners for global events from TestsPage
+            window.addEventListener('tests-page-update-footer', (event) => {
+                this.handleFooterUpdate(event.detail);
+            });
+        },
     },
 };
 </script>
@@ -34,10 +75,19 @@ export default {
 <template>
     <div id="app">
         <AppHeader />
-        <router-view />
+        <router-view v-slot="{ Component }">
+            <component :is="Component" @update-footer="handleFooterUpdate" />
+        </router-view>
         <!-- Fallback: If router-view is empty, show TestsPage directly -->
-        <TestsPage v-if="showFallback" />
-        <AppFooter />
+        <TestsPage v-if="showFallback" @update-footer="handleFooterUpdate" ref="testsPageComponent" />
+        <AppFooter
+            :show-export-menu="footerState.showExportMenu"
+            @reset-tests="handleResetTests"
+            @toggle-export-menu="handleToggleExportMenu"
+            @export-pdf="handleExportPdf"
+            @export-json="handleExportJson"
+            @export-csv="handleExportCsv"
+        />
     </div>
 </template>
 

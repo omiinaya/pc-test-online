@@ -122,9 +122,6 @@ export default {
                 formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
             });
             
-            // Debug logging for timer updates
-            console.log('formattedRealTimeTimers updated:', JSON.stringify(formatted));
-            
             return formatted;
         },
         
@@ -276,10 +273,6 @@ export default {
                     formatted[test] = '0.00s';
                 }
             });
-            
-            // Debug logging for timing updates
-            console.log('formattedTimings updated:', JSON.stringify(formatted));
-            console.log('realTimeTimers state:', JSON.stringify(this.realTimeTimers));
             
             return formatted;
         },
@@ -600,6 +593,9 @@ export default {
             resetAllTestStates();
             // Set active test and start timing
             this.setActiveTest('webcam');
+            
+            // Emit reset event for AppFooter
+            this.$emit('reset-tests');
         },
 
         // Timer management methods
@@ -684,6 +680,8 @@ export default {
         },
         toggleExportMenu() {
             this.showExportMenu = !this.showExportMenu;
+            // Emit event to parent component for AppFooter synchronization
+            this.$emit('update-footer', { showExportMenu: this.showExportMenu });
         },
         async exportAsPDF() {
             // Dynamic imports to reduce initial bundle size
@@ -1029,6 +1027,8 @@ export default {
         exportAsJSON() {
             this.exportResults();
             this.showExportMenu = false;
+            // Emit event for AppFooter
+            this.$emit('export-json');
         },
         // Check if a test has timing data to display with comprehensive error handling
         hasTimingData(test) {
@@ -1056,6 +1056,9 @@ export default {
         },
 
         exportAsCSV() {
+            // Emit event for AppFooter
+            this.$emit('export-csv');
+            
             // Prepare CSV header
             const header = ['Test Name', 'Status', 'Run Count', 'Duration (s)'];
             const rows = [header];
@@ -1085,6 +1088,33 @@ export default {
             a.click();
             URL.revokeObjectURL(url);
             this.showExportMenu = false;
+        },
+        // Global event listener methods
+        setupGlobalEventListeners() {
+            // Listen for AppFooter events
+            window.addEventListener('app-footer-reset-tests', this.handleResetFromFooter);
+            window.addEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
+            window.addEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
+            window.addEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
+        },
+        cleanupGlobalEventListeners() {
+            // Remove AppFooter event listeners
+            window.removeEventListener('app-footer-reset-tests', this.handleResetFromFooter);
+            window.removeEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
+            window.removeEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
+            window.removeEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
+        },
+        handleResetFromFooter() {
+            this.resetTests();
+        },
+        handleExportPdfFromFooter() {
+            this.exportAsPDF();
+        },
+        handleExportJsonFromFooter() {
+            this.exportAsJSON();
+        },
+        handleExportCsvFromFooter() {
+            this.exportAsCSV();
         },
     },
     mounted() {
@@ -1131,6 +1161,9 @@ export default {
         // Initialize CSS compatibility system
         const cssCompat = useCSSCompatibility();
         cssCompat.initialize();
+
+        // Set up global event listeners for AppFooter actions
+        this.setupGlobalEventListeners();
     },
     beforeUnmount() {
         // Clean up any pending debounce timers to prevent memory leaks
@@ -1144,6 +1177,9 @@ export default {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
+
+        // Clean up global event listeners
+        this.cleanupGlobalEventListeners();
     },
 };
 </script>
