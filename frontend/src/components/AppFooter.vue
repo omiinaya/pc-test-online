@@ -83,7 +83,7 @@ export default {
                                 <line x1="16" y1="8" x2="2" y2="22" />
                                 <line x1="17.5" y1="15" x2="9" y2="15" />
                             </svg>
-                            Built with ❤️
+                            Built with 🤖
                         </a>
 
                         <router-link to="/web-vitals" class="footer-link vitals">
