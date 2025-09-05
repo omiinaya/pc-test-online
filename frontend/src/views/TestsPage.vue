@@ -1144,33 +1144,57 @@ export default {
                         <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
                     </li>
 
-                    <!-- Pending Tests -->
-                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item test-navigation__item--pending">
-                        <span class="test-navigation__status test-navigation__status--pending"></span>
-                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
-                    </li>
+                    <!-- Pending Tests Section -->
+                    <div v-if="pendingTests.length > 0" class="test-section test-section--pending">
+                        <div class="test-section__header">
+                            <span class="test-section__status-indicator"></span>
+                            <span class="test-section__title">Pending Tests</span>
+                        </div>
+                        <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
+                            <span class="test-navigation__status test-navigation__status--pending"></span>
+                            <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                        </li>
+                    </div>
 
-                    <!-- Failed Tests -->
-                    <li v-for="test in failedTests" :key="test" class="test-navigation__item test-navigation__item--failed">
-                        <span class="test-navigation__status test-navigation__status--completed-fail"></span>
-                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
-                    </li>
+                    <!-- Failed Tests Section -->
+                    <div v-if="failedTests.length > 0" class="test-section test-section--failed">
+                        <div class="test-section__header">
+                            <span class="test-section__status-indicator"></span>
+                            <span class="test-section__title">Failed Tests</span>
+                        </div>
+                        <li v-for="test in failedTests" :key="test" class="test-navigation__item">
+                            <span class="test-navigation__status test-navigation__status--completed-fail"></span>
+                            <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                        </li>
+                    </div>
 
-                    <!-- Skipped Tests -->
-                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item test-navigation__item--skipped">
-                        <span class="test-navigation__status test-navigation__status--skipped"></span>
-                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
-                    </li>
+                    <!-- Skipped Tests Section -->
+                    <div v-if="skippedTestsList.length > 0" class="test-section test-section--skipped">
+                        <div class="test-section__header">
+                            <span class="test-section__status-indicator"></span>
+                            <span class="test-section__title">Skipped Tests</span>
+                        </div>
+                        <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
+                            <span class="test-navigation__status test-navigation__status--skipped"></span>
+                            <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                        </li>
+                    </div>
 
-                    <!-- Passed Tests -->
-                    <li v-for="test in passedTests" :key="test" class="test-navigation__item test-navigation__item--passed">
-                        <span class="test-navigation__status test-navigation__status--completed-success"></span>
-                        <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                        <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
-                    </li>
+                    <!-- Passed Tests Section -->
+                    <div v-if="passedTests.length > 0" class="test-section test-section--passed">
+                        <div class="test-section__header">
+                            <span class="test-section__status-indicator"></span>
+                            <span class="test-section__title">Passed Tests</span>
+                        </div>
+                        <li v-for="test in passedTests" :key="test" class="test-navigation__item">
+                            <span class="test-navigation__status test-navigation__status--completed-success"></span>
+                            <span class="test-navigation__name">{{ getTestName(test) }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                        </li>
+                    </div>
                 </ul>
             </nav>
         </aside>
@@ -1345,29 +1369,111 @@ export default {
     color: #e0e0e0;
 }
 
-/* Right sidebar status highlighting */
-.test-navigation__item--pending {
-    background-color: rgba(59, 130, 246, 0.08); /* Light blue */
-    border-color: rgba(59, 130, 246, 0.5);
-    color: #93c5fd;
+/* Section highlighting */
+.test-section {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background-color: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all var(--animation-normal) ease;
 }
 
-.test-navigation__item--failed {
-    background-color: rgba(220, 53, 69, 0.08); /* Light red */
-    border-color: rgba(220, 53, 69, 0.5);
-    color: #fca5a5;
+.test-section__header {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.test-navigation__item--skipped {
-    background-color: rgba(255, 193, 7, 0.08); /* Light yellow */
-    border-color: rgba(255, 193, 7, 0.5);
-    color: #fde68a;
+.test-section__status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
 }
 
-.test-navigation__item--passed {
-    background-color: rgba(40, 167, 69, 0.08); /* Light green */
-    border-color: rgba(40, 167, 69, 0.5);
-    color: #86efac;
+.test-section__title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Pending section styling */
+.test-section--pending {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.test-section--pending .test-section__header {
+    background-color: rgba(59, 130, 246, 0.25);
+    border-bottom-color: rgba(59, 130, 246, 0.3);
+}
+
+.test-section--pending .test-section__status-indicator {
+    background-color: #3b82f6;
+    box-shadow: 0 0 8px #3b82f6;
+}
+
+/* Failed section styling */
+.test-section--failed {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.4);
+}
+
+.test-section--failed .test-section__header {
+    background-color: rgba(220, 53, 69, 0.25);
+    border-bottom-color: rgba(220, 53, 69, 0.3);
+}
+
+.test-section--failed .test-section__status-indicator {
+    background-color: #dc3545;
+    box-shadow: 0 0 8px #dc3545;
+}
+
+/* Skipped section styling */
+.test-section--skipped {
+    background-color: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.4);
+}
+
+.test-section--skipped .test-section__header {
+    background-color: rgba(255, 193, 7, 0.25);
+    border-bottom-color: rgba(255, 193, 7, 0.3);
+}
+
+.test-section--skipped .test-section__status-indicator {
+    background-color: #ffc107;
+    box-shadow: 0 0 8px #ffc107;
+}
+
+/* Passed section styling */
+.test-section--passed {
+    background-color: rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.4);
+}
+
+.test-section--passed .test-section__header {
+    background-color: rgba(40, 167, 69, 0.25);
+    border-bottom-color: rgba(40, 167, 69, 0.3);
+}
+
+.test-section--passed .test-section__status-indicator {
+    background-color: #28a745;
+    box-shadow: 0 0 8px #28a745;
+}
+
+/* Remove individual item highlighting */
+.test-navigation__item {
+    background: none;
+    border: 1px solid transparent;
+}
+
+.test-navigation__item:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
 }
 
 .test-navigation__icon {
