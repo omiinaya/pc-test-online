@@ -397,7 +397,7 @@ export default {
 
 <style scoped>
 .web-vitals-page {
-    min-height: calc(100vh - 130px); /* Account for header and footer */
+    min-height: calc(100vh - var(--header-height) - 70px); /* Account for header and footer */
     background: var(--surface-primary);
     color: var(--text-primary);
     padding: 2rem 0;

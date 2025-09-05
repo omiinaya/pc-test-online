@@ -1276,6 +1276,7 @@ export default {
 .main-content {
     flex: 1;
     padding: 2rem;
+    padding-top: calc(2rem + var(--header-height)); /* Account for fixed header */
     overflow-y: auto;
     min-width: 0;
     position: relative; /* Required for absolute positioning of action buttons */

@@ -73,7 +73,7 @@ export default {
 </script>
 
 <template>
-    <div id="app">
+    <div>
         <AppHeader />
         <router-view v-slot="{ Component }">
             <component :is="Component" @update-footer="handleFooterUpdate" />
@@ -98,7 +98,7 @@ export default {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding-top: 1rem; /* Space for the fixed header */
+    padding-top: var(--header-height); /* Space for the fixed header */
     padding-bottom: 1rem; /* Space for the fixed footer */
 }
 

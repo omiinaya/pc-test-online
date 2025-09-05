@@ -97,6 +97,9 @@
   --surface-tertiary: #444;
   --surface-quaternary: #333;
   
+  /* Header Height */
+  --header-height: 60px;
+  
   /* Primary Color Variations */
   --primary-color-dark: #e65c00;
 }

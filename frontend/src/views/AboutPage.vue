@@ -241,7 +241,7 @@ export default {
 
 <style scoped>
 .about-page {
-    min-height: calc(100vh - 130px); /* Account for header and footer */
+    min-height: calc(100vh - var(--header-height) - 70px); /* Account for header and footer */
     background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
     color: #e2e8f0;
     padding: 2rem 0;
