@@ -942,60 +942,7 @@ export default {
 
 <template>
     <div v-if="!isMobile" class="app-layout">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="brand-icon">
-                    <img
-                        src="/favicon.svg"
-                        alt="MMIT Lab Icon"
-                        style="width: 28px; height: 28px; display: block; margin: 0; padding: 0"
-                    />
-                </div>
-                <h2>MMIT Lab</h2>
-            </div>
-            <nav class="test-navigation">
-                <ul class="test-navigation__list">
-                    <li
-                        v-for="test in availableTests"
-                        :key="test"
-                        :class="[
-                            'test-navigation__item',
-                            { 'test-navigation__item--active': activeTest === test }
-                        ]"
-                        @click="debouncedSetActiveTest(test)"
-                    >
-                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
-                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
-                        <span
-                            class="test-navigation__status"
-                            :class="`test-navigation__status--${getTestStatusClass(test)}`"
-                        ></span>
-                    </li>
-                    <li
-                        :class="[
-                            'test-navigation__item',
-                            {
-                                'test-navigation__item--active': activeTest === 'testsCompleted',
-                                'test-navigation__item--disabled': !allTestsCompleted
-                            }
-                        ]"
-                        @click="handleTestsCompletedClick"
-                    >
-                        <div class="test-navigation__icon">✅</div>
-                        <span class="test-navigation__name">Tests Completed</span>
-                        <span
-                            class="test-navigation__status"
-                            :class="allTestsCompleted
-                                ? 'test-navigation__status--completed-success'
-                                : 'test-navigation__status--pending'"
-                        ></span>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
+        <!-- Main Content Only - Sidebars removed to avoid duplication with TestsPage.vue -->
         <main class="main-content">
             <!-- Test Header Outside Container -->
             <TestHeader :test-title="currentTestTitle" :test-description="currentTestDescription">
@@ -1037,61 +984,6 @@ export default {
             @export-json="exportAsJSON"
             @export-csv="exportAsCSV"
         />
-
-        <!-- Right Sidebar - Simple Navigation Style -->
-        <aside class="sidebar right-sidebar">
-            <div class="sidebar-header">
-                <div class="brand-icon">📋</div>
-                <h2>Summary</h2>
-            </div>
-            <nav class="test-navigation">
-                <ul class="test-navigation__list">
-                    <!-- Summary Overview -->
-                    <li class="test-navigation__item">
-                        <div class="test-navigation__icon">📋</div>
-                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
-                        <span
-                            class="test-navigation__status"
-                            :class="`test-navigation__status--${summaryClass}`"
-                        ></span>
-                    </li>
-
-                    <!-- Pending Tests -->
-                    <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
-                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
-                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
-                        <span class="test-navigation__status test-navigation__status--pending"></span>
-                    </li>
-
-                    <!-- Failed Tests -->
-                    <li v-for="test in failedTests" :key="test" class="test-navigation__item">
-                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
-                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
-                        <span class="test-navigation__status test-navigation__status--completed-fail"></span>
-                    </li>
-
-                    <!-- Skipped Tests -->
-                    <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
-                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
-                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
-                        <span class="test-navigation__status test-navigation__status--skipped"></span>
-                    </li>
-
-                    <!-- Passed Tests -->
-                    <li v-for="test in passedTests" :key="test" class="test-navigation__item">
-                        <div class="test-navigation__icon">{{ testIconMap[test] }}</div>
-                        <span class="test-navigation__name">{{ testNameMap[test] }}</span>
-                        <span class="test-navigation__status test-navigation__status--completed-success"></span>
-                    </li>
-
-                    <!-- Total Time -->
-                    <li v-if="completedTestsCount > 0" class="test-navigation__item">
-                        <div class="test-navigation__icon">⏱️</div>
-                        <span class="test-navigation__name">Total Time: {{ totalTimeSpent.toFixed(2) }}s</span>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
     </div>
     <div v-else class="mobile-layout">
         <!-- Mobile Header -->

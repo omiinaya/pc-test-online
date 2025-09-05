@@ -78,12 +78,49 @@ export default {
                 touch: 0,
                 battery: 0,
             },
+            realTimeTimers: {
+                webcam: { running: false, startTime: null, elapsed: 0 },
+                microphone: { running: false, startTime: null, elapsed: 0 },
+                speakers: { running: false, startTime: null, elapsed: 0 },
+                keyboard: { running: false, startTime: null, elapsed: 0 },
+                mouse: { running: false, startTime: null, elapsed: 0 },
+                touch: { running: false, startTime: null, elapsed: 0 },
+                battery: { running: false, startTime: null, elapsed: 0 },
+            },
+            timerInterval: null,
             showExportMenu: false,
             switchDebounceTime: null,
             isSwitching: false,
         };
     },
     computed: {
+        // Real-time elapsed time for each test
+        realTimeElapsed() {
+            const elapsed = {};
+            const now = Date.now();
+            
+            Object.keys(this.realTimeTimers).forEach(test => {
+                const timer = this.realTimeTimers[test];
+                if (timer.running && timer.startTime) {
+                    elapsed[test] = ((now - timer.startTime) / 1000) + timer.elapsed;
+                } else {
+                    elapsed[test] = timer.elapsed;
+                }
+            });
+            
+            return elapsed;
+        },
+        
+        // Formatted real-time timers with two decimal places
+        formattedRealTimeTimers() {
+            const formatted = {};
+            Object.keys(this.realTimeElapsed).forEach(test => {
+                const time = this.realTimeElapsed[test];
+                formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
+            });
+            return formatted;
+        },
+        
         // Test header content
         currentTestIcon() {
             const iconMap = {
@@ -220,6 +257,9 @@ export default {
                     } else if (this.results[test] !== null || this.skippedTests.includes(test)) {
                         // Test completed but no timing data (skipped or quick completion)
                         formatted[test] = '0.00s';
+                    } else if (this.realTimeTimers[test].running) {
+                        // Test is currently running - show real-time timer
+                        formatted[test] = `${this.formattedRealTimeTimers[test]}s`;
                     } else {
                         // Test pending or in progress
                         formatted[test] = '';
@@ -353,11 +393,18 @@ export default {
         },
 
         setActiveTest(testType) {
+            // Stop timer for previous active test if it was running
+            if (this.activeTest && this.activeTest !== testType) {
+                this.stopTimer(this.activeTest);
+            }
+            
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
             if (this.timings[testType]) {
                 if (this.activeTest !== testType || this.timings[testType].start === null) {
                     this.timings[testType].start = Date.now();
                     this.timings[testType].end = null;
+                    // Start real-time timer for this test
+                    this.startTimer(testType);
                 }
             }
             this.activeTest = testType;
@@ -366,6 +413,9 @@ export default {
             if (!this.timings[testType]) {
                 return;
             }
+            // Stop real-time timer
+            this.stopTimer(testType);
+            
             // Remove from skippedTests if present (robust reactivity)
             this.skippedTests = this.skippedTests.filter(t => t !== testType);
             this.results[testType] = true;
@@ -393,6 +443,9 @@ export default {
             if (!this.timings[testType]) {
                 return;
             }
+            // Stop real-time timer
+            this.stopTimer(testType);
+            
             // Remove from skippedTests if present (robust reactivity)
             this.skippedTests = this.skippedTests.filter(t => t !== testType);
             this.results[testType] = false;
@@ -427,6 +480,9 @@ export default {
             if (!this.timings[testType]) {
                 return;
             }
+            // Stop real-time timer
+            this.stopTimer(testType);
+            
             if (!this.skippedTests.includes(testType)) {
                 this.skippedTests.push(testType);
             }
@@ -500,6 +556,11 @@ export default {
             }
         },
         resetTests() {
+            // Stop all running timers
+            Object.keys(this.realTimeTimers).forEach(test => {
+                this.stopTimer(test);
+            });
+            
             this.results = {
                 webcam: null,
                 microphone: null,
@@ -519,10 +580,56 @@ export default {
                 touch: { start: null, end: null, duration: null },
                 battery: { start: null, end: null, duration: null },
             };
+            // Reset real-time timers
+            Object.keys(this.realTimeTimers).forEach(test => {
+                this.realTimeTimers[test] = { running: false, startTime: null, elapsed: 0 };
+            });
             // Reset shared component states
             resetAllTestStates();
             // Set active test and start timing
             this.setActiveTest('webcam');
+        },
+
+        // Timer management methods
+        startTimer(testType) {
+            if (!this.realTimeTimers[testType]) return;
+            
+            // Stop any existing timer for this test
+            this.stopTimer(testType);
+            
+            // Start new timer
+            this.realTimeTimers[testType].running = true;
+            this.realTimeTimers[testType].startTime = Date.now();
+            
+            // Start update interval if not already running
+            if (!this.timerInterval) {
+                this.timerInterval = setInterval(() => {
+                    this.$forceUpdate(); // Force re-render to update timers
+                }, 100); // Update every 100ms for smooth animation
+            }
+        },
+        
+        stopTimer(testType) {
+            if (!this.realTimeTimers[testType]) return;
+            
+            if (this.realTimeTimers[testType].running) {
+                // Calculate and store elapsed time
+                const elapsed = (Date.now() - this.realTimeTimers[testType].startTime) / 1000;
+                this.realTimeTimers[testType].elapsed += elapsed;
+                this.realTimeTimers[testType].running = false;
+                this.realTimeTimers[testType].startTime = null;
+            }
+            
+            // Clean up interval if no timers are running
+            this.cleanupTimerInterval();
+        },
+        
+        cleanupTimerInterval() {
+            const anyTimerRunning = Object.values(this.realTimeTimers).some(timer => timer.running);
+            if (!anyTimerRunning && this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
         },
         getTestStatusClass(testType) {
             if (this.skippedTests.includes(testType)) return 'skipped';
@@ -997,6 +1104,12 @@ export default {
             clearTimeout(this.switchDebounceTime);
             this.switchDebounceTime = null;
         }
+        
+        // Clean up timer interval
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
     },
 };
 </script>
@@ -1139,7 +1252,6 @@ export default {
                 <ul class="test-navigation__list">
                     <!-- Summary Overview -->
                     <li class="test-navigation__item">
-                        <span class="test-navigation__status" :class="`test-navigation__status--${summaryClass}`"></span>
                         <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
                         <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
                     </li>
@@ -1151,7 +1263,6 @@ export default {
                             <span class="test-section__title">Pending Tests</span>
                         </div>
                         <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
-                            <span class="test-navigation__status test-navigation__status--pending"></span>
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                         </li>
@@ -1164,7 +1275,6 @@ export default {
                             <span class="test-section__title">Failed Tests</span>
                         </div>
                         <li v-for="test in failedTests" :key="test" class="test-navigation__item">
-                            <span class="test-navigation__status test-navigation__status--completed-fail"></span>
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                         </li>
@@ -1177,7 +1287,6 @@ export default {
                             <span class="test-section__title">Skipped Tests</span>
                         </div>
                         <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
-                            <span class="test-navigation__status test-navigation__status--skipped"></span>
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                         </li>
@@ -1190,7 +1299,6 @@ export default {
                             <span class="test-section__title">Passed Tests</span>
                         </div>
                         <li v-for="test in passedTests" :key="test" class="test-navigation__item">
-                            <span class="test-navigation__status test-navigation__status--completed-success"></span>
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
                         </li>
@@ -1490,6 +1598,25 @@ export default {
     flex-grow: 1;
 }
 
+.test-navigation__timing {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all var(--animation-normal) ease;
+}
+
+.test-navigation__item:hover .test-navigation__timing {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Status indicator styles for left sidebar - matching right sidebar */
 .test-navigation__status {
     width: 8px;
     height: 8px;
@@ -1498,7 +1625,7 @@ export default {
     transition:
         background-color var(--animation-slow) ease,
         box-shadow var(--animation-slow) ease;
-    box-shadow: 0 0 6px transparent;
+    box-shadow: 0 0 8px transparent;
 }
 
 .test-navigation__status--pending {
@@ -1518,24 +1645,6 @@ export default {
 .test-navigation__status--skipped {
     background-color: #ffc107;
     box-shadow: 0 0 6px #ffc107;
-}
-
-.test-navigation__timing {
-    margin-left: auto;
-    font-size: 0.85rem;
-    color: #a0a0a0;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    transition: all var(--animation-normal) ease;
-}
-
-.test-navigation__item:hover .test-navigation__timing {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
 }
 
 .status-indicator {
