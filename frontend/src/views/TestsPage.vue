@@ -1511,18 +1511,18 @@ export default {
 
 /* Pending section styling */
 .test-section--pending {
-    background-color: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.4);
+    background-color: rgba(85, 85, 85, 0.15);
+    border-color: rgba(85, 85, 85, 0.4);
 }
 
 .test-section--pending .test-section__header {
-    background-color: rgba(59, 130, 246, 0.25);
-    border-bottom-color: rgba(59, 130, 246, 0.3);
+    background-color: rgba(85, 85, 85, 0.25);
+    border-bottom-color: rgba(85, 85, 85, 0.3);
 }
 
 .test-section--pending .test-section__status-indicator {
-    background-color: #3b82f6;
-    box-shadow: 0 0 8px #3b82f6;
+    background-color: #555;
+    box-shadow: 0 0 8px #555;
 }
 
 /* Failed section styling */
