@@ -30,6 +30,17 @@ export default {
         TestHeader,
     },
     data() {
+        // Create reactive timers object
+        const realTimeTimers = {
+            webcam: { running: false, startTime: null, elapsed: 0 },
+            microphone: { running: false, startTime: null, elapsed: 0 },
+            speakers: { running: false, startTime: null, elapsed: 0 },
+            keyboard: { running: false, startTime: null, elapsed: 0 },
+            mouse: { running: false, startTime: null, elapsed: 0 },
+            touch: { running: false, startTime: null, elapsed: 0 },
+            battery: { running: false, startTime: null, elapsed: 0 },
+        };
+        
         return {
             activeTest: 'webcam', // Start with webcam test
             results: {
@@ -78,15 +89,7 @@ export default {
                 touch: 0,
                 battery: 0,
             },
-            realTimeTimers: {
-                webcam: { running: false, startTime: null, elapsed: 0 },
-                microphone: { running: false, startTime: null, elapsed: 0 },
-                speakers: { running: false, startTime: null, elapsed: 0 },
-                keyboard: { running: false, startTime: null, elapsed: 0 },
-                mouse: { running: false, startTime: null, elapsed: 0 },
-                touch: { running: false, startTime: null, elapsed: 0 },
-                battery: { running: false, startTime: null, elapsed: 0 },
-            },
+            realTimeTimers: realTimeTimers,
             timerInterval: null,
             showExportMenu: false,
             switchDebounceTime: null,
@@ -118,6 +121,10 @@ export default {
                 const time = this.realTimeElapsed[test];
                 formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
             });
+            
+            // Debug logging for timer updates
+            console.log('formattedRealTimeTimers updated:', JSON.stringify(formatted));
+            
             return formatted;
         },
         
@@ -261,14 +268,19 @@ export default {
                         // Test is currently running - show real-time timer
                         formatted[test] = `${this.formattedRealTimeTimers[test]}s`;
                     } else {
-                        // Test pending or in progress
-                        formatted[test] = '';
+                        // Test pending - show "0.00" initially
+                        formatted[test] = '0.00s';
                     }
                 } else {
-                    // Fallback for invalid timing data
-                    formatted[test] = '';
+                    // Fallback for invalid timing data - show "0.00"
+                    formatted[test] = '0.00s';
                 }
             });
+            
+            // Debug logging for timing updates
+            console.log('formattedTimings updated:', JSON.stringify(formatted));
+            console.log('realTimeTimers state:', JSON.stringify(this.realTimeTimers));
+            
             return formatted;
         },
         // Container styles for smooth morphing based on active test
@@ -597,14 +609,22 @@ export default {
             // Stop any existing timer for this test
             this.stopTimer(testType);
             
-            // Start new timer
-            this.realTimeTimers[testType].running = true;
-            this.realTimeTimers[testType].startTime = Date.now();
+            // Create a new object to ensure reactivity
+            this.realTimeTimers[testType] = {
+                ...this.realTimeTimers[testType],
+                running: true,
+                startTime: Date.now()
+            };
+            
+            console.log(`Timer started for ${testType}, running: ${this.realTimeTimers[testType].running}`);
             
             // Start update interval if not already running
             if (!this.timerInterval) {
                 this.timerInterval = setInterval(() => {
-                    this.$forceUpdate(); // Force re-render to update timers
+                    console.log('Timer interval tick - forcing reactivity');
+                    // Force reactivity by creating a new reference
+                    const updatedTimers = { ...this.realTimeTimers };
+                    this.realTimeTimers = updatedTimers;
                 }, 100); // Update every 100ms for smooth animation
             }
         },
@@ -615,9 +635,16 @@ export default {
             if (this.realTimeTimers[testType].running) {
                 // Calculate and store elapsed time
                 const elapsed = (Date.now() - this.realTimeTimers[testType].startTime) / 1000;
-                this.realTimeTimers[testType].elapsed += elapsed;
-                this.realTimeTimers[testType].running = false;
-                this.realTimeTimers[testType].startTime = null;
+                
+                // Create a new object to ensure reactivity
+                this.realTimeTimers[testType] = {
+                    ...this.realTimeTimers[testType],
+                    elapsed: this.realTimeTimers[testType].elapsed + elapsed,
+                    running: false,
+                    startTime: null
+                };
+                
+                console.log(`Timer stopped for ${testType}, total elapsed: ${this.realTimeTimers[testType].elapsed.toFixed(2)}s`);
             }
             
             // Clean up interval if no timers are running
@@ -629,6 +656,7 @@ export default {
             if (!anyTimerRunning && this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
+                console.log('Timer interval cleaned up');
             }
         },
         getTestStatusClass(testType) {
@@ -1013,8 +1041,14 @@ export default {
                 // Safely access the timing value
                 const timingValue = this.formattedTimings[test];
                 
+                // Debug logging
+                console.log(`hasTimingData - ${test}: ${timingValue}, type: ${typeof timingValue}`);
+                
                 // Handle cases where timing value might be undefined, null, or non-string
-                return typeof timingValue === 'string' && timingValue !== '' && timingValue !== '0.00s';
+                // Allow "0.00s" to be displayed for pending tests
+                const result = typeof timingValue === 'string' && timingValue !== '';
+                console.log(`hasTimingData result for ${test}: ${result}`);
+                return result;
             } catch (error) {
                 console.warn('Error checking timing data for test:', test, error);
                 return false;
@@ -1264,7 +1298,10 @@ export default {
                         </div>
                         <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">
+                                {{ formattedTimings[test] }}
+                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                            </span>
                         </li>
                     </div>
 
@@ -1276,7 +1313,10 @@ export default {
                         </div>
                         <li v-for="test in failedTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">
+                                {{ formattedTimings[test] }}
+                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                            </span>
                         </li>
                     </div>
 
@@ -1288,7 +1328,10 @@ export default {
                         </div>
                         <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">
+                                {{ formattedTimings[test] }}
+                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                            </span>
                         </li>
                     </div>
 
@@ -1300,7 +1343,10 @@ export default {
                         </div>
                         <li v-for="test in passedTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
-                            <span class="test-navigation__timing" v-if="hasTimingData(test)">{{ formattedTimings[test] }}</span>
+                            <span class="test-navigation__timing" v-if="hasTimingData(test)">
+                                {{ formattedTimings[test] }}
+                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                            </span>
                         </li>
                     </div>
                 </ul>
@@ -1684,6 +1730,19 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+}
+
+.live-indicator {
+    color: #ff6b00;
+    font-size: 8px;
+    margin-left: 4px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
 }
 
 .detailed-summary {
