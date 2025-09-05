@@ -1320,11 +1320,6 @@ export default {
             </div>
             <nav class="test-navigation">
                 <ul class="test-navigation__list">
-                    <!-- Summary Overview -->
-                    <li class="test-navigation__item">
-                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
-                        <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
-                    </li>
 
                     <!-- Pending Tests Section -->
                     <div v-if="pendingTests.length > 0" class="test-section test-section--pending">
@@ -1385,6 +1380,12 @@ export default {
                             </span>
                         </li>
                     </div>
+
+                    <!-- Summary Overview -->
+                    <li class="test-navigation__item">
+                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
+                        <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
+                    </li>
                 </ul>
             </nav>
         </aside>
