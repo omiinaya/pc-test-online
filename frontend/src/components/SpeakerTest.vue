@@ -638,7 +638,6 @@ export default {
 .speakers-container {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: var(--spacing-lg);
     width: 100%;
     height: 100%;
