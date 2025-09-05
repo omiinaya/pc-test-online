@@ -29,6 +29,11 @@ export default {
     },
     computed: {
         noDevicesMessage() {
+            // Special handling for audio output devices - many systems have default output
+            // even if not explicitly enumerated by the browser
+            if (this.deviceType.toLowerCase() === 'speaker') {
+                return 'No speakers enumerated (default output available)';
+            }
             return `No ${this.deviceType.toLowerCase()}s found`;
         },
     },

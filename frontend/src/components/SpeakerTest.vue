@@ -406,10 +406,24 @@ export default {
             // Add a small delay to ensure devices are properly enumerated
             setTimeout(handleDeviceEnumeration, 100);
 
+            // Watch for available devices changes to handle audio output device selection
+            watch(() => deviceTest.availableDevices.value, (newDevices, oldDevices) => {
+                console.log('DEBUG: Available devices changed:', newDevices.length, 'devices');
+                
+                // If we have audio output devices, ensure one is selected
+                if (newDevices.length > 0 && !deviceTest.selectedDeviceId.value) {
+                    // Prefer a device with a proper label, otherwise select the first one
+                    const deviceToSelect = newDevices.find(d => d.label && !d.label.includes('...')) || newDevices[0];
+                    deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
+                    console.log('DEBUG: Auto-selected audio output device:', deviceToSelect.deviceId, deviceToSelect.label);
+                }
+            }, { immediate: true });
+
             // Simple periodic check for state changes
             const debugInterval = setInterval(() => {
                 console.log('SpeakerTest State:', {
                     availableDevices: deviceTest.availableDevices.value.length,
+                    selectedDevice: deviceTest.selectedDeviceId.value,
                     showNoDevicesState: deviceTest.showNoDevicesState.value,
                     isLoading: deviceTest.isLoading.value,
                     hasError: deviceTest.hasError.value
@@ -628,7 +642,7 @@ export default {
     gap: var(--spacing-lg);
     width: 100%;
     height: 100%;
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
 }
 
 .speaker-box {

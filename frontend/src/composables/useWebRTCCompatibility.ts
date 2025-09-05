@@ -230,6 +230,7 @@ export function useWebRTCCompatibility() {
 
     /**
      * Enumerate devices with cross-browser compatibility
+     * Enhanced to handle audio output device enumeration limitations
      */
     const enumerateDevices = async (): Promise<MediaDeviceInfo[]> => {
         if (!state.value.capabilities.enumerateDevices) {
@@ -252,12 +253,43 @@ export function useWebRTCCompatibility() {
 
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            return devices.map(device => ({
+            
+            // Debug log to see what devices are actually enumerated
+            console.log('DEBUG: Enumerated devices:', devices.map(d => ({
+                kind: d.kind,
+                label: d.label,
+                deviceId: d.deviceId
+            })));
+            
+            // Additional handling for audio output devices
+            // Many browsers don't enumerate audio output devices via standard API
+            const processedDevices = devices.map(device => ({
                 deviceId: device.deviceId,
                 kind: device.kind,
                 label: device.label || `${device.kind} ${device.deviceId.slice(0, 8)}`,
                 groupId: device.groupId,
             }));
+            
+            // Check if we have any audio output devices and log for debugging
+            const audioOutputDevices = processedDevices.filter(d => d.kind === 'audiooutput');
+            console.log('DEBUG: Audio output devices found:', audioOutputDevices.length, audioOutputDevices);
+            
+            // Fallback for audio output: if no audio output devices are found but we have audio input,
+            // assume there's a default audio output available (most systems have this)
+            if (audioOutputDevices.length === 0) {
+                const hasAudioInput = processedDevices.some(d => d.kind === 'audioinput');
+                if (hasAudioInput) {
+                    console.log('DEBUG: No audio output devices enumerated, but audio input exists. Adding default audio output device.');
+                    processedDevices.push({
+                        deviceId: 'default',
+                        kind: 'audiooutput',
+                        label: 'Default Speaker',
+                        groupId: 'default-output',
+                    });
+                }
+            }
+            
+            return processedDevices;
         } catch (error) {
             console.error('enumerateDevices error:', error);
             throw new Error('Failed to enumerate media devices');
