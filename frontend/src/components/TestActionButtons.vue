@@ -95,12 +95,17 @@ export default {
     width: 100%;
     margin: -1px auto 0 auto;
     display: flex;
-    justify-content: center;
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 0.5rem;
     padding: 1rem;
     background-color: #2c2c2e;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-large);
     border-radius: var(--border-radius-large);
+}
+
+.controls-bar > .button {
+    flex: 1;
+    min-width: 0;
 }
 </style>

@@ -1381,11 +1381,6 @@ export default {
                         </li>
                     </div>
 
-                    <!-- Summary Overview -->
-                    <li class="test-navigation__item">
-                        <span class="test-navigation__name">Progress: {{ completedTestsCount }}/{{ totalTestsCount }}</span>
-                        <span class="test-navigation__timing" v-if="completedTestsCount > 0">{{ totalTimeSpent.toFixed(2) }}s</span>
-                    </li>
                 </ul>
             </nav>
         </aside>
