@@ -3,9 +3,20 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
+const i18n = require('./i18n');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Language detection middleware
+app.use((req, res, next) => {
+  const detectedLocale = i18n.detectLanguage(req);
+  i18n.setLocale(detectedLocale);
+  next();
+});
+
+// i18n middleware
+app.use(i18n.init);
 
 // Middleware
 app.use(helmet());
@@ -22,8 +33,8 @@ if (process.env.NODE_ENV === 'production') {
 // API Routes
 app.get('/api/health', (req, res) => {
     res.json({
-        status: 'OK',
-        message: 'MMITLab Testing App Backend is running',
+        status: req.t('api.health.status'),
+        message: req.t('api.health.message'),
         timestamp: new Date().toISOString(),
     });
 });
@@ -40,8 +51,8 @@ app.post('/api/test-results', (req, res) => {
     });
 
     res.json({
-        success: true,
-        message: 'Test results saved successfully',
+        success: req.t('api.testResults.success'),
+        message: req.t('api.testResults.message'),
         timestamp: new Date().toISOString(),
     });
 });
@@ -72,21 +83,21 @@ if (process.env.NODE_ENV === 'production') {
 app.use((err, req, res, _next) => {
     console.error(err.stack);
     res.status(500).json({
-        error: 'Something went wrong!',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+        error: req.t('api.errors.serverError.error'),
+        message: process.env.NODE_ENV === 'development' ? err.message : req.t('api.errors.serverError.internalMessage'),
     });
 });
 
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({
-        error: 'Not Found',
-        message: 'The requested resource was not found',
+        error: req.t('api.errors.notFound.error'),
+        message: req.t('api.errors.notFound.message'),
     });
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 MMITLab Testing App Backend running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(i18n.__('server.startup.running', { port: PORT }));
+    console.log(i18n.__('server.startup.healthCheck', { port: PORT }));
+    console.log(i18n.__('server.startup.environment', { env: process.env.NODE_ENV || 'development' }));
 });

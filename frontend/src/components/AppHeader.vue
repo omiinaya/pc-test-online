@@ -1,6 +1,16 @@
 <script>
+import { useI18n } from 'vue-i18n';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+
 export default {
     name: 'AppHeader',
+    components: {
+        LanguageSwitcher
+    },
+    setup() {
+        const { t } = useI18n();
+        return { t };
+    },
 };
 </script>
 
@@ -16,7 +26,7 @@ export default {
                             style="width: 28px; height: 28px"
                         />
                     </div>
-                    <h1 class="brand-title">MMIT Lab</h1>
+                    <h1 class="brand-title">{{ t('app.name') }}</h1>
                 </div>
             </div>
 
@@ -40,7 +50,7 @@ export default {
                             <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
                             <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
                         </svg>
-                        Tests
+                        {{ t('navigation.tests') }}
                     </router-link>
 
                     <router-link
@@ -63,13 +73,14 @@ export default {
                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                             <line x1="12" y1="17" x2="12.01" y2="17" />
                         </svg>
-                        About
+                        {{ t('navigation.about') }}
                     </router-link>
                 </div>
             </nav>
 
             <div class="header-right">
                 <div class="status-indicator-group">
+                    <LanguageSwitcher class="language-switcher-wrapper" />
                     <a
                         href="https://github.com/omiinaya/pc-test-online"
                         target="_blank"
@@ -215,14 +226,19 @@ export default {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     z-index: 2;
 }
 
 .status-indicator-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.language-switcher-wrapper {
+    display: flex;
+    align-items: center;
 }
 
 .connection-status {
@@ -287,6 +303,36 @@ export default {
     opacity: 1;
 }
 
+/* Language Switcher styling to match header design */
+.language-switcher-wrapper :deep(.language-switcher__trigger) {
+    background: transparent;
+    border: 2px solid var(--text-tertiary);
+    color: var(--text-tertiary);
+    min-width: 60px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
+}
+
+.language-switcher-wrapper :deep(.language-switcher__trigger:hover) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+.language-switcher-wrapper :deep(.language-switcher__current) {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.language-switcher-wrapper :deep(.language-switcher__flag) {
+    font-size: 1rem;
+}
+
+.language-switcher-wrapper :deep(.language-switcher__chevron) {
+    width: 10px;
+    height: 10px;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .header-content {
@@ -332,11 +378,24 @@ export default {
         min-width: 32px;
         justify-content: center;
     }
+
+    .language-switcher-wrapper :deep(.language-switcher__current) {
+        display: none;
+    }
+
+    .language-switcher-wrapper :deep(.language-switcher__trigger) {
+        min-width: 40px;
+        padding: 0.25rem;
+    }
 }
 
 /* Tablet landscape and smaller */
 @media (max-width: 1024px) {
     .header-right {
+        gap: 0.5rem;
+    }
+
+    .status-indicator-group {
         gap: 0.5rem;
     }
 }

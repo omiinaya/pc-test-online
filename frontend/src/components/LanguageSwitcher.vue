@@ -1,0 +1,226 @@
+<script>
+import { availableLocales, changeLocale, getCurrentLocale } from '../i18n';
+
+export default {
+  name: 'LanguageSwitcher',
+  data() {
+    return {
+      availableLocales,
+      currentLocale: getCurrentLocale(),
+      showDropdown: false
+    };
+  },
+  methods: {
+    changeLanguage(locale) {
+      const success = changeLocale(locale);
+      if (success) {
+        this.currentLocale = locale;
+        this.showDropdown = false;
+        // Emit event for parent components if needed
+        this.$emit('language-changed', locale);
+      }
+    },
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+    closeDropdown() {
+      this.showDropdown = false;
+    }
+  },
+  mounted() {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
+  },
+  computed: {
+    currentLanguageName() {
+      return this.availableLocales[this.currentLocale] || 'English';
+    }
+  }
+};
+</script>
+
+<template>
+  <div class="language-switcher" v-click-outside="closeDropdown">
+    <button
+      class="language-switcher__trigger"
+      @click="toggleDropdown"
+      :title="`Current language: ${currentLanguageName}`"
+    >
+      <span class="language-switcher__flag">🌐</span>
+      <span class="language-switcher__current">{{ currentLocale.toUpperCase() }}</span>
+      <svg
+        class="language-switcher__chevron"
+        :class="{ 'language-switcher__chevron--open': showDropdown }"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <transition name="fade-slide">
+      <div v-if="showDropdown" class="language-switcher__dropdown">
+        <div
+          v-for="(name, code) in availableLocales"
+          :key="code"
+          class="language-switcher__option"
+          :class="{ 'language-switcher__option--active': code === currentLocale }"
+          @click="changeLanguage(code)"
+        >
+          <span class="language-switcher__option-flag">
+            {{ code === 'en' ? '🇺🇸' : code === 'es' ? '🇪🇸' : code === 'fr' ? '🇫🇷' : code === 'de' ? '🇩🇪' : code === 'zh' ? '🇨🇳' : code === 'ja' ? '🇯🇵' : code === 'ko' ? '🇰🇷' : code === 'ru' ? '🇷🇺' : code === 'ar' ? '🇸🇦' : '🌐' }}
+          </span>
+          <span class="language-switcher__option-name">{{ name }}</span>
+          <span class="language-switcher__option-code">{{ code.toUpperCase() }}</span>
+        </div>
+      </div>
+    </transition>
+  </div>
+</template>
+
+<style scoped>
+.language-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.language-switcher__trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-medium);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-default);
+  min-width: 60px;
+}
+
+.language-switcher__trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.language-switcher__flag {
+  font-size: 1.1rem;
+}
+
+.language-switcher__current {
+  font-weight: var(--font-weight-semibold);
+}
+
+.language-switcher__chevron {
+  transition: transform var(--transition-default);
+  margin-left: 0.25rem;
+}
+
+.language-switcher__chevron--open {
+  transform: rotate(180deg);
+}
+
+.language-switcher__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow-large);
+  min-width: 160px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.language-switcher__option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-default);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.language-switcher__option:last-child {
+  border-bottom: none;
+}
+
+.language-switcher__option:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.language-switcher__option--active {
+  background: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--primary-color);
+}
+
+.language-switcher__option-flag {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.language-switcher__option-name {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+}
+
+.language-switcher__option-code {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Animations */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all var(--transition-default);
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .language-switcher__trigger {
+    padding: 0.375rem 0.5rem;
+    min-width: 50px;
+  }
+  
+  .language-switcher__current {
+    display: none;
+  }
+  
+  .language-switcher__dropdown {
+    right: -50%;
+    transform-origin: top right;
+  }
+}
+
+/* Electron specific styling */
+.electron-app .language-switcher__trigger {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.electron-app .language-switcher__trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+</style>

@@ -1,4 +1,5 @@
 <script>
+import { useI18n } from 'vue-i18n';
 import WebcamTest from './components/WebcamTest.vue';
 import MicrophoneTest from './components/MicrophoneTest.vue';
 import SpeakerTest from './components/SpeakerTest.vue';
@@ -17,6 +18,10 @@ import { useCSSCompatibility } from './composables/useCSSCompatibility';
 
 export default {
     name: 'App',
+    setup() {
+        const { t } = useI18n();
+        return { t };
+    },
     components: {
         WebcamTest,
         MicrophoneTest,
@@ -111,34 +116,31 @@ export default {
         },
         currentTestTitle() {
             const titleMap = {
-                webcam: 'Camera Test',
-                microphone: 'Microphone Test',
-                speakers: 'Speaker Test',
-                keyboard: 'Keyboard Test',
-                mouse: 'Mouse Test',
-                touch: 'Touch Test',
-                battery: 'Battery Test',
-                testsCompleted: 'All Tests Complete',
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
+                testsCompleted: this.t('tests.completed.name'),
             };
-            return titleMap[this.activeTest] || 'Camera Test';
+            return titleMap[this.activeTest] || this.t('tests.webcam.name');
         },
         currentTestDescription() {
             const descriptionMap = {
-                webcam: 'Test your camera by checking if video feed appears correctly and all cameras work.',
-                microphone:
-                    'Test your microphone by speaking and checking if audio levels are detected.',
-                speakers: 'Test your speakers by playing sounds and verifying audio output.',
-                keyboard:
-                    'Test your keyboard by pressing keys and verifying they register correctly.',
-                mouse: 'Test your mouse by clicking buttons and scrolling to verify functionality.',
-                touch: 'Test your touchscreen by completing interactive touch challenges.',
-                battery:
-                    'Test your battery and charging functionality by following the instructions.',
-                testsCompleted: 'Review your test results and download the complete report.',
+                webcam: this.t('tests.webcam.description'),
+                microphone: this.t('tests.microphone.description'),
+                speakers: this.t('tests.speakers.description'),
+                keyboard: this.t('tests.keyboard.description'),
+                mouse: this.t('tests.mouse.description'),
+                touch: this.t('tests.touch.description'),
+                battery: this.t('tests.battery.description'),
+                testsCompleted: this.t('tests.completed.description'),
             };
             return (
                 descriptionMap[this.activeTest] ||
-                'Test your camera by checking if video feed appears correctly and all cameras work.'
+                this.t('tests.webcam.description')
             );
         },
         // Dynamic component mapping for keep-alive functionality
@@ -1024,13 +1026,13 @@ export default {
         <footer class="mobile-footer">
             <div class="mobile-action-buttons" v-if="activeTest !== 'testsCompleted'">
                 <button @click="onTestFailed(activeTest)" class="button button--danger button--medium">
-                    Not Working
+                    {{ t('buttons.fail') }}
                 </button>
                 <button @click="onTestCompleted(activeTest)" class="button button--success button--medium">
-                    Working
+                    {{ t('buttons.pass') }}
                 </button>
                 <button @click="onTestSkipped(activeTest)" class="button button--skip button--medium">
-                    Skip
+                    {{ t('buttons.skip') }}
                 </button>
             </div>
             <nav class="mobile-nav">
@@ -1068,7 +1070,7 @@ export default {
                 <div class="summary-modal-content" @click.stop>
                     <div class="sidebar-header">
                         <div class="brand-icon">📋</div>
-                        <h2>Summary</h2>
+                        <h2>{{ t('sidebar.summary') }}</h2>
                         <button @click="showSummaryModal = false" class="close-modal-btn">
                             &times;
                         </button>
@@ -1145,7 +1147,7 @@ export default {
                                     ></div>
                                     <div class="test-summary__section-header">
                                         <span class="test-summary__section-label test-summary__section-label--skipped"
-                                            >Skipped: {{ skippedTestsList.length }}</span
+                                            >{{ t('status.skipped') }}: {{ skippedTestsList.length }}</span
                                         >
                                     </div>
                                     <ul class="test-summary__list">

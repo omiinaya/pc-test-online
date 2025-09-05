@@ -1,0 +1,239 @@
+{
+  "app": {
+    "name": "MMIT Lab",
+    "title": "MMIT Lab - Suite de Pruebas de Hardware",
+    "description": "Pruebas de hardware completas hechas simples y accesibles"
+  },
+  
+  "navigation": {
+    "tests": "Pruebas",
+    "about": "Acerca de",
+    "webVitals": "Web Vitals",
+    "home": "Inicio"
+  },
+  
+  "tests": {
+    "webcam": {
+      "name": "Prueba de Cámara",
+      "shortName": "Cámara",
+      "description": "Prueba tu cámara verificando que el video aparezca correctamente y todas las cámaras funcionen."
+    },
+    "microphone": {
+      "name": "Prueba de Micrófono",
+      "shortName": "Micrófono",
+      "description": "Prueba tu micrófono hablando y verificando que se detecten los niveles de audio."
+    },
+    "speakers": {
+      "name": "Prueba de Altavoces",
+      "shortName": "Altavoces",
+      "description": "Prueba tus altavoces reproduciendo sonidos y verificando la salida de audio."
+    },
+    "keyboard": {
+      "name": "Prueba de Teclado",
+      "shortName": "Teclado",
+      "description": "Prueba tu teclado presionando teclas y verificando que se registren correctamente."
+    },
+    "mouse": {
+      "name": "Prueba de Ratón",
+      "shortName": "Ratón",
+      "description": "Prueba tu ratón haciendo clic en botones y desplazándote para verificar la funcionalidad."
+    },
+    "touch": {
+      "name": "Prueba Táctil",
+      "shortName": "Táctil",
+      "description": "Prueba tu pantalla táctil completando desafíos interactivos de toque."
+    },
+    "battery": {
+      "name": "Prueba de Batería",
+      "shortName": "Batería",
+      "description": "Prueba tu batería y funcionalidad de carga siguiendo las instrucciones."
+    },
+    "completed": {
+      "name": "Todas las Pruebas Completadas",
+      "description": "Revisa tus resultados de prueba y descarga el informe completo."
+    }
+  },
+  
+  "buttons": {
+    "pass": "Aprobar",
+    "fail": "Fallar",
+    "skip": "Saltar",
+    "reset": "Reiniciar Pruebas",
+    "export": "Exportar Resultados",
+    "exportPdf": "Exportar como PDF",
+    "exportJson": "Exportar como JSON",
+    "exportCsv": "Exportar como CSV",
+    "startTest": "Iniciar Prueba",
+    "stopTest": "Detener Prueba",
+    "retry": "Reintentar",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "dismiss": "Descartar"
+  },
+  
+  "messages": {
+    "success": {
+      "testPassed": "¡Prueba aprobada exitosamente!",
+      "exportComplete": "Exportación completada exitosamente",
+      "resetComplete": "Pruebas reiniciadas exitosamente"
+    },
+    "error": {
+      "testFailed": "Prueba fallida",
+      "exportError": "Error al exportar resultados",
+      "resetError": "Error al reiniciar pruebas",
+      "deviceNotFound": "Dispositivo no encontrado",
+      "permissionDenied": "Permiso denegado",
+      "connectionError": "Error de conexión"
+    },
+    "warning": {
+      "testSkipped": "Prueba saltada",
+      "lowBattery": "Advertencia de batería baja",
+      "unsupportedFeature": "Característica no compatible"
+    },
+    "info": {
+      "testInProgress": "Prueba en progreso...",
+      "selectDevice": "Por favor selecciona un dispositivo",
+      "grantPermission": "Por favor concede permiso para acceder al dispositivo"
+    }
+  },
+  
+  "status": {
+    "pending": "Pendiente",
+    "inProgress": "En Progreso",
+    "completed": "Completado",
+    "passed": "Aprobado",
+    "failed": "Fallado",
+    "skipped": "Saltado",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "connected": "Conectado",
+    "disconnected": "Desconectado"
+  },
+  
+  "ui": {
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "processing": "Procesando...",
+    "search": "Buscar...",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "view": "Ver",
+    "settings": "Configuración",
+    "help": "Ayuda",
+    "feedback": "Comentarios",
+    "language": "Idioma",
+    "theme": "Tema",
+    "darkMode": "Modo Oscuro",
+    "lightMode": "Modo Claro",
+    "auto": "Automático",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "close": "Cerrar",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "fullscreen": "Pantalla Completa",
+    "exitFullscreen": "Salir de Pantalla Completa"
+  },
+  
+  "permissions": {
+    "camera": "Acceso a Cámara",
+    "microphone": "Acceso a Micrófono",
+    "speaker": "Acceso a Altavoces",
+    "location": "Acceso a Ubicación",
+    "notifications": "Notificaciones",
+    "storage": "Acceso a Almacenamiento",
+    "required": "Requerido para esta característica",
+    "optional": "Opcional para experiencia mejorada"
+  },
+  
+  "results": {
+    "summary": "Resumen de Pruebas",
+    "totalTests": "Total de Pruebas",
+    "completedTests": "Pruebas Completadas",
+    "passedTests": "Pruebas Aprobadas",
+    "failedTests": "Pruebas Fallidas",
+    "skippedTests": "Pruebas Saltadas",
+    "totalTime": "Tiempo Total",
+    "averageTime": "Tiempo Promedio",
+    "downloadReport": "Descargar Informe",
+    "shareResults": "Compartir Resultados",
+    "testDetails": "Detalles de Prueba",
+    "deviceInfo": "Información del Dispositivo",
+    "systemInfo": "Información del Sistema",
+    "timestamp": "Marca de Tiempo",
+    "duration": "Duración",
+    "status": "Estado"
+  },
+  
+  "about": {
+    "title": "Acerca de MMIT Lab",
+    "description": "Pruebas de hardware completas hechas simples y accesibles",
+    "features": "Características Principales",
+    "technology": "Construido Con",
+    "version": "Información de Versión",
+    "support": "Soporte y Contacto",
+    "credits": "Créditos y Agradecimientos",
+    "featureCamera": "Pruebas de Cámara - Prueba múltiples cámaras, verifica la calidad de video y la funcionalidad de cambio de cámara.",
+    "featureAudio": "Pruebas de Audio - Pruebas completas de micrófono y altavoces con monitoreo de niveles de audio en tiempo real.",
+    "featureInput": "Pruebas de Entrada - Prueba teclas del teclado, botones del ratón, ruedas de desplazamiento y capacidad de respuesta de la pantalla táctil.",
+    "featureBattery": "Pruebas de Batería - Monitorea la salud de la batería, estado de carga y capacidades de gestión de energía.",
+    "featurePerformance": "Monitoreo de Rendimiento - Métricas de rendimiento en tiempo real y monitoreo de Web Vitals para una experiencia óptima.",
+    "featureReports": "Informes Detallados - Exporta resultados completos de pruebas en múltiples formatos (PDF, JSON, CSV)."
+  },
+  
+  "sidebar": {
+    "tests": "Pruebas",
+    "summary": "Resumen",
+    "pendingTests": "Pruebas Pendientes",
+    "failedTests": "Pruebas Fallidas",
+    "skippedTests": "Pruebas Saltadas",
+    "passedTests": "Pruebas Aprobadas"
+  },
+  
+  "export": {
+    "title": "Exportar Resultados",
+    "format": "Formato de Exportación",
+    "filename": "Nombre de Archivo",
+    "includeTimestamps": "Incluir Marcas de Tiempo",
+    "includeDeviceInfo": "Incluir Información del Dispositivo",
+    "includeSystemInfo": "Incluir Información del Sistema",
+    "generateReport": "Generar Informe",
+    "downloading": "Descargando...",
+    "success": "¡Exportación exitosa!",
+    "error": "Error durante la exportación"
+  },
+  
+  "time": {
+    "seconds": "{count} segundo | {count} segundos",
+    "minutes": "{count} minuto | {count} minutos",
+    "hours": "{count} hora | {count} horas",
+    "days": "{count} día | {count} días"
+  },
+  
+  "common": {
+    "unknown": "Desconocido",
+    "notAvailable": "No Disponible",
+    "notSupported": "No Compatible",
+    "notDetected": "No Detectado",
+    "noResults": "No se encontraron resultados",
+    "noData": "No hay datos disponibles",
+    "tryAgain": "Intentar de Nuevo",
+    "refresh": "Actualizar",
+    "learnMore": "Aprender Más",
+    "readMore": "Leer Más",
+    "seeAll": "Ver Todo",
+    "collapse": "Contraer",
+    "expand": "Expandir",
+    "more": "Más",
+    "less": "Menos",
+    "optional": "Opcional",
+    "required": "Requerido",
+    "default": "Predeterminado",
+    "custom": "Personalizado"
+  }
+}

@@ -1,0 +1,239 @@
+{
+  "app": {
+    "name": "MMIT Lab",
+    "title": "MMIT Lab - Hardware Testing Suite",
+    "description": "Comprehensive hardware testing made simple and accessible"
+  },
+  
+  "navigation": {
+    "tests": "Tests",
+    "about": "About",
+    "webVitals": "Web Vitals",
+    "home": "Home"
+  },
+  
+  "tests": {
+    "webcam": {
+      "name": "Camera Test",
+      "shortName": "Camera",
+      "description": "Test your camera by checking if video feed appears correctly and all cameras work."
+    },
+    "microphone": {
+      "name": "Microphone Test", 
+      "shortName": "Mic",
+      "description": "Test your microphone by speaking and checking if audio levels are detected."
+    },
+    "speakers": {
+      "name": "Speaker Test",
+      "shortName": "Speaker",
+      "description": "Test your speakers by playing sounds and verifying audio output."
+    },
+    "keyboard": {
+      "name": "Keyboard Test",
+      "shortName": "Keyboard",
+      "description": "Test your keyboard by pressing keys and verifying they register correctly."
+    },
+    "mouse": {
+      "name": "Mouse Test",
+      "shortName": "Mouse",
+      "description": "Test your mouse by clicking buttons and scrolling to verify functionality."
+    },
+    "touch": {
+      "name": "Touch Test",
+      "shortName": "Touch",
+      "description": "Test your touchscreen by completing interactive touch challenges."
+    },
+    "battery": {
+      "name": "Battery Test",
+      "shortName": "Battery",
+      "description": "Test your battery and charging functionality by following the instructions."
+    },
+    "completed": {
+      "name": "All Tests Complete",
+      "description": "Review your test results and download the complete report."
+    }
+  },
+  
+  "buttons": {
+    "pass": "Pass",
+    "fail": "Fail",
+    "skip": "Skip",
+    "reset": "Reset Tests",
+    "export": "Export Results",
+    "exportPdf": "Export as PDF",
+    "exportJson": "Export as JSON",
+    "exportCsv": "Export as CSV",
+    "startTest": "Start Test",
+    "stopTest": "Stop Test",
+    "retry": "Retry",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "dismiss": "Dismiss"
+  },
+  
+  "messages": {
+    "success": {
+      "testPassed": "Test passed successfully!",
+      "exportComplete": "Export completed successfully",
+      "resetComplete": "Tests reset successfully"
+    },
+    "error": {
+      "testFailed": "Test failed",
+      "exportError": "Error exporting results",
+      "resetError": "Error resetting tests",
+      "deviceNotFound": "Device not found",
+      "permissionDenied": "Permission denied",
+      "connectionError": "Connection error"
+    },
+    "warning": {
+      "testSkipped": "Test skipped",
+      "lowBattery": "Low battery warning",
+      "unsupportedFeature": "Feature not supported"
+    },
+    "info": {
+      "testInProgress": "Test in progress...",
+      "selectDevice": "Please select a device",
+      "grantPermission": "Please grant permission to access device"
+    }
+  },
+  
+  "status": {
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "passed": "Passed",
+    "failed": "Failed",
+    "skipped": "Skipped",
+    "online": "Online",
+    "offline": "Offline",
+    "connected": "Connected",
+    "disconnected": "Disconnected"
+  },
+  
+  "ui": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "search": "Search...",
+    "filter": "Filter",
+    "sort": "Sort",
+    "view": "View",
+    "settings": "Settings",
+    "help": "Help",
+    "feedback": "Feedback",
+    "language": "Language",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "auto": "Auto",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen"
+  },
+  
+  "permissions": {
+    "camera": "Camera Access",
+    "microphone": "Microphone Access",
+    "speaker": "Speaker Access",
+    "location": "Location Access",
+    "notifications": "Notifications",
+    "storage": "Storage Access",
+    "required": "Required for this feature",
+    "optional": "Optional for enhanced experience"
+  },
+  
+  "results": {
+    "summary": "Test Summary",
+    "totalTests": "Total Tests",
+    "completedTests": "Completed Tests",
+    "passedTests": "Passed Tests",
+    "failedTests": "Failed Tests",
+    "skippedTests": "Skipped Tests",
+    "totalTime": "Total Time",
+    "averageTime": "Average Time",
+    "downloadReport": "Download Report",
+    "shareResults": "Share Results",
+    "testDetails": "Test Details",
+    "deviceInfo": "Device Information",
+    "systemInfo": "System Information",
+    "timestamp": "Timestamp",
+    "duration": "Duration",
+    "status": "Status"
+  },
+  
+  "about": {
+    "title": "About MMIT Lab",
+    "description": "Comprehensive hardware testing made simple and accessible",
+    "features": "Key Features",
+    "technology": "Built With",
+    "version": "Version Information",
+    "support": "Support & Contact",
+    "credits": "Credits & Acknowledgments",
+    "featureCamera": "Camera Testing - Test multiple cameras, check video quality, and verify camera switching functionality.",
+    "featureAudio": "Audio Testing - Comprehensive microphone and speaker tests with real-time audio level monitoring.",
+    "featureInput": "Input Testing - Test keyboard keys, mouse buttons, scroll wheels, and touchscreen responsiveness.",
+    "featureBattery": "Battery Testing - Monitor battery health, charging status, and power management capabilities.",
+    "featurePerformance": "Performance Monitoring - Real-time performance metrics and Web Vitals monitoring for optimal experience.",
+    "featureReports": "Detailed Reports - Export comprehensive test results in multiple formats (PDF, JSON, CSV)."
+  },
+  
+  "sidebar": {
+    "tests": "Tests",
+    "summary": "Summary",
+    "pendingTests": "Pending Tests",
+    "failedTests": "Failed Tests",
+    "skippedTests": "Skipped Tests",
+    "passedTests": "Passed Tests"
+  },
+  
+  "export": {
+    "title": "Export Results",
+    "format": "Export Format",
+    "filename": "File Name",
+    "includeTimestamps": "Include Timestamps",
+    "includeDeviceInfo": "Include Device Information",
+    "includeSystemInfo": "Include System Information",
+    "generateReport": "Generate Report",
+    "downloading": "Downloading...",
+    "success": "Export successful!",
+    "error": "Error during export"
+  },
+  
+  "time": {
+    "seconds": "{count} second | {count} seconds",
+    "minutes": "{count} minute | {count} minutes",
+    "hours": "{count} hour | {count} hours",
+    "days": "{count} day | {count} days"
+  },
+  
+  "common": {
+    "unknown": "Unknown",
+    "notAvailable": "Not Available",
+    "notSupported": "Not Supported",
+    "notDetected": "Not Detected",
+    "noResults": "No results found",
+    "noData": "No data available",
+    "tryAgain": "Try Again",
+    "refresh": "Refresh",
+    "learnMore": "Learn More",
+    "readMore": "Read More",
+    "seeAll": "See All",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "more": "More",
+    "less": "Less",
+    "optional": "Optional",
+    "required": "Required",
+    "default": "Default",
+    "custom": "Custom"
+  }
+}

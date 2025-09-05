@@ -1,14 +1,19 @@
 import { createApp } from 'vue';
 import router from './router';
 import AppLayout from './AppLayout.vue';
+import i18n, { initLocale } from './i18n';
 
 // Import shared styles
 import './styles/variables.css';
 import './styles/utilities.css';
 import './styles/components/Button.css';
 
+// Initialize locale
+initLocale();
+
 const app = createApp(AppLayout);
 app.use(router);
+app.use(i18n);
 
 // Mount the app and expose methods for Electron integration
 const vueApp = app.mount('#app');

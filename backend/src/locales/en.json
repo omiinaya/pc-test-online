@@ -1,0 +1,65 @@
+{
+  "api": {
+    "health": {
+      "status": "OK",
+      "message": "MMITLab Testing App Backend is running"
+    },
+    "testResults": {
+      "success": true,
+      "message": "Test results saved successfully"
+    },
+    "errors": {
+      "notFound": {
+        "error": "Not Found",
+        "message": "The requested resource was not found"
+      },
+      "serverError": {
+        "error": "Server Error",
+        "message": "Something went wrong!",
+        "internalMessage": "Internal server error"
+      },
+      "validation": {
+        "invalidData": "Invalid data provided",
+        "missingRequired": "Missing required fields"
+      }
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidFormat": "Invalid format",
+      "minLength": "Minimum length is {{min}} characters",
+      "maxLength": "Maximum length is {{max}} characters"
+    }
+  },
+  "server": {
+    "startup": {
+      "running": "🚀 MMITLab Testing App Backend running on port {{port}}",
+      "healthCheck": "📊 Health check: http://localhost:{{port}}/api/health",
+      "environment": "🌍 Environment: {{env}}"
+    },
+    "logs": {
+      "testResultsReceived": "Test Results Received",
+      "connectionEstablished": "Connection established",
+      "requestProcessed": "Request processed successfully"
+    }
+  },
+  "system": {
+    "info": {
+      "platform": "Platform",
+      "arch": "Architecture",
+      "release": "Release",
+      "totalMemory": "Total Memory",
+      "freeMemory": "Free Memory",
+      "cpus": "CPU Cores",
+      "uptime": "Uptime"
+    }
+  },
+  "common": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "processing": "Processing..."
+  }
+}
