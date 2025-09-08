@@ -535,7 +535,7 @@ export default {
             container.innerHTML = `
         <div class="pdf-content">
           <div class="header">
-            <h1>MMITLab Test Results</h1>
+            <h1>${this.t('app.name')} ${this.t('results.summary')}</h1>
             <div class="accent-bar"></div>
           </div>
           
@@ -576,10 +576,10 @@ export default {
             <table class="results-table">
               <thead>
                 <tr>
-                  <th>Test Name</th>
-                  <th>Status</th>
-                  <th>Run Count</th>
-                  <th>Duration (s)</th>
+                  <th>${this.t('results.testDetails')}</th>
+                  <th>${this.t('status.status')}</th>
+                  <th>${this.t('results.runCount')}</th>
+                  <th>${this.t('results.duration')} (s)</th>
                 </tr>
               </thead>
               <tbody>
@@ -808,8 +808,13 @@ export default {
             this.showExportMenu = false;
         },
         exportAsCSV() {
-            // Prepare CSV header
-            const header = ['Test Name', 'Status', 'Run Count', 'Duration (s)'];
+            // Prepare CSV header with translated labels
+            const header = [
+                this.t('results.testDetails'),
+                this.t('status.status'),
+                this.t('results.runCount'),
+                this.t('results.duration') + ' (s)'
+            ];
             const rows = [header];
             const tests = Object.keys(this.results);
             for (const test of tests) {
@@ -1055,7 +1060,7 @@ export default {
                     class="mobile-nav-btn"
                 >
                     <span class="test-icon">✅</span>
-                    <span class="mobile-nav-label">Summary</span>
+                    <span class="mobile-nav-label">{{ $t('sidebar.summary') }}</span>
                 </button>
             </nav>
         </footer>
@@ -1080,7 +1085,7 @@ export default {
                             <div class="test-summary__overview">
                                 <div class="test-summary__badge" :class="`test-summary__badge--${summaryClass}`">
                                     <span class="test-summary__completion-text"
-                                        >Completed: {{ completedTestsCount }}/{{
+                                        >{{ $t('export.summaryLabels.completed') }} {{ completedTestsCount }}/{{
                                             totalTestsCount
                                         }}</span
                                     >

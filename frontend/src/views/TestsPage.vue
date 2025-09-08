@@ -760,7 +760,7 @@ export default {
             container.innerHTML = `
         <div class="pdf-content">
           <div class="header">
-            <h1>MMITLab Test Results</h1>
+            <h1>${this.t('app.name')} ${this.t('results.summary')}</h1>
             <div class="accent-bar"></div>
           </div>
           
@@ -799,10 +799,10 @@ export default {
             <table class="results-table">
               <thead>
                 <tr>
-                  <th>Test Name</th>
-                  <th>Status</th>
-                  <th>Run Count</th>
-                  <th>Duration (s)</th>
+                  <th>${this.t('results.testDetails')}</th>
+                  <th>${this.t('status.status')}</th>
+                  <th>${this.t('results.runCount')}</th>
+                  <th>${this.t('results.duration')} (s)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1192,99 +1192,99 @@ export default {
 </script>
 
 <template>
-    <div class="app-layout">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="brand-icon">📋</div>
-                <h2>Tests</h2>
-            </div>
-            <nav class="test-navigation">
-              <ul class="test-navigation__list">
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'webcam' }"
-                  @click="debouncedSetActiveTest('webcam')"
-                >
-                  <span class="test-navigation__icon">📹</span>
-                  <span class="test-navigation__name">Camera Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('webcam')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'microphone' }"
-                  @click="debouncedSetActiveTest('microphone')"
-                >
-                  <span class="test-navigation__icon">🎤</span>
-                  <span class="test-navigation__name">Mic Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('microphone')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'speakers' }"
-                  @click="debouncedSetActiveTest('speakers')"
-                >
-                  <span class="test-navigation__icon">🔊</span>
-                  <span class="test-navigation__name">Speaker Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('speakers')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'keyboard' }"
-                  @click="debouncedSetActiveTest('keyboard')"
-                >
-                  <span class="test-navigation__icon">⌨️</span>
-                  <span class="test-navigation__name">Keyboard Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('keyboard')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'mouse' }"
-                  @click="debouncedSetActiveTest('mouse')"
-                >
-                  <span class="test-navigation__icon">🖱️</span>
-                  <span class="test-navigation__name">Mouse Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('mouse')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'touch' }"
-                  @click="debouncedSetActiveTest('touch')"
-                >
-                  <span class="test-navigation__icon">👆</span>
-                  <span class="test-navigation__name">Touch Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('touch')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
-                  :class="{ 'test-navigation__item--active': activeTest === 'battery' }"
-                  @click="debouncedSetActiveTest('battery')"
-                >
-                  <span class="test-navigation__icon">🔋</span>
-                  <span class="test-navigation__name">Battery Test</span>
-                  <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('battery')"></span>
-                </li>
-                <li
-                  class="test-navigation__item"
+  <div class="app-layout">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+          <div class="sidebar-header">
+              <div class="brand-icon">📋</div>
+              <h2>{{ $t('navigation.tests') }}</h2>
+          </div>
+          <nav class="test-navigation">
+            <ul class="test-navigation__list">
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'webcam' }"
+                @click="debouncedSetActiveTest('webcam')"
+              >
+                <span class="test-navigation__icon">📹</span>
+                <span class="test-navigation__name">{{ $t('tests.webcam.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('webcam')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'microphone' }"
+                @click="debouncedSetActiveTest('microphone')"
+              >
+                <span class="test-navigation__icon">🎤</span>
+                <span class="test-navigation__name">{{ $t('tests.microphone.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('microphone')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'speakers' }"
+                @click="debouncedSetActiveTest('speakers')"
+              >
+                <span class="test-navigation__icon">🔊</span>
+                <span class="test-navigation__name">{{ $t('tests.speakers.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('speakers')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'keyboard' }"
+                @click="debouncedSetActiveTest('keyboard')"
+              >
+                <span class="test-navigation__icon">⌨️</span>
+                <span class="test-navigation__name">{{ $t('tests.keyboard.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('keyboard')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'mouse' }"
+                @click="debouncedSetActiveTest('mouse')"
+              >
+                <span class="test-navigation__icon">🖱️</span>
+                <span class="test-navigation__name">{{ $t('tests.mouse.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('mouse')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'touch' }"
+                @click="debouncedSetActiveTest('touch')"
+              >
+                <span class="test-navigation__icon">👆</span>
+                <span class="test-navigation__name">{{ $t('tests.touch.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('touch')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{ 'test-navigation__item--active': activeTest === 'battery' }"
+                @click="debouncedSetActiveTest('battery')"
+              >
+                <span class="test-navigation__icon">🔋</span>
+                <span class="test-navigation__name">{{ $t('tests.battery.shortName') }}</span>
+                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('battery')"></span>
+              </li>
+              <li
+                class="test-navigation__item"
+                :class="{
+                  'test-navigation__item--active': activeTest === 'testsCompleted',
+                  'test-navigation__item--disabled': !allTestsCompleted,
+                }"
+                @click="handleTestsCompletedClick"
+              >
+                <span class="test-navigation__icon">✅</span>
+                <span class="test-navigation__name">{{ $t('tests.completed.name') }}</span>
+                <span
+                  class="test-navigation__status"
                   :class="{
-                    'test-navigation__item--active': activeTest === 'testsCompleted',
-                    'test-navigation__item--disabled': !allTestsCompleted,
+                    'test-navigation__status--completed-success': allTestsCompleted,
+                    'test-navigation__status--pending': !allTestsCompleted,
                   }"
-                  @click="handleTestsCompletedClick"
-                >
-                  <span class="test-navigation__icon">✅</span>
-                  <span class="test-navigation__name">Tests Completed</span>
-                  <span
-                    class="test-navigation__status"
-                    :class="{
-                      'test-navigation__status--completed-success': allTestsCompleted,
-                      'test-navigation__status--pending': !allTestsCompleted,
-                    }"
-                  ></span>
-                </li>
-              </ul>
-            </nav>
-        </aside>
+                ></span>
+              </li>
+            </ul>
+          </nav>
+      </aside>
 
         <!-- Main Content -->
         <main class="main-content">
