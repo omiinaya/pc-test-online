@@ -378,7 +378,7 @@ export default {
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
             :label="$t('tests.microphone.shortName')"
-            deviceType="Microphone"
+            :deviceType="$t('tests.microphone.name')"
             :disabled="isLoading"
             @device-changed="handleDeviceChange"
         />

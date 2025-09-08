@@ -78,7 +78,7 @@ const errorDetails = computed(() => {
         `Message: ${error.value.message}`,
         error.value.stack ? `Stack: ${error.value.stack}` : '',
         errorInfo.value ? `Component: ${errorInfo.value.type}` : '',
-        errorInfo.value ? `Context: ${errorInfo.value.context || 'Unknown'}` : '',
+        errorInfo.value ? `Context: ${errorInfo.value.context || t('common.unknown')}` : '',
     ]
         .filter(Boolean)
         .join('\n');
@@ -93,7 +93,7 @@ onErrorCaptured((err: Error, info: any) => {
     const newErrorInfo: ErrorInfo = {
         type: mapErrorType(err.name),
         message: err.message,
-        context: info?.componentName || 'Unknown Component',
+        context: info?.componentName || t('common.unknownComponent'),
         originalError: err,
     };
     errorInfo.value = newErrorInfo;
@@ -192,10 +192,10 @@ const handleReport = () => {
     navigator.clipboard
         ?.writeText(JSON.stringify(errorReport, null, 2))
         .then(() => {
-            alert('Error details copied to clipboard');
+            alert(this.$t('alerts.errorDetailsCopied'));
         })
         .catch(() => {
-            alert('Unable to copy error details');
+            alert(this.$t('alerts.unableToCopyErrorDetails'));
         });
 };
 

@@ -40,7 +40,7 @@ export default {
         },
         actionLabel: {
             type: String,
-            default: 'Continue',
+            default: '',
         },
         actionDisabled: {
             type: Boolean,
@@ -249,7 +249,7 @@ export default {
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
                     </slot>
-                    <span>{{ actionLabel }}</span>
+                    <span>{{ actionLabel || $t('buttons.continue') }}</span>
                 </button>
 
                 <slot name="actions"></slot>

@@ -252,7 +252,7 @@ export default {
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
             :label="$t('tests.webcam.shortName')"
-            deviceType="Camera"
+            :deviceType="$t('tests.webcam.name')"
             :disabled="isLoading"
             @device-changed="switchDevice"
         />

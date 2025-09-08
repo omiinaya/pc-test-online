@@ -609,7 +609,7 @@ export default {
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
             :label="$t('tests.speakers.shortName')"
-            deviceType="Speaker"
+            :deviceType="$t('tests.speakers.name')"
             :disabled="isLoading"
             @device-changed="handleDeviceChange"
         />

@@ -227,6 +227,7 @@
   
   "common": {
     "unknown": "Unknown",
+    "unknownComponent": "Unknown Component",
     "notAvailable": "Not Available",
     "notSupported": "Not Supported",
     "notDetected": "Not Detected",
@@ -355,5 +356,11 @@
       "memory": "Memory",
       "memory_description": "JS Heap Size"
     }
+  },
+
+  "alerts": {
+    "pdfGenerationError": "Error generating PDF. Please try again.",
+    "errorDetailsCopied": "Error details copied to clipboard",
+    "unableToCopyErrorDetails": "Unable to copy error details"
   }
 }

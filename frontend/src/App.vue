@@ -796,7 +796,7 @@ export default {
                 // Save the PDF
                 pdf.save('mmit-test-results.pdf');
             } catch (error) {
-                alert('Error generating PDF. Please try again.');
+                alert(this.$t('alerts.pdfGenerationError'));
             } finally {
                 // Clean up
                 document.body.removeChild(container);

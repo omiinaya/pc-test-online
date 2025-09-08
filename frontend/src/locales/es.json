@@ -224,6 +224,7 @@
   
   "common": {
     "unknown": "Desconocido",
+    "unknownComponent": "Componente Desconocido",
     "notAvailable": "No Disponible",
     "notSupported": "No Compatible",
     "notDetected": "No Detectado",
@@ -261,5 +262,11 @@
       "performance_limitations": "⚠️ Limitaciones de Rendimiento del Navegador",
       "recommendations": "💡 Recomendaciones de Rendimiento"
     }
+  },
+
+  "alerts": {
+    "pdfGenerationError": "Error al generar PDF. Por favor, inténtalo de nuevo.",
+    "errorDetailsCopied": "Detalles del error copiados al portapapeles",
+    "unableToCopyErrorDetails": "No se pudieron copiar los detalles del error"
   }
 }
