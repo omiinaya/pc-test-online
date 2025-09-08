@@ -495,7 +495,7 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">Left</span>
+                    <span class="speaker-label">{{ $t('device_testing.speaker.left_channel') }}</span>
                 </div>
                 <div
                     class="speaker-box"
@@ -540,7 +540,7 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">Both</span>
+                    <span class="speaker-label">{{ $t('device_testing.speaker.both_channels') }}</span>
                 </div>
                 <div
                     class="speaker-box"
@@ -570,7 +570,7 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">Right</span>
+                    <span class="speaker-label">{{ $t('device_testing.speaker.right_channel') }}</span>
                 </div>
             </div>
 
@@ -578,8 +578,8 @@ export default {
             <div v-if="showNoDevicesState" class="canvas-overlay">
                 <StatePanel
                     state="error"
-                    title="No Speakers Found"
-                    message="No speakers were detected on your system. Please ensure your speakers are properly connected."
+                    :title="$t('errors.device.speaker_not_found')"
+                    :message="$t('errors.device.speaker_not_connected')"
                     :showRetryButton="true"
                     @retry="retryTest"
                 />
@@ -588,15 +588,15 @@ export default {
             <div v-else-if="isLoading" class="canvas-overlay">
                 <StatePanel
                     state="loading"
-                    title="Detecting speakers..."
-                    message="Please wait while we search for available speakers"
+                    :title="$t('device_testing.detection.detecting_speakers')"
+                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'speakers' })"
                 />
             </div>
 
             <div v-else-if="hasError" class="canvas-overlay">
                 <StatePanel
                     state="error"
-                    title="Speaker Error"
+                    :title="$t('errors.device.speaker_error')"
                     :message="currentError"
                     :showRetryButton="true"
                     @retry="retryTest"
@@ -608,7 +608,7 @@ export default {
         <DeviceSelector
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
-            label="Speaker"
+            :label="$t('tests.speakers.shortName')"
             deviceType="Speaker"
             :disabled="isLoading"
             @device-changed="handleDeviceChange"

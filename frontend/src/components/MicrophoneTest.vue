@@ -191,15 +191,6 @@ export default {
         const handleDeviceChange = async deviceId => {
             stopVisualization();
 
-            const constraints = {
-                audio: {
-                    deviceId: { exact: deviceId },
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false,
-                },
-            };
-
             const stream = await deviceTest.switchDevice(deviceId);
             if (stream) {
                 await nextTick();
@@ -334,8 +325,8 @@ export default {
             <div v-if="showNoDevicesState" class="canvas-overlay">
                 <StatePanel
                     state="error"
-                    title="No Microphones Found"
-                    message="No microphones were detected on your system. Please ensure your microphone is properly connected."
+                    :title="$t('errors.device.microphone_not_found')"
+                    :message="$t('errors.device.microphone_not_connected')"
                     :showRetryButton="true"
                     @retry="resetTest"
                 />
@@ -344,18 +335,18 @@ export default {
             <div v-else-if="isLoading" class="canvas-overlay">
                 <StatePanel
                     state="loading"
-                    title="Detecting microphones..."
-                    message="Please wait while we search for available microphones"
+                    :title="$t('device_testing.detection.detecting_microphones')"
+                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'microphones' })"
                 />
             </div>
 
             <div v-else-if="needsPermission" class="canvas-overlay">
                 <StatePanel
                     state="info"
-                    title="Microphone Permission Required"
-                    message="Please allow microphone access to test your microphone."
+                    :title="$t('device_testing.permission.microphone_required')"
+                    :message="$t('device_testing.permission.microphone_grant_access')"
                     :showActionButton="true"
-                    actionLabel="Grant Microphone Access"
+                    :actionLabel="$t('device_testing.permission.microphone_grant_button')"
                     @action-clicked="requestPermission"
                 />
             </div>
@@ -363,10 +354,10 @@ export default {
             <div v-else-if="permissionBlocked" class="canvas-overlay">
                 <StatePanel
                     state="error"
-                    title="Microphone Access Denied"
-                    message="Please enable microphone permissions in your browser settings and try again."
+                    :title="$t('errors.permission.microphone_denied')"
+                    :message="$t('errors.permission.microphone_enable_settings')"
                     :showRetryButton="true"
-                    retryLabel="Try Again"
+                    :retryLabel="$t('buttons.retry')"
                     @retry="requestPermission"
                 />
             </div>
@@ -374,7 +365,7 @@ export default {
             <div v-else-if="hasError" class="canvas-overlay">
                 <StatePanel
                     state="error"
-                    title="Microphone Error"
+                    :title="$t('errors.device.microphone_error')"
                     :message="currentError"
                     :showRetryButton="true"
                     @retry="resetTest"
@@ -386,7 +377,7 @@ export default {
         <DeviceSelector
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
-            label="Microphone"
+            :label="$t('tests.microphone.shortName')"
             deviceType="Microphone"
             :disabled="isLoading"
             @device-changed="handleDeviceChange"
@@ -395,7 +386,7 @@ export default {
         <!-- Browser Compatibility Warnings -->
         <div v-if="showCompatibilityWarnings" class="compatibility-warnings">
             <div class="warning-header">
-                <h4>⚠️ Browser Compatibility Notice</h4>
+                <h4>{{ $t('errors.browser.compatibility_notice') }}</h4>
             </div>
             <ul class="warning-list">
                 <li v-for="warning in compatibilityWarnings" :key="warning" class="warning-item">
@@ -403,7 +394,7 @@ export default {
                 </li>
             </ul>
             <div v-if="recommendedBrowser" class="recommendation">
-                <strong>Recommendation:</strong> {{ recommendedBrowser }}
+                <strong>{{ $t('errors.browser.recommendation', { browser: recommendedBrowser }) }}</strong>
             </div>
         </div>
     </div>

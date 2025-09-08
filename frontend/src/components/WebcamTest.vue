@@ -191,14 +191,16 @@ export default {
                 :class="{ blurred: isLoading || hasError || needsPermission || showNoDevicesState }"
                 aria-label="Camera preview for testing"
                 title="Live camera feed for testing purposes"
+                :aria-label="$t('device_testing.webcam.camera_preview')"
+                :title="$t('device_testing.webcam.live_feed')"
             ></video>
 
             <!-- State Panel Overlays inside video -->
             <div v-if="showNoDevicesState" class="video-overlay">
                 <StatePanel
                     state="error"
-                    title="No Cameras Found"
-                    message="No cameras were detected on your system. Please ensure your camera is properly connected."
+                    :title="$t('errors.device.camera_not_found')"
+                    :message="$t('errors.device.camera_not_connected')"
                     :showRetryButton="true"
                     @retry="resetTest"
                 />
@@ -207,18 +209,18 @@ export default {
             <div v-else-if="isLoading" class="video-overlay">
                 <StatePanel
                     state="loading"
-                    title="Detecting cameras..."
-                    message="Please wait while we search for available cameras"
+                    :title="$t('device_testing.detection.detecting_cameras')"
+                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'cameras' })"
                 />
             </div>
 
             <div v-else-if="needsPermission" class="video-overlay">
                 <StatePanel
                     state="info"
-                    title="Camera Permission Required"
-                    message="Please allow camera access to test your webcam."
+                    :title="$t('device_testing.permission.camera_required')"
+                    :message="$t('device_testing.permission.camera_grant_access')"
                     :showActionButton="true"
-                    actionLabel="Grant Camera Access"
+                    :actionLabel="$t('device_testing.permission.camera_grant_button')"
                     @action-clicked="requestPermission"
                 />
             </div>
@@ -226,10 +228,10 @@ export default {
             <div v-else-if="permissionBlocked" class="video-overlay">
                 <StatePanel
                     state="error"
-                    title="Camera Access Denied"
-                    message="Please enable camera permissions in your browser settings and try again."
+                    :title="$t('errors.permission.camera_denied')"
+                    :message="$t('errors.permission.camera_enable_settings')"
                     :showRetryButton="true"
-                    retryLabel="Try Again"
+                    :retryLabel="$t('buttons.retry')"
                     @retry="requestPermission"
                 />
             </div>
@@ -237,7 +239,7 @@ export default {
             <div v-else-if="hasError" class="video-overlay">
                 <StatePanel
                     state="error"
-                    title="Camera Error"
+                    :title="$t('errors.device.camera_error')"
                     :message="currentError"
                     :showRetryButton="true"
                     @retry="resetTest"
@@ -249,7 +251,7 @@ export default {
         <DeviceSelector
             :devices="availableDevices"
             :selectedDeviceId="selectedDeviceId"
-            label="Camera"
+            :label="$t('tests.webcam.shortName')"
             deviceType="Camera"
             :disabled="isLoading"
             @device-changed="switchDevice"
@@ -258,7 +260,7 @@ export default {
         <!-- Browser Compatibility Warnings -->
         <div v-if="showCompatibilityWarnings" class="compatibility-warnings">
             <div class="warning-header">
-                <h4>⚠️ Browser Compatibility Notice</h4>
+                <h4>{{ $t('errors.browser.compatibility_notice') }}</h4>
             </div>
             <ul class="warning-list">
                 <li v-for="warning in compatibilityWarnings" :key="warning" class="warning-item">
@@ -266,7 +268,7 @@ export default {
                 </li>
             </ul>
             <div v-if="recommendedBrowser" class="recommendation">
-                <strong>Recommendation:</strong> {{ recommendedBrowser }}
+                <strong>{{ $t('errors.browser.recommendation', { browser: recommendedBrowser }) }}</strong>
             </div>
         </div>
     </div>

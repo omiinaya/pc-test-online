@@ -2,44 +2,120 @@
   "api": {
     "health": {
       "status": "OK",
-      "message": "MMITLab Testing App Backend está ejecutándose"
+      "message": "MMITLab Testing App Backend está ejecutándose",
+      "version": "Versión {{version}}",
+      "uptime": "Tiempo de actividad: {{uptime}} segundos"
     },
     "testResults": {
       "success": true,
-      "message": "Resultados de prueba guardados exitosamente"
+      "message": "Resultados de prueba guardados exitosamente",
+      "received": "Recibidos {{count}} resultados de prueba",
+      "processing": "Procesando resultados de prueba..."
+    },
+    "success": {
+      "created": "Recurso creado exitosamente",
+      "updated": "Recurso actualizado exitosamente",
+      "deleted": "Recurso eliminado exitosamente",
+      "retrieved": "Recurso obtenido exitosamente"
+    },
+    "messages": {
+      "welcome": "Bienvenido a MMITLab Testing API",
+      "documentation": "Documentación de API disponible en {{url}}",
+      "rateLimited": "Límite de tasa excedido. Intente nuevamente en {{seconds}} segundos"
     },
     "errors": {
+      "validation": {
+        "invalidData": "Datos inválidos proporcionados",
+        "missingRequired": "Campos requeridos faltantes: {{fields}}",
+        "invalidType": "Tipo de dato inválido para el campo: {{field}}",
+        "outOfRange": "Valor fuera de rango para el campo: {{field}}",
+        "patternMismatch": "Patrón no coincide para el campo: {{field}}"
+      },
+      "permission": {
+        "unauthorized": "Acceso no autorizado",
+        "forbidden": "Acceso prohibido",
+        "insufficientPermissions": "Permisos insuficientes para esta acción",
+        "tokenExpired": "Token de autenticación expirado",
+        "invalidToken": "Token de autenticación inválido"
+      },
+      "system": {
+        "databaseError": "Error de conexión a la base de datos",
+        "timeout": "Tiempo de espera agotado",
+        "serviceUnavailable": "Servicio temporalmente no disponible",
+        "maintenance": "Sistema en mantenimiento",
+        "rateLimit": "Demasiadas solicitudes"
+      },
       "notFound": {
         "error": "No Encontrado",
-        "message": "El recurso solicitado no fue encontrado"
+        "message": "El recurso solicitado no fue encontrado",
+        "resource": "Recurso '{{resource}}' no encontrado",
+        "endpoint": "Endpoint '{{endpoint}}' no encontrado"
       },
       "serverError": {
         "error": "Error del Servidor",
         "message": "¡Algo salió mal!",
-        "internalMessage": "Error interno del servidor"
-      },
-      "validation": {
-        "invalidData": "Datos inválidos proporcionados",
-        "missingRequired": "Campos requeridos faltantes"
+        "internalMessage": "Error interno del servidor",
+        "contactSupport": "Por favor contacte al soporte si el problema persiste"
       }
-    },
-    "validation": {
-      "required": "Este campo es requerido",
-      "invalidFormat": "Formato inválido",
-      "minLength": "La longitud mínima es de {{min}} caracteres",
-      "maxLength": "La longitud máxima es de {{max}} caracteres"
     }
   },
   "server": {
     "startup": {
       "running": "🚀 MMITLab Testing App Backend ejecutándose en el puerto {{port}}",
       "healthCheck": "📊 Verificación de salud: http://localhost:{{port}}/api/health",
-      "environment": "🌍 Entorno: {{env}}"
+      "environment": "🌍 Entorno: {{env}}",
+      "initializing": "Inicializando componentes del servidor...",
+      "ready": "Servidor listo para aceptar conexiones",
+      "shutdown": "Servidor apagándose correctamente"
     },
     "logs": {
-      "testResultsReceived": "Resultados de Prueba Recibidos",
-      "connectionEstablished": "Conexión establecida",
-      "requestProcessed": "Solicitud procesada exitosamente"
+      "testResultsReceived": "Resultados de Prueba Recibidos: {{count}} resultados de {{device}}",
+      "connectionEstablished": "Conexión establecida con {{client}}",
+      "requestProcessed": "Solicitud {{method}} {{path}} procesada en {{time}}ms",
+      "errorOccurred": "Error ocurrido: {{error}}",
+      "validationFailed": "Validación fallida para la solicitud: {{errors}}"
+    },
+    "status": {
+      "online": "En línea",
+      "offline": "Fuera de línea",
+      "degraded": "Rendimiento degradado",
+      "maintenance": "Modo de mantenimiento"
+    }
+  },
+  "validation": {
+    "required": {
+      "field": "Campo '{{field}}' es requerido",
+      "general": "Este campo es requerido",
+      "array": "Se requiere al menos un elemento",
+      "object": "Este objeto es requerido"
+    },
+    "format": {
+      "email": "Formato de email inválido",
+      "url": "Formato de URL inválido",
+      "phone": "Formato de número telefónico inválido",
+      "date": "Formato de fecha inválido",
+      "ip": "Formato de dirección IP inválido",
+      "uuid": "Formato de UUID inválido"
+    },
+    "length": {
+      "min": "Longitud mínima es de {{min}} caracteres",
+      "max": "Longitud máxima es de {{max}} caracteres",
+      "exact": "Debe tener exactamente {{length}} caracteres",
+      "between": "Debe tener entre {{min}} y {{max}} caracteres"
+    },
+    "type": {
+      "string": "Debe ser una cadena de texto",
+      "number": "Debe ser un número",
+      "boolean": "Debe ser un valor booleano",
+      "array": "Debe ser un arreglo",
+      "object": "Debe ser un objeto"
+    },
+    "value": {
+      "min": "Valor mínimo es {{min}}",
+      "max": "Valor máximo es {{max}}",
+      "positive": "Debe ser un número positivo",
+      "negative": "Debe ser un número negativo",
+      "integer": "Debe ser un número entero"
     }
   },
   "system": {
@@ -51,6 +127,12 @@
       "freeMemory": "Memoria Libre",
       "cpus": "Núcleos de CPU",
       "uptime": "Tiempo de Actividad"
+    },
+    "metrics": {
+      "memoryUsage": "Uso de memoria: {{usage}}%",
+      "cpuUsage": "Uso de CPU: {{usage}}%",
+      "diskUsage": "Uso de disco: {{usage}}%",
+      "responseTime": "Tiempo promedio de respuesta: {{time}}ms"
     }
   },
   "common": {
@@ -60,6 +142,11 @@
     "info": "Información",
     "loading": "Cargando...",
     "saving": "Guardando...",
-    "processing": "Procesando..."
+    "processing": "Procesando...",
+    "retrying": "Reintentando...",
+    "completed": "Completado",
+    "failed": "Fallido",
+    "pending": "Pendiente",
+    "cancelled": "Cancelado"
   }
 }

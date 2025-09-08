@@ -134,6 +134,7 @@
     "no": "No",
     "ok": "OK",
     "close": "Cerrar",
+    "closeSymbol": "×",
     "minimize": "Minimizar",
     "maximize": "Maximizar",
     "fullscreen": "Pantalla Completa",
@@ -205,7 +206,13 @@
     "generateReport": "Generar Informe",
     "downloading": "Descargando...",
     "success": "¡Exportación exitosa!",
-    "error": "Error durante la exportación"
+    "error": "Error durante la exportación",
+    "summaryLabels": {
+      "completed": "Completado:",
+      "passed": "Aprobado:",
+      "failed": "Fallado:",
+      "skipped": "Saltado:"
+    }
   },
   
   "time": {
@@ -235,5 +242,24 @@
     "required": "Requerido",
     "default": "Predeterminado",
     "custom": "Personalizado"
+  },
+
+  "touchTest": {
+    "startPrompt": "Toca en cualquier lugar para comenzar la prueba táctil",
+    "tapToBegin": "Toca en cualquier lugar para comenzar",
+    "tapChallenge": "Toca el círculo",
+    "dragChallenge": "Arrastra el círculo al objetivo",
+    "completeTitle": "¡Prueba Táctil Completada!",
+    "completeMessage": "Tu pantalla táctil ha sido probada exitosamente",
+    "challengesProgress": "Desafíos: {completed}/4 completados",
+    "allChallengesCompleted": "¡Todos los desafíos completados!"
+  },
+
+  "compatibility": {
+    "warnings": {
+      "limited_support": "⚠️ Soporte Limitado",
+      "performance_limitations": "⚠️ Limitaciones de Rendimiento del Navegador",
+      "recommendations": "💡 Recomendaciones de Rendimiento"
+    }
   }
 }

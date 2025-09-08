@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { ref, computed, onErrorCaptured, onMounted, readonly } from 'vue';
 import type { ErrorInfo, ErrorType } from '@/types';
 
@@ -13,13 +14,15 @@ interface Props {
     onRetry?: () => void | Promise<void>;
 }
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<Props>(), {
-    fallbackTitle: 'Something went wrong',
-    fallbackMessage: 'An unexpected error occurred. Please try refreshing the page.',
-    showDetails: false,
-    showReload: true,
-    showReport: false,
-    maxRetries: 3,
+  fallbackTitle: t('errors.generic.title'),
+  fallbackMessage: t('errors.generic.message'),
+  showDetails: false,
+  showReload: true,
+  showReport: false,
+  maxRetries: 3,
 });
 
 // Error state
@@ -48,23 +51,23 @@ const mapErrorType = (errorName: string): ErrorType => {
 
 // Computed properties
 const errorTitle = computed(() => {
-    if (error.value?.name === 'ChunkLoadError') {
-        return 'Update Available';
-    }
-    if (error.value?.name === 'NetworkError') {
-        return 'Connection Problem';
-    }
-    return props.fallbackTitle;
+  if (error.value?.name === 'ChunkLoadError') {
+    return t('errors.update_available.title');
+  }
+  if (error.value?.name === 'NetworkError') {
+    return t('errors.network.title');
+  }
+  return props.fallbackTitle;
 });
 
 const errorMessage = computed(() => {
-    if (error.value?.name === 'ChunkLoadError') {
-        return 'A new version of the application is available. Please reload to get the latest version.';
-    }
-    if (error.value?.name === 'NetworkError') {
-        return 'Unable to connect to the server. Please check your internet connection and try again.';
-    }
-    return error.value?.message || props.fallbackMessage;
+  if (error.value?.name === 'ChunkLoadError') {
+    return t('errors.update_available.message');
+  }
+  if (error.value?.name === 'NetworkError') {
+    return t('errors.network.message');
+  }
+  return error.value?.message || props.fallbackMessage;
 });
 
 const errorDetails = computed(() => {
@@ -243,7 +246,7 @@ defineExpose({
 
             <div v-if="showDetails && errorDetails" class="error-boundary__details">
                 <details class="error-boundary__accordion">
-                    <summary class="error-boundary__summary">Technical Details</summary>
+                  <summary class="error-boundary__summary">{{ t('errors.technical_details') }}</summary>
                     <div class="error-boundary__content">
                         <pre class="error-boundary__stack">{{ errorDetails }}</pre>
                     </div>
@@ -262,25 +265,25 @@ defineExpose({
                         class="error-boundary__spinner"
                         aria-hidden="true"
                     ></span>
-                    {{ isRetrying ? 'Retrying...' : 'Try Again' }}
+                    {{ isRetrying ? t('buttons.retrying') : t('buttons.retry') }}
                 </button>
-
+        
                 <button
                     v-if="showReload"
                     type="button"
                     class="error-boundary__button error-boundary__button--secondary"
                     @click="handleReload"
                 >
-                    Reload Page
+                    {{ t('buttons.reload') }}
                 </button>
-
+        
                 <button
                     v-if="showReport"
                     type="button"
                     class="error-boundary__button error-boundary__button--ghost"
                     @click="handleReport"
                 >
-                    Report Issue
+                    {{ t('buttons.report') }}
                 </button>
             </div>
         </div>

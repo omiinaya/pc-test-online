@@ -2,44 +2,120 @@
   "api": {
     "health": {
       "status": "OK",
-      "message": "MMITLab Testing App Backend is running"
+      "message": "MMITLab Testing App Backend is running",
+      "version": "Version {{version}}",
+      "uptime": "Uptime: {{uptime}} seconds"
     },
     "testResults": {
       "success": true,
-      "message": "Test results saved successfully"
+      "message": "Test results saved successfully",
+      "received": "Received {{count}} test results",
+      "processing": "Processing test results..."
+    },
+    "success": {
+      "created": "Resource created successfully",
+      "updated": "Resource updated successfully",
+      "deleted": "Resource deleted successfully",
+      "retrieved": "Resource retrieved successfully"
+    },
+    "messages": {
+      "welcome": "Welcome to MMITLab Testing API",
+      "documentation": "API documentation available at {{url}}",
+      "rateLimited": "Rate limit exceeded. Try again in {{seconds}} seconds"
     },
     "errors": {
+      "validation": {
+        "invalidData": "Invalid data provided",
+        "missingRequired": "Missing required fields: {{fields}}",
+        "invalidType": "Invalid data type for field: {{field}}",
+        "outOfRange": "Value out of range for field: {{field}}",
+        "patternMismatch": "Pattern mismatch for field: {{field}}"
+      },
+      "permission": {
+        "unauthorized": "Unauthorized access",
+        "forbidden": "Access forbidden",
+        "insufficientPermissions": "Insufficient permissions for this action",
+        "tokenExpired": "Authentication token expired",
+        "invalidToken": "Invalid authentication token"
+      },
+      "system": {
+        "databaseError": "Database connection error",
+        "timeout": "Request timeout",
+        "serviceUnavailable": "Service temporarily unavailable",
+        "maintenance": "System under maintenance",
+        "rateLimit": "Too many requests"
+      },
       "notFound": {
         "error": "Not Found",
-        "message": "The requested resource was not found"
+        "message": "The requested resource was not found",
+        "resource": "Resource '{{resource}}' not found",
+        "endpoint": "Endpoint '{{endpoint}}' not found"
       },
       "serverError": {
         "error": "Server Error",
         "message": "Something went wrong!",
-        "internalMessage": "Internal server error"
-      },
-      "validation": {
-        "invalidData": "Invalid data provided",
-        "missingRequired": "Missing required fields"
+        "internalMessage": "Internal server error",
+        "contactSupport": "Please contact support if the problem persists"
       }
-    },
-    "validation": {
-      "required": "This field is required",
-      "invalidFormat": "Invalid format",
-      "minLength": "Minimum length is {{min}} characters",
-      "maxLength": "Maximum length is {{max}} characters"
     }
   },
   "server": {
     "startup": {
       "running": "🚀 MMITLab Testing App Backend running on port {{port}}",
       "healthCheck": "📊 Health check: http://localhost:{{port}}/api/health",
-      "environment": "🌍 Environment: {{env}}"
+      "environment": "🌍 Environment: {{env}}",
+      "initializing": "Initializing server components...",
+      "ready": "Server ready to accept connections",
+      "shutdown": "Server shutting down gracefully"
     },
     "logs": {
-      "testResultsReceived": "Test Results Received",
-      "connectionEstablished": "Connection established",
-      "requestProcessed": "Request processed successfully"
+      "testResultsReceived": "Test Results Received: {{count}} results from {{device}}",
+      "connectionEstablished": "Connection established with {{client}}",
+      "requestProcessed": "Request {{method}} {{path}} processed in {{time}}ms",
+      "errorOccurred": "Error occurred: {{error}}",
+      "validationFailed": "Validation failed for request: {{errors}}"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "degraded": "Degraded performance",
+      "maintenance": "Maintenance mode"
+    }
+  },
+  "validation": {
+    "required": {
+      "field": "Field '{{field}}' is required",
+      "general": "This field is required",
+      "array": "At least one item is required",
+      "object": "This object is required"
+    },
+    "format": {
+      "email": "Invalid email format",
+      "url": "Invalid URL format",
+      "phone": "Invalid phone number format",
+      "date": "Invalid date format",
+      "ip": "Invalid IP address format",
+      "uuid": "Invalid UUID format"
+    },
+    "length": {
+      "min": "Minimum length is {{min}} characters",
+      "max": "Maximum length is {{max}} characters",
+      "exact": "Must be exactly {{length}} characters",
+      "between": "Must be between {{min}} and {{max}} characters"
+    },
+    "type": {
+      "string": "Must be a string",
+      "number": "Must be a number",
+      "boolean": "Must be a boolean",
+      "array": "Must be an array",
+      "object": "Must be an object"
+    },
+    "value": {
+      "min": "Minimum value is {{min}}",
+      "max": "Maximum value is {{max}}",
+      "positive": "Must be a positive number",
+      "negative": "Must be a negative number",
+      "integer": "Must be an integer"
     }
   },
   "system": {
@@ -51,6 +127,12 @@
       "freeMemory": "Free Memory",
       "cpus": "CPU Cores",
       "uptime": "Uptime"
+    },
+    "metrics": {
+      "memoryUsage": "Memory usage: {{usage}}%",
+      "cpuUsage": "CPU usage: {{usage}}%",
+      "diskUsage": "Disk usage: {{usage}}%",
+      "responseTime": "Average response time: {{time}}ms"
     }
   },
   "common": {
@@ -60,6 +142,11 @@
     "info": "Information",
     "loading": "Loading...",
     "saving": "Saving...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "retrying": "Retrying...",
+    "completed": "Completed",
+    "failed": "Failed",
+    "pending": "Pending",
+    "cancelled": "Cancelled"
   }
 }

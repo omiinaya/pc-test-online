@@ -6,6 +6,7 @@ import { useComponentLifecycle } from '../composables/useComponentLifecycle.js';
 import { useEventListeners, usePointerEvents } from '../composables/useEventListeners.js';
 import { useGlobalReset } from '../composables/useTestState.js';
 import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
+import { useI18n } from 'vue-i18n';
 
 export default {
     name: 'TouchTest',
@@ -14,6 +15,7 @@ export default {
     },
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        const { t } = useI18n();
         // Initialize composables for normalized patterns
         const testResults = useTestResults('touch', emit);
         const lifecycle = useComponentLifecycle();
@@ -31,7 +33,7 @@ export default {
 
         // Reactive state
         const stage = ref('idle');
-        const feedbackText = ref('Touch or click the screen to begin the test.');
+        const feedbackText = ref(t('touchTest.startPrompt'));
         const completedChallenges = ref(0);
         const currentChallenge = ref({ type: null, complete: false });
         const transitionsEnabled = ref(false); // Disable transitions during initial container animation
@@ -355,7 +357,7 @@ export default {
         };
 
         const setupTapChallenge = () => {
-            feedbackText.value = 'Tap the circle.';
+            feedbackText.value = t('touchTest.tapChallenge');
             tapTarget.value.x = null;
             tapTarget.value.y = null;
 
@@ -394,7 +396,7 @@ export default {
         };
 
         const setupDragChallenge = () => {
-            feedbackText.value = 'Drag the orange circle into the outlined circle.';
+            feedbackText.value = t('touchTest.dragChallenge');
             dragSource.value.x = null;
             dragSource.value.y = null;
             dragTarget.value.x = null;
@@ -516,7 +518,7 @@ export default {
             stage.value = 'idle';
             completedChallenges.value = 0;
             currentChallenge.value = { type: null, complete: false };
-            feedbackText.value = 'Touch or click the screen to begin the test.';
+            feedbackText.value = t('touchTest.startPrompt');
             transitionsEnabled.value = false; // Reset transitions
 
             // Reset target positions to exact initial state
@@ -782,7 +784,7 @@ export default {
                 stage.value = 'idle';
                 completedChallenges.value = 0;
                 currentChallenge.value = { type: null, complete: false };
-                feedbackText.value = 'Touch or click the screen to begin the test.';
+                feedbackText.value = t('touchTest.startPrompt');
                 transitionsEnabled.value = false;
                 tapTarget.value = { x: null, y: null, size: targetSize };
                 dragSource.value = {
@@ -850,8 +852,8 @@ export default {
             state="success"
             :full-height="false"
             :show-icon="true"
-            title="Test Complete!"
-            message="Touch challenges completed successfully."
+            :title="t('touchTest.completeTitle')"
+            :message="t('touchTest.completeMessage')"
         >
             <template #icon>
                 <div class="animated-checkmark">
@@ -895,7 +897,7 @@ export default {
                         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
                         <path d="M3 21v-5h5" />
                     </svg>
-                    Test Again
+                    {{ t('buttons.testAgain') }}
                 </button>
             </template>
         </StatePanel>
@@ -922,7 +924,7 @@ export default {
                         <path d="M12 9v4" />
                         <path d="m12 17 .01 0" />
                     </svg>
-                    Touch Compatibility Notice
+                    {{ t('compatibility.warnings.limited_support') }}
                 </div>
                 <div class="warning-content">
                     <p>
@@ -943,7 +945,7 @@ export default {
             </div>
 
             <div v-if="stage === 'idle'" class="start-prompt">
-                <div class="tap-instruction">Tap anywhere to begin</div>
+                <div class="tap-instruction">{{ t('touchTest.tapToBegin') }}</div>
             </div>
 
             <div v-show="stage !== 'idle'" class="interactive-area">
@@ -951,8 +953,8 @@ export default {
                     <div class="progress-text">
                         {{
                             completedChallenges >= 4
-                                ? '4/4 challenges completed'
-                                : `${completedChallenges}/4 challenges completed`
+                                ? t('touchTest.allChallengesCompleted')
+                                : t('touchTest.challengesProgress', { completed: completedChallenges, total: 4 })
                         }}
                     </div>
                     <div class="progress-bar">

@@ -65,7 +65,10 @@
     "exportCsv": "Export as CSV",
     "startTest": "Start Test",
     "stopTest": "Stop Test",
-    "retry": "Retry",
+    "retry": "Try Again",
+    "retrying": "Retrying...",
+    "reload": "Reload Page",
+    "report": "Report Issue",
     "continue": "Continue",
     "back": "Back",
     "next": "Next",
@@ -134,6 +137,7 @@
     "no": "No",
     "ok": "OK",
     "close": "Close",
+    "closeSymbol": "×",
     "minimize": "Minimize",
     "maximize": "Maximize",
     "fullscreen": "Fullscreen",
@@ -205,7 +209,13 @@
     "generateReport": "Generate Report",
     "downloading": "Downloading...",
     "success": "Export successful!",
-    "error": "Error during export"
+    "error": "Error during export",
+    "summaryLabels": {
+      "completed": "Completed:",
+      "passed": "Passed:",
+      "failed": "Failed:",
+      "skipped": "Skipped:"
+    }
   },
   
   "time": {
@@ -235,5 +245,115 @@
     "required": "Required",
     "default": "Default",
     "custom": "Custom"
+  },
+
+  "errors": {
+    "generic": {
+      "title": "Something went wrong",
+      "message": "An unexpected error occurred. Please try refreshing the page."
+    },
+    "update_available": {
+      "title": "Update Available",
+      "message": "A new version of the application is available. Please reload to get the latest version."
+    },
+    "network": {
+      "title": "Connection Problem",
+      "message": "Unable to connect to the server. Please check your internet connection and try again."
+    },
+    "technical_details": "Technical Details",
+    "permission": {
+      "camera_denied": "Camera Access Denied",
+      "camera_enable_settings": "Please enable camera permissions in your browser settings and try again.",
+      "microphone_denied": "Microphone Access Denied",
+      "microphone_enable_settings": "Please enable microphone permissions in your browser settings and try again.",
+      "speaker_denied": "Speaker Access Denied",
+      "speaker_enable_settings": "Please enable speaker permissions in your browser settings and try again."
+    },
+    "device": {
+      "camera_not_found": "No Cameras Found",
+      "camera_not_connected": "No cameras were detected on your system. Please ensure your camera is properly connected.",
+      "microphone_not_found": "No Microphones Found",
+      "microphone_not_connected": "No microphones were detected on your system. Please ensure your microphone is properly connected.",
+      "speaker_not_found": "No Speakers Found",
+      "speaker_not_connected": "No speakers were detected on your system. Please ensure your speakers are properly connected.",
+      "camera_error": "Camera Error",
+      "microphone_error": "Microphone Error",
+      "speaker_error": "Speaker Error",
+      "device_not_found": "Device not found: {deviceType}"
+    },
+    "browser": {
+      "compatibility_notice": "⚠️ Browser Compatibility Notice",
+      "recommendation": "Recommendation: {browser}"
+    },
+    "audio_analysis": "Failed to setup audio analysis: {error}",
+    "audio_playback": "Failed to play sound: {error}",
+    "autoplay_policy": "Please click the speaker buttons to start audio playback. Browser requires user interaction for audio."
+  },
+
+  "device_testing": {
+    "permission": {
+      "camera_required": "Camera Permission Required",
+      "camera_grant_access": "Please allow camera access to test your webcam.",
+      "camera_grant_button": "Grant Camera Access",
+      "microphone_required": "Microphone Permission Required",
+      "microphone_grant_access": "Please allow microphone access to test your microphone.",
+      "microphone_grant_button": "Grant Microphone Access"
+    },
+    "detection": {
+      "detecting_cameras": "Detecting cameras...",
+      "detecting_microphones": "Detecting microphones...",
+      "detecting_speakers": "Detecting speakers...",
+      "please_wait_search": "Please wait while we search for available {deviceType}"
+    },
+    "webcam": {
+      "camera_preview": "Camera preview for testing",
+      "live_feed": "Live camera feed for testing purposes"
+    },
+    "microphone": {
+      "volume_meter": "Volume level indicator"
+    },
+    "speaker": {
+      "left_channel": "Left",
+      "right_channel": "Right",
+      "both_channels": "Both",
+      "test_sound": "Test sound playback"
+    }
+  },
+
+  "touchTest": {
+    "startPrompt": "Tap anywhere to start the touch test",
+    "tapToBegin": "Tap anywhere to begin",
+    "tapChallenge": "Tap the circle",
+    "dragChallenge": "Drag the circle to the target",
+    "completeTitle": "Touch Test Complete!",
+    "completeMessage": "Your touchscreen has been successfully tested",
+    "challengesProgress": "Challenges: {completed}/4 completed",
+    "allChallengesCompleted": "All challenges completed!"
+  },
+
+  "compatibility": {
+    "warnings": {
+      "limited_support": "⚠️ Limited Support",
+      "performance_limitations": "⚠️ Browser Performance Limitations",
+      "recommendations": "💡 Performance Recommendations"
+    }
+  },
+
+  "performance": {
+    "monitor": "Performance Monitor",
+    "web_vitals": "Core Web Vitals",
+    "browser_capabilities": "Browser Capabilities",
+    "score": "Score",
+    "web_vitals_score": "Web Vitals",
+    "browser_support_score": "Browser Support",
+    "vitals": {
+      "lcp": "Largest Contentful Paint",
+      "fid": "First Input Delay",
+      "cls": "Cumulative Layout Shift",
+      "fcp": "First Contentful Paint",
+      "ttfb": "Time to First Byte",
+      "memory": "Memory",
+      "memory_description": "JS Heap Size"
+    }
   }
 }

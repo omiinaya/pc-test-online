@@ -12,6 +12,7 @@ import TestActionButtons from '../components/TestActionButtons.vue';
 import TestHeader from '../components/TestHeader.vue';
 import { resetAllTestStates } from '../composables/useTestState.js';
 import { useCSSCompatibility } from '../composables/useCSSCompatibility';
+import { useI18n } from 'vue-i18n';
 // Dynamic imports for PDF libraries to reduce initial bundle size
 
 export default {
@@ -28,6 +29,10 @@ export default {
         VisualizerContainer,
         TestActionButtons,
         TestHeader,
+    },
+    setup() {
+        const { t } = useI18n();
+        return { t };
     },
     data() {
         // Create reactive timers object
@@ -141,34 +146,31 @@ export default {
         },
         currentTestTitle() {
             const titleMap = {
-                webcam: 'Camera Test',
-                microphone: 'Microphone Test',
-                speakers: 'Speaker Test',
-                keyboard: 'Keyboard Test',
-                mouse: 'Mouse Test',
-                touch: 'Touch Test',
-                battery: 'Battery Test',
-                testsCompleted: 'All Tests Complete',
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
+                testsCompleted: this.t('tests.completed.name'),
             };
-            return titleMap[this.activeTest] || 'Camera Test';
+            return titleMap[this.activeTest] || this.t('tests.webcam.name');
         },
         currentTestDescription() {
             const descriptionMap = {
-                webcam: 'Test your camera by checking if video feed appears correctly and all cameras work.',
-                microphone:
-                    'Test your microphone by speaking and checking if audio levels are detected.',
-                speakers: 'Test your speakers by playing sounds and verifying audio output.',
-                keyboard:
-                    'Test your keyboard by pressing keys and verifying they register correctly.',
-                mouse: 'Test your mouse by clicking buttons and scrolling to verify functionality.',
-                touch: 'Test your touchscreen by completing interactive touch challenges.',
-                battery:
-                    'Test your battery and charging functionality by following the instructions.',
-                testsCompleted: 'Review your test results and download the complete report.',
+                webcam: this.t('tests.webcam.description'),
+                microphone: this.t('tests.microphone.description'),
+                speakers: this.t('tests.speakers.description'),
+                keyboard: this.t('tests.keyboard.description'),
+                mouse: this.t('tests.mouse.description'),
+                touch: this.t('tests.touch.description'),
+                battery: this.t('tests.battery.description'),
+                testsCompleted: this.t('tests.completed.description'),
             };
             return (
                 descriptionMap[this.activeTest] ||
-                'Test your camera by checking if video feed appears correctly and all cameras work.'
+                this.t('tests.webcam.description')
             );
         },
         // Dynamic component mapping for keep-alive functionality
@@ -718,19 +720,19 @@ export default {
                     let statusIcon = '';
 
                     if (this.results[test] === true) {
-                        status = 'Passed';
+                        status = this.t('status.passed');
                         statusClass = 'status-passed';
                         statusIcon = '✓';
                     } else if (this.results[test] === false) {
-                        status = 'Failed';
+                        status = this.t('status.failed');
                         statusClass = 'status-failed';
                         statusIcon = '✗';
                     } else if (this.skippedTests.includes(test)) {
-                        status = 'Skipped';
+                        status = this.t('status.skipped');
                         statusClass = 'status-skipped';
                         statusIcon = '↷';
                     } else {
-                        status = 'Pending';
+                        status = this.t('status.pending');
                         statusClass = 'status-pending';
                         statusIcon = '⏳';
                     }
@@ -768,29 +770,29 @@ export default {
               <span class="value">${completedCount}/${Object.keys(this.results).length}</span>
             </div>
             <div class="summary-item passed">
-              <span class="label">Passed:</span>
+              <span class="label">${this.t('export.summaryLabels.passed')}</span>
               <span class="value">${passedCount}</span>
             </div>
-            ${
-                failedCount > 0
-                    ? `
-              <div class="summary-item failed">
-                <span class="label">Failed:</span>
-                <span class="value">${failedCount}</span>
-              </div>
-            `
-                    : ''
-            }
-            ${
-                skippedCount > 0
-                    ? `
-              <div class="summary-item skipped">
-                <span class="label">Skipped:</span>
-                <span class="value">${skippedCount}</span>
-              </div>
-            `
-                    : ''
-            }
+          ${
+              failedCount > 0
+                  ? `
+            <div class="summary-item failed">
+              <span class="label">${this.t('export.summaryLabels.failed')}</span>
+              <span class="value">${passedCount}</span>
+            </div>
+          `
+                  : ''
+          }
+          ${
+              skippedCount > 0
+                  ? `
+            <div class="summary-item skipped">
+              <span class="label">${this.t('export.summaryLabels.skipped')}</span>
+              <span class="value">${skippedCount}</span>
+            </div>
+          `
+                  : ''
+          }
           </div>
           
           <div class="table-container">
@@ -1059,15 +1061,20 @@ export default {
             // Emit event for AppFooter
             this.$emit('export-csv');
             
-            // Prepare CSV header
-            const header = ['Test Name', 'Status', 'Run Count', 'Duration (s)'];
+            // Prepare CSV header with translated labels
+            const header = [
+                this.t('results.testDetails'),
+                this.t('status.status'),
+                this.t('results.runCount'),
+                this.t('results.duration') + ' (s)'
+            ];
             const rows = [header];
             const tests = Object.keys(this.results);
             for (const test of tests) {
                 let status = '';
-                if (this.results[test] === true) status = 'Passed';
-                else if (this.results[test] === false) status = 'Failed';
-                else status = 'Pending';
+                if (this.results[test] === true) status = this.t('status.passed');
+                else if (this.results[test] === false) status = this.t('status.failed');
+                else status = this.t('status.pending');
                 const runCount = this.runCounts[test] || 0;
                 const duration =
                     this.timings[test] && typeof this.timings[test].duration === 'number'
@@ -1316,7 +1323,7 @@ export default {
         <aside class="sidebar right-sidebar">
             <div class="sidebar-header">
                 <div class="brand-icon">📋</div>
-                <h2>Summary</h2>
+                <h2>{{ $t('sidebar.summary') }}</h2>
             </div>
             <nav class="test-navigation">
                 <ul class="test-navigation__list">
@@ -1325,7 +1332,7 @@ export default {
                     <div v-if="pendingTests.length > 0" class="test-section test-section--pending">
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">Pending Tests</span>
+                            <span class="test-section__title">{{ $t('sidebar.pendingTests') }}</span>
                         </div>
                         <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
@@ -1340,7 +1347,7 @@ export default {
                     <div v-if="failedTests.length > 0" class="test-section test-section--failed">
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">Failed Tests</span>
+                            <span class="test-section__title">{{ $t('sidebar.failedTests') }}</span>
                         </div>
                         <li v-for="test in failedTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
@@ -1355,7 +1362,7 @@ export default {
                     <div v-if="skippedTestsList.length > 0" class="test-section test-section--skipped">
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">Skipped Tests</span>
+                            <span class="test-section__title">{{ $t('sidebar.skippedTests') }}</span>
                         </div>
                         <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
@@ -1370,7 +1377,7 @@ export default {
                     <div v-if="passedTests.length > 0" class="test-section test-section--passed">
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">Passed Tests</span>
+                            <span class="test-section__title">{{ $t('sidebar.passedTests') }}</span>
                         </div>
                         <li v-for="test in passedTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>

@@ -1,11 +1,13 @@
 <script>
 import { computed } from 'vue';
 import { usePerformance } from '../composables/usePerformance';
+import { useI18n } from 'vue-i18n';
 
 export default {
     name: 'PerformanceMonitor',
     setup() {
         const performanceMonitor = usePerformance();
+        const { t } = useI18n();
 
         const webVitalsScore = computed(() => {
             const vitals = [
@@ -82,7 +84,7 @@ export default {
         <div class="performance-header">
             <h3>
                 <span class="performance-icon">⚡</span>
-                Performance Monitor
+                {{ t('performance.monitor') }}
                 <span class="performance-grade" :class="`grade-${performanceGrade.toLowerCase()}`">
                     {{ performanceGrade }}
                 </span>
@@ -90,7 +92,7 @@ export default {
             <div class="browser-info">
                 {{ capabilities.name }} {{ capabilities.version }}
                 <span v-if="!browserSupportsFullMonitoring" class="limited-support"
-                    >⚠️ Limited Support</span
+                    >{{ t('compatibility.warnings.limited_support') }}</span
                 >
             </div>
         </div>
@@ -99,16 +101,16 @@ export default {
         <div class="performance-score">
             <div class="score-circle" :class="`grade-${performanceGrade.toLowerCase()}`">
                 <span class="score-value">{{ metrics.browserScore }}</span>
-                <span class="score-label">Score</span>
+                <span class="score-label">{{ t('performance.score') }}</span>
             </div>
             <div class="score-details">
                 <div class="score-breakdown">
                     <div class="breakdown-item">
-                        <span class="breakdown-label">Web Vitals</span>
+                        <span class="breakdown-label">{{ t('performance.web_vitals_score') }}</span>
                         <span class="breakdown-value">{{ webVitalsScore }}%</span>
                     </div>
                     <div class="breakdown-item">
-                        <span class="breakdown-label">Browser Support</span>
+                        <span class="breakdown-label">{{ t('performance.browser_support_score') }}</span>
                         <span class="breakdown-value">{{ browserCapabilityScore }}%</span>
                     </div>
                 </div>
@@ -117,44 +119,44 @@ export default {
 
         <!-- Core Web Vitals -->
         <div class="web-vitals" v-if="capabilities.supportsWebVitals">
-            <h4>Core Web Vitals</h4>
+            <h4>{{ t('performance.web_vitals') }}</h4>
             <div class="vitals-grid">
                 <div class="vital-item" :class="getVitalStatus('LCP')">
                     <div class="vital-label">LCP</div>
                     <div class="vital-value">{{ formatVital(metrics.LCP, 'ms') }}</div>
-                    <div class="vital-description">Largest Contentful Paint</div>
+                    <div class="vital-description">{{ t('performance.vitals.lcp') }}</div>
                 </div>
                 <div class="vital-item" :class="getVitalStatus('FID')">
                     <div class="vital-label">FID</div>
                     <div class="vital-value">{{ formatVital(metrics.FID, 'ms') }}</div>
-                    <div class="vital-description">First Input Delay</div>
+                    <div class="vital-description">{{ t('performance.vitals.fid') }}</div>
                 </div>
                 <div class="vital-item" :class="getVitalStatus('CLS')">
                     <div class="vital-label">CLS</div>
                     <div class="vital-value">{{ formatVital(metrics.CLS, '') }}</div>
-                    <div class="vital-description">Cumulative Layout Shift</div>
+                    <div class="vital-description">{{ t('performance.vitals.cls') }}</div>
                 </div>
                 <div class="vital-item" :class="getVitalStatus('FCP')">
                     <div class="vital-label">FCP</div>
                     <div class="vital-value">{{ formatVital(metrics.FCP, 'ms') }}</div>
-                    <div class="vital-description">First Contentful Paint</div>
+                    <div class="vital-description">{{ t('performance.vitals.fcp') }}</div>
                 </div>
                 <div class="vital-item" :class="getVitalStatus('TTFB')">
                     <div class="vital-label">TTFB</div>
                     <div class="vital-value">{{ formatVital(metrics.TTFB, 'ms') }}</div>
-                    <div class="vital-description">Time to First Byte</div>
+                    <div class="vital-description">{{ t('performance.vitals.ttfb') }}</div>
                 </div>
                 <div class="vital-item" v-if="metrics.memoryUsage">
-                    <div class="vital-label">Memory</div>
+                    <div class="vital-label">{{ t('performance.vitals.memory') }}</div>
                     <div class="vital-value">{{ metrics.memoryUsage }}MB</div>
-                    <div class="vital-description">JS Heap Size</div>
+                    <div class="vital-description">{{ t('performance.vitals.memory_description') }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Browser Compatibility Issues -->
         <div v-if="hasPerformanceIssues" class="compatibility-issues">
-            <h4>⚠️ Browser Performance Limitations</h4>
+            <h4>{{ t('compatibility.warnings.performance_limitations') }}</h4>
             <ul class="issues-list">
                 <li v-for="issue in metrics.compatibilityIssues" :key="issue" class="issue-item">
                     {{ issue }}
@@ -164,7 +166,7 @@ export default {
 
         <!-- Recommendations -->
         <div v-if="metrics.recommendations.length > 0" class="recommendations">
-            <h4>💡 Performance Recommendations</h4>
+            <h4>{{ t('compatibility.warnings.recommendations') }}</h4>
             <ul class="recommendations-list">
                 <li v-for="rec in metrics.recommendations" :key="rec" class="recommendation-item">
                     {{ rec }}
@@ -174,7 +176,7 @@ export default {
 
         <!-- Browser Capabilities -->
         <details class="capabilities-details">
-            <summary>Browser Capabilities</summary>
+            <summary>{{ t('performance.browser_capabilities') }}</summary>
             <div class="capabilities-grid">
                 <div class="capability-item" :class="{ supported: capabilities.supportsWebVitals }">
                     <span class="capability-icon">{{

@@ -494,19 +494,19 @@ export default {
                     let statusIcon = '';
 
                     if (this.results[test] === true) {
-                        status = 'Passed';
+                        status = this.t('status.passed');
                         statusClass = 'status-passed';
                         statusIcon = '✓';
                     } else if (this.results[test] === false) {
-                        status = 'Failed';
+                        status = this.t('status.failed');
                         statusClass = 'status-failed';
                         statusIcon = '✗';
                     } else if (this.skippedTests.includes(test)) {
-                        status = 'Skipped';
+                        status = this.t('status.skipped');
                         statusClass = 'status-skipped';
                         statusIcon = '↷';
                     } else {
-                        status = 'Pending';
+                        status = this.t('status.pending');
                         statusClass = 'status-pending';
                         statusIcon = '⏳';
                     }
@@ -814,9 +814,9 @@ export default {
             const tests = Object.keys(this.results);
             for (const test of tests) {
                 let status = '';
-                if (this.results[test] === true) status = 'Passed';
-                else if (this.results[test] === false) status = 'Failed';
-                else status = 'Pending';
+                if (this.results[test] === true) status = this.t('status.passed');
+                else if (this.results[test] === false) status = this.t('status.failed');
+                else status = this.t('status.pending');
                 const runCount = this.runCounts[test] || 0;
                 const duration =
                     this.timings[test] && typeof this.timings[test].duration === 'number'
@@ -1072,7 +1072,7 @@ export default {
                         <div class="brand-icon">📋</div>
                         <h2>{{ t('sidebar.summary') }}</h2>
                         <button @click="showSummaryModal = false" class="close-modal-btn">
-                            &times;
+                            {{ t('ui.closeSymbol') }}
                         </button>
                     </div>
                     <div class="mobile-summary-body">
