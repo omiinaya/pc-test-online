@@ -467,6 +467,7 @@ export default {
 
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
+            this.emitProgressUpdate();
         },
         onTestFailed(testType) {
             if (!this.timings[testType]) {
@@ -497,6 +498,7 @@ export default {
 
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
+            this.emitProgressUpdate();
         },
         onTestSkipped(payload) {
             // Support both old (string) and new (object) signatures for robustness
@@ -587,7 +589,7 @@ export default {
         resetTests() {
             // Stop all running timers
             Object.keys(this.realTimeTimers).forEach(test => {
-                this.stopTimer(test);
+            this.stopTimer(test);
             });
             
             this.results = {
@@ -620,6 +622,7 @@ export default {
             
             // Emit reset event for AppFooter
             this.$emit('reset-tests');
+            this.emitProgressUpdate();
         },
 
         // Timer management methods
@@ -683,6 +686,12 @@ export default {
             if (this.results[testType] === true) return 'completed-success';
             if (this.results[testType] === false) return 'completed-fail';
             return 'pending';
+        },
+        emitProgressUpdate() {
+            this.$emit('update-footer', {
+                completedTests: this.completedTestsCount,
+                totalTests: this.totalTestsCount
+            });
         },
         exportResults() {
             const report = {
@@ -1192,6 +1201,8 @@ export default {
 
         // Set up global event listeners for AppFooter actions
         this.setupGlobalEventListeners();
+        // Emit initial progress
+        this.emitProgressUpdate();
     },
     beforeUnmount() {
         // Clean up any pending debounce timers to prevent memory leaks

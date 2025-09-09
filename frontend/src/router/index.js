@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router';
 import TestsPage from '../views/TestsPage.vue';
-import WebVitalsPage from '../views/WebVitalsPage.vue';
 import AboutPage from '../views/AboutPage.vue';
 
 const routes = [
@@ -8,11 +7,6 @@ const routes = [
         path: '/',
         name: 'Home',
         component: TestsPage,
-    },
-    {
-        path: '/web-vitals',
-        name: 'WebVitals',
-        component: WebVitalsPage,
     },
     {
         path: '/about',

@@ -15,6 +15,8 @@ export default {
             showFallback: false,
             footerState: {
                 showExportMenu: false,
+                completedTests: 0,
+                totalTests: 7,
             },
         };
     },
@@ -40,6 +42,12 @@ export default {
             if (payload && typeof payload === 'object') {
                 if ('showExportMenu' in payload) {
                     this.footerState.showExportMenu = payload.showExportMenu;
+                }
+                if ('completedTests' in payload) {
+                    this.footerState.completedTests = payload.completedTests;
+                }
+                if ('totalTests' in payload) {
+                    this.footerState.totalTests = payload.totalTests;
                 }
             }
         },
@@ -82,6 +90,8 @@ export default {
         <TestsPage v-if="showFallback" @update-footer="handleFooterUpdate" ref="testsPageComponent" />
         <AppFooter
             :show-export-menu="footerState.showExportMenu"
+            :completed-tests="footerState.completedTests"
+            :total-tests="footerState.totalTests"
             @reset-tests="handleResetTests"
             @toggle-export-menu="handleToggleExportMenu"
             @export-pdf="handleExportPdf"

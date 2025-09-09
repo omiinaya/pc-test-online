@@ -5,6 +5,14 @@ export default {
         showExportMenu: {
             type: Boolean,
             default: false
+        },
+        completedTests: {
+            type: Number,
+            default: 0
+        },
+        totalTests: {
+            type: Number,
+            default: 7
         }
     },
     methods: {
@@ -35,82 +43,38 @@ export default {
     <footer class="app-footer">
         <div class="footer-content">
             <div class="footer-grid">
-                <!-- Left section (can be used for future content) -->
-                <div class="footer-grid-column footer-grid-left"></div>
-                
-                <!-- Center section (existing footer links) -->
-                <div class="footer-grid-column footer-grid-center">
-                    <div class="footer-links">
-                        <a
-                            href="https://buymeacoffee.com/omiinaya"
-                            class="footer-link coffee"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                <!-- Left section - Buy Me Coffee link -->
+                <div class="footer-grid-column footer-grid-left">
+                    <a
+                        href="https://buymeacoffee.com/omiinaya"
+                        class="footer-link coffee"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-                                <line x1="6" y1="1" x2="6" y2="4" />
-                                <line x1="10" y1="1" x2="10" y2="4" />
-                                <line x1="14" y1="1" x2="14" y2="4" />
-                            </svg>
-                            {{ $t('footer.buyMeCoffee') }}
-                        </a>
-
-                        <a href="#" class="footer-link built-with" @click.prevent="handleBuiltWithClick">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-                                <line x1="16" y1="8" x2="2" y2="22" />
-                                <line x1="17.5" y1="15" x2="9" y2="15" />
-                            </svg>
-                            {{ $t('footer.builtWith') }}
-                        </a>
-
-                        <router-link to="/web-vitals" class="footer-link vitals">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M3 3v5h5" />
-                                <path d="M6 17l4-4 4 4" />
-                                <path d="M18 21v-5h-5" />
-                                <path d="M3 16.5L12 12l5.5 4" />
-                            </svg>
-                            {{ $t('footer.webVitals') }}
-                        </router-link>
-                    </div>
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                            <line x1="6" y1="1" x2="6" y2="4" />
+                            <line x1="10" y1="1" x2="10" y2="4" />
+                            <line x1="14" y1="1" x2="14" y2="4" />
+                        </svg>
+                        {{ $t('footer.buyMeCoffee') }}
+                    </a>
                 </div>
                 
-                <!-- Right section for action buttons -->
-                <div class="footer-grid-column footer-grid-right">
-                    <div class="footer-action-buttons">
+                <!-- Center section - Reset button, Progress indicator, and Export button -->
+                <div class="footer-grid-column footer-grid-center">
+                    <div class="footer-links">
                         <button
                             @click="handleReset"
                             class="button button--secondary button--small"
@@ -129,6 +93,11 @@ export default {
                             </svg>
                             <span>{{ $t('buttons.reset') }}</span>
                         </button>
+              
+                        <span class="footer-progress">
+                            {{ completedTests }}/{{ totalTests }}
+                        </span>
+              
                         <div class="export-menu-footer">
                             <button
                                 @click="handleToggleExport"
@@ -212,6 +181,28 @@ export default {
                         </div>
                     </div>
                 </div>
+                
+                <!-- Right section - Built with Robots text -->
+                <div class="footer-grid-column footer-grid-right">
+                    <a href="#" class="footer-link built-with" @click.prevent="handleBuiltWithClick">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+                            <line x1="16" y1="8" x2="2" y2="22" />
+                            <line x1="17.5" y1="15" x2="9" y2="15" />
+                        </svg>
+                        {{ $t('footer.builtWith') }}
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
@@ -268,7 +259,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
     flex-wrap: wrap;
 }
 
@@ -309,9 +300,27 @@ export default {
     background: rgba(245, 158, 11, 0.1);
 }
 
-.footer-link.vitals:hover {
-    color: var(--primary-color);
-    background: rgba(var(--primary-color-rgb), 0.1);
+
+/* Progress tracker styling */
+.footer-progress {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-medium);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    transition: all var(--transition-default);
+}
+
+.footer-progress:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 /* Footer Action Buttons */
@@ -394,7 +403,7 @@ export default {
     }
 
     .footer-links {
-        gap: 1rem;
+        gap: 0.75rem;
         font-size: var(--font-size-xs);
     }
 
@@ -419,6 +428,10 @@ export default {
     .footer-action-buttons {
         position: relative;
         right: 0;
+    }
+    
+    .footer-grid-right {
+        justify-content: flex-end;
     }
 }
 </style>
