@@ -54,11 +54,10 @@ export default {
           :class="{ 'language-switcher__option--active': code === currentLocale }"
           @click="changeLanguage(code)"
         >
-          <span class="language-switcher__option-flag">
-            {{ code === 'en' ? '🇺🇸' : code === 'es' ? '🇪🇸' : code === 'fr' ? '🇫🇷' : code === 'de' ? '🇩🇪' : code === 'zh' ? '🇨🇳' : code === 'ja' ? '🇯🇵' : code === 'ko' ? '🇰🇷' : code === 'ru' ? '🇷🇺' : code === 'ar' ? '🇸🇦' : '🌐' }}
+          <span class="language-switcher__option-code">
+            {{ code.toUpperCase() }}
           </span>
           <span class="language-switcher__option-name">{{ name }}</span>
-          <span class="language-switcher__option-code">{{ code.toUpperCase() }}</span>
         </div>
       </div>
     </transition>
@@ -142,9 +141,13 @@ export default {
   color: var(--primary-color);
 }
 
-.language-switcher__option-flag {
-  font-size: 1.2rem;
+.language-switcher__option-code {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
   flex-shrink: 0;
+  min-width: 28px;
+  text-align: center;
 }
 
 .language-switcher__option-name {
@@ -154,11 +157,6 @@ export default {
   color: var(--text-primary);
 }
 
-.language-switcher__option-code {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-semibold);
-}
 
 /* Animations */
 .fade-slide-enter-active,
