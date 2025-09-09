@@ -321,6 +321,8 @@ export default {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border-color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
 }
 
 .language-switcher-wrapper :deep(.language-switcher__flag) {
