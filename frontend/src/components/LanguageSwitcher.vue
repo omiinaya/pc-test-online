@@ -133,7 +133,12 @@ export default {
 }
 
 .language-switcher__option--active {
-  background: rgba(var(--primary-color-rgb), 0.1);
+  background: rgba(var(--primary-color-rgb), 0.15);
+  color: var(--primary-color);
+}
+
+.language-switcher__option--active .language-switcher__option-name,
+.language-switcher__option--active .language-switcher__option-code {
   color: var(--primary-color);
 }
 
@@ -146,11 +151,12 @@ export default {
   flex: 1;
   font-weight: var(--font-weight-medium);
   text-align: left;
+  color: var(--text-primary);
 }
 
 .language-switcher__option-code {
   font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-weight: var(--font-weight-semibold);
 }
 
