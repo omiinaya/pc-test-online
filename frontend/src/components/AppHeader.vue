@@ -303,14 +303,18 @@ export default {
     opacity: 1;
 }
 
-/* Language Switcher styling to match header design */
+/* Language Switcher styling to match header design - now round like GitHub button */
 .language-switcher-wrapper :deep(.language-switcher__trigger) {
     background: transparent;
     border: 2px solid var(--text-tertiary);
     color: var(--text-tertiary);
-    min-width: 60px;
+    width: 32px;
     height: 32px;
-    padding: 0.25rem 0.5rem;
+    padding: 0;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .language-switcher-wrapper :deep(.language-switcher__trigger:hover) {
@@ -319,18 +323,13 @@ export default {
     border-color: var(--text-primary);
 }
 
-.language-switcher-wrapper :deep(.language-switcher__current) {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-}
-
 .language-switcher-wrapper :deep(.language-switcher__flag) {
-    font-size: 1rem;
-}
-
-.language-switcher-wrapper :deep(.language-switcher__chevron) {
-    width: 10px;
-    height: 10px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transform: translateY(0.5px); /* Fine-tune emoji vertical alignment */
 }
 
 /* Mobile responsiveness */
@@ -379,13 +378,15 @@ export default {
         justify-content: center;
     }
 
-    .language-switcher-wrapper :deep(.language-switcher__current) {
-        display: none;
-    }
-
     .language-switcher-wrapper :deep(.language-switcher__trigger) {
-        min-width: 40px;
-        padding: 0.25rem;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+    }
+    
+    .language-switcher-wrapper :deep(.language-switcher__flag) {
+        font-size: 1.1rem;
+        transform: translateY(0.25px); /* Slightly less adjustment on mobile */
     }
 }
 

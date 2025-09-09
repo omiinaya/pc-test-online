@@ -43,21 +43,6 @@ export default {
       :title="`Current language: ${currentLanguageName}`"
     >
       <span class="language-switcher__flag">🌐</span>
-      <span class="language-switcher__current">{{ currentLocale.toUpperCase() }}</span>
-      <svg
-        class="language-switcher__chevron"
-        :class="{ 'language-switcher__chevron--open': showDropdown }"
-        width="12"
-        height="12"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
     </button>
 
     <transition name="fade-slide">
@@ -89,17 +74,19 @@ export default {
 .language-switcher__trigger {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  justify-content: center;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--border-radius-medium);
+  border-radius: 50%;
   color: var(--text-tertiary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-default);
-  min-width: 60px;
+  width: 40px;
+  height: 40px;
+  min-width: auto;
 }
 
 .language-switcher__trigger:hover {
@@ -109,21 +96,9 @@ export default {
 }
 
 .language-switcher__flag {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
-.language-switcher__current {
-  font-weight: var(--font-weight-semibold);
-}
-
-.language-switcher__chevron {
-  transition: transform var(--transition-default);
-  margin-left: 0.25rem;
-}
-
-.language-switcher__chevron--open {
-  transform: rotate(180deg);
-}
 
 .language-switcher__dropdown {
   position: absolute;
@@ -194,12 +169,14 @@ export default {
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .language-switcher__trigger {
-    padding: 0.375rem 0.5rem;
-    min-width: 50px;
+    padding: 0.375rem;
+    width: 36px;
+    height: 36px;
+    min-width: auto;
   }
   
-  .language-switcher__current {
-    display: none;
+  .language-switcher__flag {
+    font-size: 1.1rem;
   }
   
   .language-switcher__dropdown {
