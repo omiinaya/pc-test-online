@@ -399,8 +399,8 @@
       "volume_meter": "Indicador de nivel de volumen"
     },
     "speaker": {
-      "left_channel": "Izquierdo",
-      "right_channel": "Derecho",
+      "left_channel": "Izquierda",
+      "right_channel": "Derecha",
       "both_channels": "Ambos",
       "test_sound": "Prueba de reproducción de sonido"
     }

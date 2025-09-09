@@ -330,6 +330,8 @@ export default {
     justify-content: center;
     line-height: 1;
     transform: translateY(0.5px); /* Fine-tune emoji vertical alignment */
+    color: var(--text-primary); /* Make globe icon white */
+    filter: brightness(0) invert(1); /* Ensure it's white regardless of emoji color */
 }
 
 /* Mobile responsiveness */
