@@ -14,42 +14,42 @@
   
   "tests": {
     "webcam": {
-      "name": "Prueba de Cámara",
+      "name": "Cámara",
       "shortName": "Cámara",
       "description": "Prueba tu cámara verificando que el video aparezca correctamente y todas las cámaras funcionen."
     },
     "microphone": {
-      "name": "Prueba de Micrófono",
+      "name": "Micrófono",
       "shortName": "Micrófono",
       "description": "Prueba tu micrófono hablando y verificando que se detecten los niveles de audio."
     },
     "speakers": {
-      "name": "Prueba de Altavoces",
+      "name": "Altavoces",
       "shortName": "Altavoces",
       "description": "Prueba tus altavoces reproduciendo sonidos y verificando la salida de audio."
     },
     "keyboard": {
-      "name": "Prueba de Teclado",
+      "name": "Teclado",
       "shortName": "Teclado",
       "description": "Prueba tu teclado presionando teclas y verificando que se registren correctamente."
     },
     "mouse": {
-      "name": "Pruceba de Ratón",
+      "name": "Ratón",
       "shortName": "Ratón",
       "description": "Prueba tu ratón haciendo clic en botones y desplazándote para verificar la funcionalidad."
     },
     "touch": {
-      "name": "Prueba Táctil",
+      "name": "Táctil",
       "shortName": "Táctil",
       "description": "Prueba tu pantalla táctil completando desafíos interactivos de toque."
     },
     "battery": {
-      "name": "Prueba de Batería",
+      "name": "Batería",
       "shortName": "Batería",
       "description": "Prueba tu batería y funcionalidad de carga sigiendo las instrucciones."
     },
     "completed": {
-      "name": "Todas las Pruebas Completadas",
+      "name": "Pruebas Completadas",
       "description": "Revisa tus resultados de prueba y descarga el informe completo."
     }
   },
