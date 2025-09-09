@@ -5,9 +5,10 @@
   "main": "electron/main.js",
   "author": "OmarM",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "node scripts/kill-ports.js 3000 5173 && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
+    "kill-ports": "node scripts/kill-ports.js 3000 5173",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
     "build:frontend:electron": "cd frontend && cross-env ELECTRON=true npm run build",

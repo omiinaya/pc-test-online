@@ -182,26 +182,81 @@ export default {
                     </div>
                 </div>
                 
-                <!-- Right section - Built with Robots text -->
+                <!-- Right section - Social media links -->
                 <div class="footer-grid-column footer-grid-right">
-                    <a href="#" class="footer-link built-with" @click.prevent="handleBuiltWithClick">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                    <span class="follow-text">Follow me on: </span>
+                    <div class="social-links">
+                        <!-- X (Twitter) -->
+                        <a
+                            href="https://x.com/omiinaya"
+                            class="footer-link social-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Follow on X (Twitter)"
                         >
-                            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-                            <line x1="16" y1="8" x2="2" y2="22" />
-                            <line x1="17.5" y1="15" x2="9" y2="15" />
-                        </svg>
-                        {{ $t('footer.builtWith') }}
-                    </a>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- GitHub -->
+                        <a
+                            href="https://github.com/omiinaya"
+                            class="footer-link social-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View GitHub profile"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                            </svg>
+                        </a>
+                        
+                        <!-- LinkedIn -->
+                        <a
+                            href="https://www.linkedin.com/in/omiinaya/"
+                            class="footer-link social-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Connect on LinkedIn"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                                <rect x="2" y="9" width="4" height="12"/>
+                                <circle cx="4" cy="4" r="2"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -289,6 +344,32 @@ export default {
     stroke: currentColor;
 }
 
+/* Follow text styling */
+.follow-text {
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    margin-right: 0.5rem;
+}
+
+/* Social links styling */
+.social-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.footer-link.social-link {
+    padding: 0.5rem;
+    border-radius: var(--border-radius-medium);
+    transition: all var(--transition-default);
+}
+
+.footer-link.social-link:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    transform: translateY(-1px);
+}
+
 /* Specific link styling */
 .footer-link.built-with:hover {
     color: #e11d48;
@@ -298,6 +379,22 @@ export default {
 .footer-link.coffee:hover {
     color: #f59e0b;
     background: rgba(245, 158, 11, 0.1);
+}
+
+/* Social link hover colors */
+.footer-link.social-link:nth-child(1):hover {
+    color: #000000;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.footer-link.social-link:nth-child(2):hover {
+    color: #6e5494;
+    background: rgba(110, 84, 148, 0.1);
+}
+
+.footer-link.social-link:nth-child(3):hover {
+    color: #0077b5;
+    background: rgba(0, 119, 181, 0.1);
 }
 
 

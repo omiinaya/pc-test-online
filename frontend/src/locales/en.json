@@ -58,8 +58,8 @@
     "pass": "Pass",
     "fail": "Fail",
     "skip": "Skip",
-    "reset": "Reset Tests",
-    "export": "Export Results",
+    "reset": "Reset",
+    "export": "Export",
     "exportPdf": "Export as PDF",
     "exportJson": "Export as JSON",
     "exportCsv": "Export as CSV",
@@ -281,7 +281,7 @@
   },
   
   "export": {
-    "title": "Export Results",
+    "title": "Export",
     "format": "Export Format",
     "filename": "File Name",
     "includeTimestamps": "Include Timestamps",
@@ -456,8 +456,8 @@
     "buyMeCoffee": "Buy me a coffee",
     "builtWith": "Built with 🤖",
     "webVitals": "Web Vitals",
-    "resetTests": "Reset Tests",
-    "exportResults": "Export Results"
+    "resetTests": "Reset",
+    "exportResults": "Export"
   },
   
   "battery": {
