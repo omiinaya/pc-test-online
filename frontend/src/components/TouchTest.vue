@@ -832,6 +832,9 @@ export default {
             touchCompatibilityRecommendations: touchCompatibility.getCompatibilityRecommendations,
             hasTouchCompatibilityIssues: touchCompatibility.hasCompatibilityIssues,
 
+            // Translation function
+            t,
+
             // Methods
             handlePointerDown,
             handlePointerMove,

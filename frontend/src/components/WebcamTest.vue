@@ -4,6 +4,7 @@ import DeviceSelector from './DeviceSelector.vue';
 import { useEnhancedDeviceTest } from '../composables/useEnhancedDeviceTest.js';
 import { CameraIcon, CheckIcon } from '../composables/useIcons.js';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export default {
     name: 'WebcamTest',
@@ -16,11 +17,12 @@ export default {
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
 
     setup(props, { emit }) {
+        const { t } = useI18n();
         // Use the enhanced device test composable for all core functionality
         const deviceTest = useEnhancedDeviceTest(
             {
                 deviceKind: 'videoinput',
-                deviceType: 'Camera',
+                deviceType: t('tests.webcam.name'),
                 permissionType: 'camera',
                 testName: 'webcam',
             },

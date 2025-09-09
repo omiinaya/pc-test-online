@@ -61,13 +61,13 @@ export default {
                 battery: '🔋',
             },
             testNameMap: {
-                webcam: 'Camera',
-                microphone: 'Mic',
-                speakers: 'Speaker',
-                keyboard: 'Keyboard',
-                mouse: 'Mouse',
-                touch: 'Touch',
-                battery: 'Battery',
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
             },
             timings: {
                 webcam: { start: null, end: null, duration: null },
@@ -217,6 +217,18 @@ export default {
             return Object.values(this.timings)
                 .map(t => (typeof t.duration === 'number' ? t.duration : 0))
                 .reduce((a, b) => a + b, 0);
+        },
+        // Internationalized test names for mobile navigation and export functions
+        i18nTestNameMap() {
+            return {
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
+            };
         },
         // Container styles for smooth morphing based on active test
         currentContainerStyles() {
@@ -520,7 +532,7 @@ export default {
                     return `
 
           <tr>
-            <td class="test-name">${this.testNameMap[test]}</td>
+            <td class="test-name">${this.i18nTestNameMap[test]}</td>
             <td class="status ${statusClass}">
               <span class="status-icon">${statusIcon}</span>
               ${status}
@@ -827,7 +839,7 @@ export default {
                     this.timings[test] && typeof this.timings[test].duration === 'number'
                         ? this.timings[test].duration.toFixed(2)
                         : '';
-                rows.push([this.testNameMap[test], status, runCount, duration]);
+                rows.push([this.i18nTestNameMap[test], status, runCount, duration]);
             }
             // Convert to CSV string
             const csv = rows
@@ -1049,7 +1061,7 @@ export default {
                     class="mobile-nav-btn"
                 >
                     <span class="test-icon">{{ testIconMap[test] }}</span>
-                    <span class="mobile-nav-label">{{ testNameMap[test] }}</span>
+                    <span class="mobile-nav-label">{{ i18nTestNameMap[test] }}</span>
                 </button>
                 <button
                     :class="{
@@ -1106,7 +1118,7 @@ export default {
                                             class="test-summary__item"
                                         >
                                             <span class="test-summary__name">{{
-                                                testNameMap[test]
+                                                i18nTestNameMap[test]
                                             }}</span>
                                         </li>
                                     </ul>
@@ -1125,7 +1137,7 @@ export default {
                                             class="test-summary__item"
                                         >
                                             <span class="test-summary__name">{{
-                                                testNameMap[test]
+                                                i18nTestNameMap[test]
                                             }}</span>
                                             <div class="test-summary__meta">
                                                 <span
@@ -1162,7 +1174,7 @@ export default {
                                             class="test-summary__item"
                                         >
                                             <span class="test-summary__name">{{
-                                                testNameMap[test]
+                                                i18nTestNameMap[test]
                                             }}</span>
                                             <div class="test-summary__meta">
                                                 <span class="test-summary__count"
@@ -1201,7 +1213,7 @@ export default {
                                             class="test-summary__item"
                                         >
                                             <span class="test-summary__name">{{
-                                                testNameMap[test]
+                                                i18nTestNameMap[test]
                                             }}</span>
                                             <div class="test-summary__meta">
                                                 <span

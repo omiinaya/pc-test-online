@@ -68,13 +68,13 @@ export default {
                 battery: '🔋',
             },
             testNameMap: {
-                webcam: 'Camera',
-                microphone: 'Mic',
-                speakers: 'Speaker',
-                keyboard: 'Keyboard',
-                mouse: 'Mouse',
-                touch: 'Touch',
-                battery: 'Battery',
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
             },
             timings: {
                 webcam: { start: null, end: null, duration: null },
@@ -251,6 +251,18 @@ export default {
                 .map(t => (typeof t.duration === 'number' ? t.duration : 0))
                 .reduce((a, b) => a + b, 0);
         },
+        // Internationalized test names for sidebar and export functions
+        i18nTestNameMap() {
+            return {
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
+            };
+        },
         // Format individual test timing for display
         formattedTimings() {
             const formatted = {};
@@ -296,17 +308,17 @@ export default {
     methods: {
         // Safe access to test name mapping with comprehensive error handling
         getTestName(test) {
-            // Validate that testNameMap exists and is an object
-            if (!this.testNameMap || typeof this.testNameMap !== 'object') {
-                console.warn('testNameMap is not properly defined, using fallback mapping');
+            // Validate that i18nTestNameMap exists and is an object
+            if (!this.i18nTestNameMap || typeof this.i18nTestNameMap !== 'object') {
+                console.warn('i18nTestNameMap is not properly defined, using fallback mapping');
                 const fallbackMap = {
-                    webcam: 'Camera',
-                    microphone: 'Mic',
-                    speakers: 'Speaker',
-                    keyboard: 'Keyboard',
-                    mouse: 'Mouse',
-                    touch: 'Touch',
-                    battery: 'Battery',
+                    webcam: this.t('tests.webcam.name'),
+                    microphone: this.t('tests.microphone.name'),
+                    speakers: this.t('tests.speakers.name'),
+                    keyboard: this.t('tests.keyboard.name'),
+                    mouse: this.t('tests.mouse.name'),
+                    touch: this.t('tests.touch.name'),
+                    battery: this.t('tests.battery.name'),
                 };
                 return fallbackMap[test] || this.getSafeFallback(test);
             }
@@ -318,7 +330,7 @@ export default {
             }
             
             // Get the name from the map, ensuring it's a string
-            const name = this.testNameMap[test];
+            const name = this.i18nTestNameMap[test];
             
             // Return the mapped name if it's a valid string, otherwise fallback
             if (typeof name === 'string' && name.trim().length > 0) {
@@ -362,11 +374,21 @@ export default {
             // Return a meaningful fallback that won't cause conversion issues
             if (testStr === 'unknown' || testStr === 'null' || testStr === 'undefined' ||
                 testStr === 'reactive-object' || testStr === 'conversion-error') {
-                return 'Unknown Test';
+                return this.t('errors.unknownTest');
             }
             
-            // Capitalize and format the test key as a fallback
-            return testStr.charAt(0).toUpperCase() + testStr.slice(1);
+            // Use translation for the test name based on the test key
+            const translationMap = {
+                webcam: this.t('tests.webcam.name'),
+                microphone: this.t('tests.microphone.name'),
+                speakers: this.t('tests.speakers.name'),
+                keyboard: this.t('tests.keyboard.name'),
+                mouse: this.t('tests.mouse.name'),
+                touch: this.t('tests.touch.name'),
+                battery: this.t('tests.battery.name'),
+            };
+            
+            return translationMap[testStr] || testStr.charAt(0).toUpperCase() + testStr.slice(1);
         },
 
         // Debounced test switching to prevent rapid component changes and lag
@@ -619,10 +641,9 @@ export default {
             // Start update interval if not already running
             if (!this.timerInterval) {
                 this.timerInterval = setInterval(() => {
-                    console.log('Timer interval tick - forcing reactivity');
-                    // Force reactivity by creating a new reference
-                    const updatedTimers = { ...this.realTimeTimers };
-                    this.realTimeTimers = updatedTimers;
+                    // Simply access the reactive properties to trigger updates
+                    // Vue's reactivity system will handle the rest
+                    this.$forceUpdate();
                 }, 100); // Update every 100ms for smooth animation
             }
         },
@@ -642,7 +663,7 @@ export default {
                     startTime: null
                 };
                 
-                console.log(`Timer stopped for ${testType}, total elapsed: ${this.realTimeTimers[testType].elapsed.toFixed(2)}s`);
+                // console.log(`Timer stopped for ${testType}, total elapsed: ${this.realTimeTimers[testType].elapsed.toFixed(2)}s`);
             }
             
             // Clean up interval if no timers are running
@@ -654,7 +675,7 @@ export default {
             if (!anyTimerRunning && this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
-                console.log('Timer interval cleaned up');
+                // console.log('Timer interval cleaned up');
             }
         },
         getTestStatusClass(testType) {
@@ -745,7 +766,7 @@ export default {
 
                     return `
           <tr>
-            <td class="test-name">${this.testNameMap[test]}</td>
+            <td class="test-name">${this.i18nTestNameMap[test]}</td>
             <td class="status ${statusClass}">
               <span class="status-icon">${statusIcon}</span>
               ${status}
@@ -1044,12 +1065,12 @@ export default {
                 const timingValue = this.formattedTimings[test];
                 
                 // Debug logging
-                console.log(`hasTimingData - ${test}: ${timingValue}, type: ${typeof timingValue}`);
+                // console.log(`hasTimingData - ${test}: ${timingValue}, type: ${typeof timingValue}`);
                 
                 // Handle cases where timing value might be undefined, null, or non-string
                 // Allow "0.00s" to be displayed for pending tests
                 const result = typeof timingValue === 'string' && timingValue !== '';
-                console.log(`hasTimingData result for ${test}: ${result}`);
+                // console.log(`hasTimingData result for ${test}: ${result}`);
                 return result;
             } catch (error) {
                 console.warn('Error checking timing data for test:', test, error);
@@ -1080,7 +1101,7 @@ export default {
                     this.timings[test] && typeof this.timings[test].duration === 'number'
                         ? this.timings[test].duration.toFixed(2)
                         : '';
-                rows.push([this.testNameMap[test], status, runCount, duration]);
+                rows.push([this.i18nTestNameMap[test], status, runCount, duration]);
             }
             // Convert to CSV string
             const csv = rows

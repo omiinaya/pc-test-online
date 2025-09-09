@@ -1,5 +1,6 @@
 <script>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useEnhancedDeviceTest } from '../composables/useEnhancedDeviceTest.js';
@@ -12,11 +13,12 @@ export default {
     },
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        const { t } = useI18n();
         // Enhanced device test with device enumeration but no permissions needed for output
         const deviceTest = useEnhancedDeviceTest(
             {
                 deviceKind: 'audiooutput',
-                deviceType: 'Speaker',
+                deviceType: t('tests.speakers.name'),
                 permissionType: null, // No permissions needed for audio output
                 testName: 'speakers',
                 autoInitialize: true,
