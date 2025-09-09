@@ -189,8 +189,6 @@ export default {
                 playsinline
                 class="camera-preview"
                 :class="{ blurred: isLoading || hasError || needsPermission || showNoDevicesState }"
-                aria-label="Camera preview for testing"
-                title="Live camera feed for testing purposes"
                 :aria-label="$t('device_testing.webcam.camera_preview')"
                 :title="$t('device_testing.webcam.live_feed')"
             ></video>

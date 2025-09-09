@@ -355,19 +355,20 @@ export default {
         // Watch for device enumeration to handle audio output edge cases
         const handleDeviceEnumeration = async () => {
             try {
-                console.log('Device enumeration handler called');
-                console.log('Available devices:', deviceTest.availableDevices.value);
-                console.log('Is loading:', deviceTest.isLoading.value);
-                console.log('Show no devices state:', deviceTest.showNoDevicesState.value);
-                console.log('Has devices:', deviceTest.hasDevices.value);
+                // Debug logging removed for production
+                // console.log('Device enumeration handler called');
+                // console.log('Available devices:', deviceTest.availableDevices.value);
+                // console.log('Is loading:', deviceTest.isLoading.value);
+                // console.log('Show no devices state:', deviceTest.showNoDevicesState.value);
+                // console.log('Has devices:', deviceTest.hasDevices.value);
                 
                 // For audio output, many systems have default devices that work
                 // even when not explicitly enumerated. We should be more permissive.
                 if (deviceTest.availableDevices.value.length === 0) {
-                    console.log('DEBUG: No audio output devices enumerated, but default output may still work');
-                    console.log('DEBUG: Device detection delay state:', deviceTest.deviceDetectionDelay?.shouldShowNoDevices.value);
+                    // console.log('DEBUG: No audio output devices enumerated, but default output may still work');
+                    // console.log('DEBUG: Device detection delay state:', deviceTest.deviceDetectionDelay?.shouldShowNoDevices.value);
                 } else {
-                    console.log('DEBUG: Found', deviceTest.availableDevices.value.length, 'audio output devices');
+                    // console.log('DEBUG: Found', deviceTest.availableDevices.value.length, 'audio output devices');
                 }
             } catch (error) {
                 console.error('Error handling device enumeration:', error);
@@ -387,13 +388,14 @@ export default {
                              !deviceTest.isLoading.value &&
                              !deviceTest.hasError.value;
             
-            console.log('SpeakerTest - Device State:', {
-                showNoDevicesState: deviceTest.showNoDevicesState.value,
-                availableDevices: deviceTest.availableDevices.value.length,
-                isLoading: deviceTest.isLoading.value,
-                hasError: deviceTest.hasError.value,
-                finalResult: shouldShow
-            });
+            // Debug logging removed for production
+            // console.log('SpeakerTest - Device State:', {
+            //     showNoDevicesState: deviceTest.showNoDevicesState.value,
+            //     availableDevices: deviceTest.availableDevices.value.length,
+            //     isLoading: deviceTest.isLoading.value,
+            //     hasError: deviceTest.hasError.value,
+            //     finalResult: shouldShow
+            // });
             
             // For audio output, default to allowing testing even if no devices enumerated
             return false; // Never show "no devices" for audio output
@@ -401,39 +403,39 @@ export default {
 
         // Watch for device enumeration completion with safe debugging
         if (deviceTest.deviceEnumeration) {
-            console.log('SpeakerTest: Setting up device enumeration...');
+            // console.log('SpeakerTest: Setting up device enumeration...');
 
             // Add a small delay to ensure devices are properly enumerated
             setTimeout(handleDeviceEnumeration, 100);
 
             // Watch for available devices changes to handle audio output device selection
             watch(() => deviceTest.availableDevices.value, (newDevices, oldDevices) => {
-                console.log('DEBUG: Available devices changed:', newDevices.length, 'devices');
+                // console.log('DEBUG: Available devices changed:', newDevices.length, 'devices');
                 
                 // If we have audio output devices, ensure one is selected
                 if (newDevices.length > 0 && !deviceTest.selectedDeviceId.value) {
                     // Prefer a device with a proper label, otherwise select the first one
                     const deviceToSelect = newDevices.find(d => d.label && !d.label.includes('...')) || newDevices[0];
                     deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
-                    console.log('DEBUG: Auto-selected audio output device:', deviceToSelect.deviceId, deviceToSelect.label);
+                    // console.log('DEBUG: Auto-selected audio output device:', deviceToSelect.deviceId, deviceToSelect.label);
                 }
             }, { immediate: true });
 
-            // Simple periodic check for state changes
-            const debugInterval = setInterval(() => {
-                console.log('SpeakerTest State:', {
-                    availableDevices: deviceTest.availableDevices.value.length,
-                    selectedDevice: deviceTest.selectedDeviceId.value,
-                    showNoDevicesState: deviceTest.showNoDevicesState.value,
-                    isLoading: deviceTest.isLoading.value,
-                    hasError: deviceTest.hasError.value
-                });
-            }, 3000);
+            // Simple periodic check for state changes (removed for production)
+            // const debugInterval = setInterval(() => {
+            //     console.log('SpeakerTest State:', {
+            //         availableDevices: deviceTest.availableDevices.value.length,
+            //         selectedDevice: deviceTest.selectedDeviceId.value,
+            //         showNoDevicesState: deviceTest.showNoDevicesState.value,
+            //         isLoading: deviceTest.isLoading.value,
+            //         hasError: deviceTest.hasError.value
+            //     });
+            // }, 3000);
 
             // Clean up interval on unmount
-            onUnmounted(() => {
-                clearInterval(debugInterval);
-            });
+            // onUnmounted(() => {
+            //     clearInterval(debugInterval);
+            // });
         }
 
         // Cleanup on unmount

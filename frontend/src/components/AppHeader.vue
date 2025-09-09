@@ -22,7 +22,7 @@ export default {
                     <div class="brand-icon">
                         <img
                             src="/favicon.svg"
-                            alt="MMIT Lab Icon"
+                            :alt="t('app.name') + ' Icon'"
                             style="width: 28px; height: 28px"
                         />
                     </div>
@@ -86,7 +86,7 @@ export default {
                         target="_blank"
                         rel="noopener noreferrer"
                         class="github-link"
-                        title="View Source Code on GitHub"
+                        :title="t('ui.view_source_code')"
                     >
                         <div class="github-icon">
                             <svg

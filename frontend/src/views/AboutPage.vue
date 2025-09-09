@@ -6,7 +6,7 @@ export default {
             return `${import.meta.env.MODE}-${Date.now().toString(36)}`;
         },
         environment() {
-            return import.meta.env.DEV ? 'Development' : 'Production';
+            return import.meta.env.DEV ? this.$t('about.version.environment_dev') : this.$t('about.version.environment_prod');
         },
     },
 };
@@ -19,11 +19,11 @@ export default {
             <header class="about-hero">
                 <div class="hero-content">
                     <div class="app-logo">
-                        <img src="/favicon.svg" alt="MMIT Lab" class="logo-image" />
+                        <img src="/favicon.svg" :alt="$t('app.name')" class="logo-image" />
                     </div>
-                    <h1 class="hero-title">About MMIT Lab</h1>
+                    <h1 class="hero-title">{{ $t('about.title') }}</h1>
                     <p class="hero-subtitle">
-                        Comprehensive hardware testing made simple and accessible
+                        {{ $t('about.subtitle') }}
                     </p>
                 </div>
             </header>
@@ -32,78 +32,63 @@ export default {
             <div class="about-content">
                 <!-- What is MMIT Lab Section -->
                 <section class="content-section">
-                    <h2 class="section-title">What is MMIT Lab?</h2>
+                    <h2 class="section-title">{{ $t('about.what_is_mmit.title') }}</h2>
                     <div class="section-content">
-                        <p>
-                            MMIT Lab is a comprehensive hardware testing suite designed to help
-                            users thoroughly test their devices and ensure optimal performance. Our
-                            platform provides easy-to-use tests for cameras, microphones, speakers,
-                            keyboards, mice, touchscreens, and battery systems.
-                        </p>
-                        <p>
-                            Whether you're troubleshooting hardware issues, verifying device
-                            functionality before a purchase, or conducting routine maintenance
-                            checks, MMIT Lab provides the tools you need in a simple, intuitive
-                            interface.
+                        <p v-for="(paragraph, index) in $t('about.what_is_mmit.paragraphs')" :key="index">
+                            {{ paragraph }}
                         </p>
                     </div>
                 </section>
 
                 <!-- Features Section -->
                 <section class="content-section">
-                    <h2 class="section-title">Key Features</h2>
+                    <h2 class="section-title">{{ $t('about.features.title') }}</h2>
                     <div class="features-grid">
                         <div class="feature-card">
                             <div class="feature-icon">📷</div>
-                            <h3 class="feature-title">Camera Testing</h3>
+                            <h3 class="feature-title">{{ $t('about.features.camera.title') }}</h3>
                             <p class="feature-description">
-                                Test multiple cameras, check video quality, and verify camera
-                                switching functionality.
+                                {{ $t('about.features.camera.description') }}
                             </p>
                         </div>
 
                         <div class="feature-card">
                             <div class="feature-icon">🎤</div>
-                            <h3 class="feature-title">Audio Testing</h3>
+                            <h3 class="feature-title">{{ $t('about.features.audio.title') }}</h3>
                             <p class="feature-description">
-                                Comprehensive microphone and speaker tests with real-time audio
-                                level monitoring.
+                                {{ $t('about.features.audio.description') }}
                             </p>
                         </div>
 
                         <div class="feature-card">
                             <div class="feature-icon">⌨️</div>
-                            <h3 class="feature-title">Input Testing</h3>
+                            <h3 class="feature-title">{{ $t('about.features.input.title') }}</h3>
                             <p class="feature-description">
-                                Test keyboard keys, mouse buttons, scroll wheels, and touchscreen
-                                responsiveness.
+                                {{ $t('about.features.input.description') }}
                             </p>
                         </div>
 
                         <div class="feature-card">
                             <div class="feature-icon">🔋</div>
-                            <h3 class="feature-title">Battery Testing</h3>
+                            <h3 class="feature-title">{{ $t('about.features.battery.title') }}</h3>
                             <p class="feature-description">
-                                Monitor battery health, charging status, and power management
-                                capabilities.
+                                {{ $t('about.features.battery.description') }}
                             </p>
                         </div>
 
                         <div class="feature-card">
                             <div class="feature-icon">📊</div>
-                            <h3 class="feature-title">Performance Monitoring</h3>
+                            <h3 class="feature-title">{{ $t('about.features.performance.title') }}</h3>
                             <p class="feature-description">
-                                Real-time performance metrics and Web Vitals monitoring for optimal
-                                experience.
+                                {{ $t('about.features.performance.description') }}
                             </p>
                         </div>
 
                         <div class="feature-card">
                             <div class="feature-icon">📋</div>
-                            <h3 class="feature-title">Detailed Reports</h3>
+                            <h3 class="feature-title">{{ $t('about.features.reports.title') }}</h3>
                             <p class="feature-description">
-                                Export comprehensive test results in multiple formats (PDF, JSON,
-                                CSV).
+                                {{ $t('about.features.reports.description') }}
                             </p>
                         </div>
                     </div>
@@ -111,10 +96,10 @@ export default {
 
                 <!-- Technology Section -->
                 <section class="content-section">
-                    <h2 class="section-title">Built With</h2>
+                    <h2 class="section-title">{{ $t('about.technology.title') }}</h2>
                     <div class="tech-stack">
                         <div class="tech-category">
-                            <h3>Frontend</h3>
+                            <h3>{{ $t('about.technology.frontend') }}</h3>
                             <div class="tech-tags">
                                 <span class="tech-tag">Vue.js 3</span>
                                 <span class="tech-tag">JavaScript</span>
@@ -125,7 +110,7 @@ export default {
                         </div>
 
                         <div class="tech-category">
-                            <h3>Testing</h3>
+                            <h3>{{ $t('about.technology.testing') }}</h3>
                             <div class="tech-tags">
                                 <span class="tech-tag">MediaDevices API</span>
                                 <span class="tech-tag">Battery API</span>
@@ -136,7 +121,7 @@ export default {
                         </div>
 
                         <div class="tech-category">
-                            <h3>Tools</h3>
+                            <h3>{{ $t('about.technology.tools') }}</h3>
                             <div class="tech-tags">
                                 <span class="tech-tag">Vite</span>
                                 <span class="tech-tag">TypeScript</span>
@@ -149,28 +134,24 @@ export default {
 
                 <!-- Version Info Section -->
                 <section class="content-section">
-                    <h2 class="section-title">Version Information</h2>
+                    <h2 class="section-title">{{ $t('about.version.title') }}</h2>
                     <div class="version-info">
                         <div class="version-card">
                             <div class="version-header">
-                                <h3>Current Version</h3>
+                                <h3>{{ $t('about.version.current_version') }}</h3>
                                 <span class="version-number">v2.0.0</span>
                             </div>
                             <div class="version-details">
-                                <p><strong>Release Date:</strong> January 2025</p>
-                                <p><strong>Build:</strong> {{ buildInfo }}</p>
-                                <p><strong>Environment:</strong> {{ environment }}</p>
+                                <p><strong>{{ $t('about.version.release_date') }}:</strong> January 2025</p>
+                                <p><strong>{{ $t('about.version.build') }}:</strong> {{ buildInfo }}</p>
+                                <p><strong>{{ $t('about.version.environment') }}:</strong> {{ environment }}</p>
                             </div>
                         </div>
 
                         <div class="changelog-preview">
-                            <h3>Recent Updates</h3>
+                            <h3>{{ $t('about.version.recent_updates') }}</h3>
                             <ul class="changelog-list">
-                                <li>✨ Added comprehensive battery testing</li>
-                                <li>🎨 Improved UI/UX with modern design</li>
-                                <li>📊 Enhanced performance monitoring</li>
-                                <li>🔧 Better error handling and reporting</li>
-                                <li>📱 Improved mobile responsiveness</li>
+                                <li v-for="(update, index) in $t('about.version.updates')" :key="index">{{ update }}</li>
                             </ul>
                         </div>
                     </div>
@@ -178,57 +159,51 @@ export default {
 
                 <!-- Contact/Support Section -->
                 <section class="content-section">
-                    <h2 class="section-title">Support & Contact</h2>
+                    <h2 class="section-title">{{ $t('about.support.title') }}</h2>
                     <div class="contact-grid">
                         <div class="contact-card">
                             <div class="contact-icon">📧</div>
-                            <h3>Email Support</h3>
+                            <h3>{{ $t('about.support.email.title') }}</h3>
                             <p>support@mmitlab.com</p>
-                            <p class="contact-note">We typically respond within 24 hours</p>
+                            <p class="contact-note">{{ $t('about.support.email.response_time') }}</p>
                         </div>
 
                         <div class="contact-card">
                             <div class="contact-icon">📖</div>
-                            <h3>Documentation</h3>
-                            <p>Comprehensive guides and API docs</p>
-                            <a href="#" class="contact-link">View Documentation</a>
+                            <h3>{{ $t('about.support.documentation.title') }}</h3>
+                            <p>{{ $t('about.support.documentation.description') }}</p>
+                            <a href="#" class="contact-link">{{ $t('about.support.documentation.link') }}</a>
                         </div>
 
                         <div class="contact-card">
                             <div class="contact-icon">🐛</div>
-                            <h3>Report Issues</h3>
-                            <p>Found a bug or have a suggestion?</p>
-                            <a href="#" class="contact-link">Submit Issue</a>
+                            <h3>{{ $t('about.support.issues.title') }}</h3>
+                            <p>{{ $t('about.support.issues.description') }}</p>
+                            <a href="#" class="contact-link">{{ $t('about.support.issues.link') }}</a>
                         </div>
                     </div>
                 </section>
 
                 <!-- Credits Section -->
                 <section class="content-section">
-                    <h2 class="section-title">Credits & Acknowledgments</h2>
+                    <h2 class="section-title">{{ $t('about.credits.title') }}</h2>
                     <div class="credits-content">
                         <p>
-                            MMIT Lab is made possible thanks to the open-source community and
-                            various web standards that enable hardware access through browsers.
+                            {{ $t('about.credits.description') }}
                         </p>
 
                         <div class="credits-grid">
                             <div class="credit-category">
-                                <h3>Special Thanks</h3>
+                                <h3>{{ $t('about.credits.special_thanks') }}</h3>
                                 <ul>
-                                    <li>Web Platform Team for MediaDevices API</li>
-                                    <li>Vue.js Core Team</li>
-                                    <li>Browser vendors for API implementations</li>
-                                    <li>Open source contributors</li>
+                                    <li v-for="(item, index) in $t('about.credits.thanks_list')" :key="index">{{ item }}</li>
                                 </ul>
                             </div>
 
                             <div class="credit-category">
-                                <h3>Icons & Assets</h3>
+                                <h3>{{ $t('about.credits.icons_assets') }}</h3>
                                 <ul>
-                                    <li>Emoji icons from Unicode Consortium</li>
-                                    <li>SVG icons from Feather Icons</li>
-                                    <li>Custom illustrations and graphics</li>
+                                    <li v-for="(item, index) in $t('about.credits.assets_list')" :key="index">{{ item }}</li>
                                 </ul>
                             </div>
                         </div>

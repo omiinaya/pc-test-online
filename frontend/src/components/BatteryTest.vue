@@ -237,8 +237,8 @@ export default {
     <StatePanel
         v-if="!batterySupported"
         state="error"
-        title="Battery API Not Supported"
-        message="Your browser doesn't support battery status detection."
+        :title="$t('errors.device.battery_not_supported')"
+        :message="$t('errors.device.browser_not_support_battery')"
     />
 
     <!-- Battery API is supported - show test UI or completion -->
@@ -247,8 +247,8 @@ export default {
         <StatePanel
             v-if="testPhase === 'complete'"
             state="success"
-            title="Test Complete!"
-            message="Battery and charging functionality verified."
+            :title="$t('messages.success.testPassed')"
+            :message="$t('tests.battery.completionMessage')"
         >
             <template #icon>
                 <div class="animated-checkmark">
@@ -286,13 +286,13 @@ export default {
                 </div>
                 <div class="battery-details">
                     <div class="battery-info-row">
-                        <span class="battery-label">Charge</span>
+                        <span class="battery-label">{{ $t('battery.chargeLabel') }}</span>
                         <span class="battery-value">{{ batteryLevel }}%</span>
                     </div>
                     <div class="battery-info-row">
-                        <span class="battery-label">Status</span>
+                        <span class="battery-label">{{ $t('battery.statusLabel') }}</span>
                         <span class="battery-value" :class="{ 'charging-text': isCharging }">
-                            {{ isCharging ? 'Charging' : 'Not Charging' }}
+                            {{ isCharging ? $t('battery.charging') : $t('battery.notCharging') }}
                         </span>
                     </div>
                 </div>
@@ -301,23 +301,23 @@ export default {
             <!-- Test Instructions -->
             <div class="test-instructions">
                 <div v-if="testPhase === 'initial'" class="instruction-step">
-                    <h3>Step 1: Connect Charger</h3>
-                    <p>Please connect your charger to begin the test.</p>
+                    <h3>{{ $t('battery.step1.title') }}</h3>
+                    <p>{{ $t('battery.step1.description') }}</p>
                     <div class="timer" v-if="isCharging">
-                        Starting test in {{ initialDelay }}s...
+                        {{ $t('battery.startingTest', { seconds: initialDelay }) }}
                     </div>
                 </div>
                 <div v-else-if="testPhase === 'unplug'" class="instruction-step">
-                    <h3>Unplug Charger</h3>
-                    <p>Please unplug your charger to continue.</p>
+                    <h3>{{ $t('battery.step2.title') }}</h3>
+                    <p>{{ $t('battery.step2.description') }}</p>
                 </div>
                 <div v-else-if="testPhase === 'waitAfterUnplug'" class="instruction-step">
-                    <h3>Test Complete</h3>
-                    <p>Battery status detection is working.</p>
+                    <h3>{{ $t('battery.step3.title') }}</h3>
+                    <p>{{ $t('battery.step3.description') }}</p>
                 </div>
                 <div v-else-if="testPhase === 'ready'" class="instruction-step">
-                    <h3>Battery Test Ready</h3>
-                    <p>Battery status is being detected.</p>
+                    <h3>{{ $t('battery.ready.title') }}</h3>
+                    <p>{{ $t('battery.ready.description') }}</p>
                 </div>
             </div>
         </template>

@@ -27,13 +27,6 @@ export default {
       this.showDropdown = false;
     }
   },
-  mounted() {
-    // Close dropdown when clicking outside
-    document.addEventListener('click', this.handleClickOutside);
-  },
-  beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside);
-  },
   computed: {
     currentLanguageName() {
       return this.availableLocales[this.currentLocale] || 'English';
@@ -43,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <div class="language-switcher" v-click-outside="closeDropdown">
+  <div class="language-switcher">
     <button
       class="language-switcher__trigger"
       @click="toggleDropdown"

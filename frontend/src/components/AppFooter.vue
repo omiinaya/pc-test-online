@@ -10,7 +10,7 @@ export default {
     methods: {
         handleBuiltWithClick() {
             // Placeholder for future "built with" link
-            console.log('Built with link clicked - will be implemented later');
+            // console.log('Built with link clicked - will be implemented later');
         },
         handleReset() {
             this.$emit('reset-tests');
@@ -64,7 +64,7 @@ export default {
                                 <line x1="10" y1="1" x2="10" y2="4" />
                                 <line x1="14" y1="1" x2="14" y2="4" />
                             </svg>
-                            Buy me a coffee
+                            {{ $t('footer.buyMeCoffee') }}
                         </a>
 
                         <a href="#" class="footer-link built-with" @click.prevent="handleBuiltWithClick">
@@ -83,7 +83,7 @@ export default {
                                 <line x1="16" y1="8" x2="2" y2="22" />
                                 <line x1="17.5" y1="15" x2="9" y2="15" />
                             </svg>
-                            Built with 🤖
+                            {{ $t('footer.builtWith') }}
                         </a>
 
                         <router-link to="/web-vitals" class="footer-link vitals">
@@ -103,7 +103,7 @@ export default {
                                 <path d="M18 21v-5h-5" />
                                 <path d="M3 16.5L12 12l5.5 4" />
                             </svg>
-                            Web Vitals
+                            {{ $t('footer.webVitals') }}
                         </router-link>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ export default {
                         <button
                             @click="handleReset"
                             class="button button--secondary button--small"
-                            title="Reset Tests"
+                            :title="$t('footer.resetTests')"
                         >
                             <svg
                                 width="18"
@@ -127,13 +127,13 @@ export default {
                                 <polyline points="1 4 1 10 7 10"></polyline>
                                 <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
                             </svg>
-                            <span>Reset</span>
+                            <span>{{ $t('buttons.reset') }}</span>
                         </button>
                         <div class="export-menu-footer">
                             <button
                                 @click="handleToggleExport"
                                 class="button button--primary button--small"
-                                title="Export Report"
+                                :title="$t('footer.exportResults')"
                             >
                                 <svg
                                     width="18"
@@ -147,7 +147,7 @@ export default {
                                     <polyline points="7 10 12 15 17 10"></polyline>
                                     <line x1="12" y1="15" x2="12" y2="3"></line>
                                 </svg>
-                                <span>Export</span>
+                                <span>{{ $t('buttons.export') }}</span>
                             </button>
                             <transition name="expand-fade">
                                 <div v-if="showExportMenu" class="export-options-footer">
@@ -169,7 +169,7 @@ export default {
                                             <line x1="16" y1="17" x2="8" y2="17"></line>
                                             <polyline points="10 9 9 9 8 9"></polyline>
                                         </svg>
-                                        Export as PDF
+                                        {{ $t('buttons.exportPdf') }}
                                     </button>
                                     <button @click="handleExportJson" class="button button--text export-option-footer">
                                         <svg
@@ -188,7 +188,7 @@ export default {
                                             <path d="M12 18v-6"></path>
                                             <circle cx="12" cy="18" r="1"></circle>
                                         </svg>
-                                        Export as JSON
+                                        {{ $t('buttons.exportJson') }}
                                     </button>
                                     <button @click="handleExportCsv" class="button button--text export-option-footer">
                                         <svg
@@ -205,7 +205,7 @@ export default {
                                             <path d="M8 12h8"></path>
                                             <path d="M8 16h8"></path>
                                         </svg>
-                                        Export as CSV
+                                        {{ $t('buttons.exportCsv') }}
                                     </button>
                                 </div>
                             </transition>

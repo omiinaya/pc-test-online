@@ -290,22 +290,18 @@ export default {
         <div v-if="isMobile" class="mobile-notice">
             <div class="mobile-notice-content">
                 <div class="mobile-icon">📱</div>
-                <h3>Keyboard Test Unavailable on Mobile</h3>
+                <h3>{{ $t('keyboard.mobile_unavailable') }}</h3>
                 <p>
-                    The keyboard test is designed for physical keyboards and is not available on
-                    mobile devices. This test requires a hardware keyboard to properly detect key
-                    presses and validate functionality.
+                    {{ $t('keyboard.mobile_description') }}
                 </p>
                 <p>
-                    <strong>What you can do:</strong>
+                    <strong>{{ $t('keyboard.mobile_what_can_do') }}</strong>
                 </p>
                 <ul>
-                    <li>Use a desktop or laptop computer for the full keyboard test</li>
-                    <li>Skip this test if you're on a mobile device</li>
-                    <li>Return to the test menu to continue with other device tests</li>
+                    <li v-for="(option, index) in $t('keyboard.mobile_options')" :key="index">{{ option }}</li>
                 </ul>
                 <button class="button button--primary button--medium" @click="$emit('test-skipped')">
-                    Skip Keyboard Test
+                    {{ $t('keyboard.skip_test') }}
                 </button>
             </div>
         </div>

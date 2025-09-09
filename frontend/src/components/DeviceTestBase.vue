@@ -119,16 +119,16 @@ export default {
         <StatePanel
             v-if="deviceEnumeration.loadingDevices.value"
             state="loading"
-            :title="`Detecting ${deviceType}s...`"
-            :message="`Please wait while we search for available ${deviceType.toLowerCase()}s`"
+            :title="$t('device_testing.detecting_devices', { deviceType })"
+            :message="$t('device_testing.searching_devices', { deviceType: deviceType.toLowerCase() })"
         />
 
         <!-- Error state: no devices -->
         <StatePanel
             v-else-if="!hasDevices && !deviceEnumeration.loadingDevices.value"
             state="error"
-            :title="`No ${deviceType}s Found`"
-            :message="`No ${deviceType.toLowerCase()}s were found on your system.`"
+            :title="$t('device_testing.no_devices_found', { deviceType })"
+            :message="$t('device_testing.no_devices_message', { deviceType: deviceType.toLowerCase() })"
         >
             <template #icon>
                 <svg
@@ -159,7 +159,7 @@ export default {
                 v-if="availableDevices.length > 1"
                 :devices="availableDevices"
                 :selectedDeviceId="selectedDeviceId"
-                :label="`Select ${deviceType}`"
+                :label="$t('device_testing.select_device', { deviceType })"
                 :deviceType="deviceType"
                 :disabled="loading"
                 @device-changed="handleDeviceChange"

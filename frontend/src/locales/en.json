@@ -141,7 +141,8 @@
     "minimize": "Minimize",
     "maximize": "Maximize",
     "fullscreen": "Fullscreen",
-    "exitFullscreen": "Exit Fullscreen"
+    "exitFullscreen": "Exit Fullscreen",
+    "view_source_code": "View Source Code on GitHub"
   },
   
   "permissions": {
@@ -176,18 +177,98 @@
   
   "about": {
     "title": "About MMIT Lab",
-    "description": "Comprehensive hardware testing made simple and accessible",
-    "features": "Key Features",
-    "technology": "Built With",
-    "version": "Version Information",
-    "support": "Support & Contact",
-    "credits": "Credits & Acknowledgments",
-    "featureCamera": "Camera Testing - Test multiple cameras, check video quality, and verify camera switching functionality.",
-    "featureAudio": "Audio Testing - Comprehensive microphone and speaker tests with real-time audio level monitoring.",
-    "featureInput": "Input Testing - Test keyboard keys, mouse buttons, scroll wheels, and touchscreen responsiveness.",
-    "featureBattery": "Battery Testing - Monitor battery health, charging status, and power management capabilities.",
-    "featurePerformance": "Performance Monitoring - Real-time performance metrics and Web Vitals monitoring for optimal experience.",
-    "featureReports": "Detailed Reports - Export comprehensive test results in multiple formats (PDF, JSON, CSV)."
+    "subtitle": "Comprehensive hardware testing made simple and accessible",
+    "what_is_mmit": {
+      "title": "What is MMIT Lab?",
+      "paragraphs": [
+        "MMIT Lab is a comprehensive hardware testing suite designed to help users thoroughly test their devices and ensure optimal performance. Our platform provides easy-to-use tests for cameras, microphones, speakers, keyboards, mice, touchscreens, and battery systems.",
+        "Whether you're troubleshooting hardware issues, verifying device functionality before a purchase, or conducting routine maintenance checks, MMIT Lab provides the tools you need in a simple, intuitive interface."
+      ]
+    },
+    "features": {
+      "title": "Key Features",
+      "camera": {
+        "title": "Camera Testing",
+        "description": "Test multiple cameras, check video quality, and verify camera switching functionality."
+      },
+      "audio": {
+        "title": "Audio Testing",
+        "description": "Comprehensive microphone and speaker tests with real-time audio level monitoring."
+      },
+      "input": {
+        "title": "Input Testing",
+        "description": "Test keyboard keys, mouse buttons, scroll wheels, and touchscreen responsiveness."
+      },
+      "battery": {
+        "title": "Battery Testing",
+        "description": "Monitor battery health, charging status, and power management capabilities."
+      },
+      "performance": {
+        "title": "Performance Monitoring",
+        "description": "Real-time performance metrics and Web Vitals monitoring for optimal experience."
+      },
+      "reports": {
+        "title": "Detailed Reports",
+        "description": "Export comprehensive test results in multiple formats (PDF, JSON, CSV)."
+      }
+    },
+    "technology": {
+      "title": "Built With",
+      "frontend": "Frontend",
+      "testing": "Testing",
+      "tools": "Tools"
+    },
+    "version": {
+      "title": "Version Information",
+      "current_version": "Current Version",
+      "release_date": "Release Date",
+      "build": "Build",
+      "environment": "Environment",
+      "environment_dev": "Development",
+      "environment_prod": "Production",
+      "recent_updates": "Recent Updates",
+      "updates": [
+        "✨ Added comprehensive battery testing",
+        "🎨 Improved UI/UX with modern design",
+        "📊 Enhanced performance monitoring",
+        "🔧 Better error handling and reporting",
+        "📱 Improved mobile responsiveness"
+      ]
+    },
+    "support": {
+      "title": "Support & Contact",
+      "email": {
+        "title": "Email Support",
+        "response_time": "We typically respond within 24 hours"
+      },
+      "documentation": {
+        "title": "Documentation",
+        "description": "Comprehensive guides and API docs",
+        "link": "View Documentation"
+      },
+      "issues": {
+        "title": "Report Issues",
+        "description": "Found a bug or have a suggestion?",
+        "link": "Submit Issue"
+      }
+    },
+    "credits": {
+      "title": "Credits & Acknowledgments",
+      "description": "MMIT Lab is made possible thanks to the open-source community and various web standards that enable hardware access through browsers.",
+      "special_thanks": "Special Thanks",
+      "icons_assets": "Icons & Assets",
+      "thanks_list": [
+        "Web Platform Team for MediaDevices API",
+        "Vue.js Core Team",
+        "Browser vendors for API implementations",
+        "Open source contributors"
+      ],
+      "assets_list": [
+        "Emoji icons from Unicode Consortium",
+        "SVG icons from Feather Icons",
+        "Custom illustrations and graphics"
+      ]
+    }
   },
   
   "sidebar": {
@@ -280,7 +361,9 @@
       "camera_error": "Camera Error",
       "microphone_error": "Microphone Error",
       "speaker_error": "Speaker Error",
-      "device_not_found": "Device not found: {deviceType}"
+      "device_not_found": "Device not found: {deviceType}",
+      "battery_not_supported": "Battery API Not Supported",
+      "browser_not_support_battery": "Your browser doesn't support battery status detection."
     },
     "browser": {
       "compatibility_notice": "⚠️ Browser Compatibility Notice",
@@ -304,7 +387,12 @@
       "detecting_cameras": "Detecting cameras...",
       "detecting_microphones": "Detecting microphones...",
       "detecting_speakers": "Detecting speakers...",
-      "please_wait_search": "Please wait while we search for available {deviceType}"
+      "please_wait_search": "Please wait while we search for available {deviceType}",
+      "detecting_devices": "Detecting {deviceType}s...",
+      "searching_devices": "Please wait while we search for available {deviceType}s",
+      "no_devices_found": "No {deviceType}s Found",
+      "no_devices_message": "No {deviceType}s were found on your system.",
+      "select_device": "Select {deviceType}"
     },
     "webcam": {
       "camera_preview": "Camera preview for testing",
@@ -362,5 +450,114 @@
     "pdfGenerationError": "Error generating PDF. Please try again.",
     "errorDetailsCopied": "Error details copied to clipboard",
     "unableToCopyErrorDetails": "Unable to copy error details"
+  },
+
+  "footer": {
+    "buyMeCoffee": "Buy me a coffee",
+    "builtWith": "Built with 🤖",
+    "webVitals": "Web Vitals",
+    "resetTests": "Reset Tests",
+    "exportResults": "Export Results"
+  },
+  
+  "battery": {
+    "chargeLabel": "Charge",
+    "statusLabel": "Status",
+    "charging": "Charging",
+    "notCharging": "Not Charging",
+    "step1": {
+      "title": "Step 1: Connect Charger",
+      "description": "Please connect your charger to begin the test."
+    },
+    "step2": {
+      "title": "Unplug Charger",
+      "description": "Please unplug your charger to continue."
+    },
+    "step3": {
+      "title": "Test Complete",
+      "description": "Battery status detection is working."
+    },
+    "ready": {
+      "title": "Battery Test Ready",
+      "description": "Battery status is being detected."
+    },
+    "startingTest": "Starting test in {seconds}s..."
+  },
+
+
+  "keyboard": {
+    "mobile_unavailable": "Keyboard Test Unavailable on Mobile",
+    "mobile_description": "The keyboard test is designed for physical keyboards and is not available on mobile devices. This test requires a hardware keyboard to properly detect key presses and validate functionality.",
+    "mobile_what_can_do": "What you can do:",
+    "mobile_options": [
+      "Use a desktop or laptop computer for the full keyboard test",
+      "Skip this test if you're on a mobile device",
+      "Return to the test menu to continue with other device tests"
+    ],
+    "skip_test": "Skip Keyboard Test"
+  },
+
+  "web_vitals": {
+    "title": "Web Vitals Dashboard",
+    "description": "Monitor your website's Core Web Vitals and performance metrics in real-time.",
+    "core_vitals": "Core Web Vitals",
+    "additional_metrics": "Additional Performance Metrics",
+    "lcp": {
+      "name": "Largest Contentful Paint",
+      "abbreviation": "LCP",
+      "description": "Time to render the largest content element",
+      "thresholds": {
+        "good": "Good: ≤ 2.5s",
+        "needs_improvement": "Needs Improvement: ≤ 4s",
+        "poor": "Poor: > 4s"
+      }
+    },
+    "fid": {
+      "name": "First Input Delay",
+      "abbreviation": "FID",
+      "description": "Time from first interaction to browser response",
+      "thresholds": {
+        "good": "Good: ≤ 100ms",
+        "needs_improvement": "Needs Improvement: ≤ 300ms",
+        "poor": "Poor: > 300ms"
+      }
+    },
+    "cls": {
+      "name": "Cumulative Layout Shift",
+      "abbreviation": "CLS",
+      "description": "Amount of unexpected layout shift",
+      "thresholds": {
+        "good": "Good: ≤ 0.1",
+        "needs_improvement": "Needs Improvement: ≤ 0.25",
+        "poor": "Poor: > 0.25"
+      }
+    },
+    "fcp": {
+      "name": "First Contentful Paint",
+      "abbreviation": "FCP",
+      "description": "Time to first contentful paint"
+    },
+    "ttfb": {
+      "name": "Time to First Byte",
+      "abbreviation": "TTFB",
+      "description": "Time to first byte from server"
+    },
+    "actions": {
+      "refresh_metrics": "Refresh Metrics",
+      "measuring": "Measuring...",
+      "back_to_tests": "Back to Tests"
+    },
+    "about": {
+      "title": "About Web Vitals",
+      "content": [
+        "Core Web Vitals are a set of real-world, user-centered metrics that quantify key aspects of the user experience. They measure dimensions of web usability such as load time, interactivity, and the stability of content as it loads.",
+        "Note: Some metrics may require user interaction to be measured accurately. Interact with the page and refresh metrics to get complete readings."
+      ]
+    },
+    "status": {
+      "measuring": "Measuring...",
+      "requires_interaction": "Requires interaction",
+      "not_available": "N/A"
+    }
   }
 }

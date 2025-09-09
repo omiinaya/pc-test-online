@@ -1,35 +1,37 @@
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export default {
     name: 'WebVitalsPage',
     setup() {
+        const { t } = useI18n();
         const measuring = ref(false);
         const vitals = ref({
             lcp: {
-                value: 'Measuring...',
+                value: t('web_vitals.status.measuring'),
                 score: 'unknown',
-                description: 'Time to render the largest content element',
+                description: t('web_vitals.lcp.description'),
             },
             fid: {
-                value: 'Measuring...',
+                value: t('web_vitals.status.measuring'),
                 score: 'unknown',
-                description: 'Time from first interaction to browser response',
+                description: t('web_vitals.fid.description'),
             },
             cls: {
-                value: 'Measuring...',
+                value: t('web_vitals.status.measuring'),
                 score: 'unknown',
-                description: 'Amount of unexpected layout shift',
+                description: t('web_vitals.cls.description'),
             },
             fcp: {
-                value: 'Measuring...',
+                value: t('web_vitals.status.measuring'),
                 score: 'unknown',
-                description: 'Time to first contentful paint',
+                description: t('web_vitals.fcp.description'),
             },
             ttfb: {
-                value: 'Measuring...',
+                value: t('web_vitals.status.measuring'),
                 score: 'unknown',
-                description: 'Time to first byte from server',
+                description: t('web_vitals.ttfb.description'),
             },
         });
 
@@ -108,7 +110,7 @@ export default {
                         vitals.value.ttfb = {
                             value: formatValue(ttfbValue),
                             score: determineScore(ttfbValue, { good: 800, needsImprovement: 1800 }),
-                            description: 'Time to first byte from server',
+                            description: t('web_vitals.ttfb.description'),
                         };
                     }
 
@@ -119,28 +121,28 @@ export default {
                         vitals.value.fcp = {
                             value: formatValue(fcpValue),
                             score: determineScore(fcpValue, { good: 1800, needsImprovement: 3000 }),
-                            description: 'Time to first contentful paint',
+                            description: t('web_vitals.fcp.description'),
                         };
                     }
 
                     // For LCP, FID, and CLS, we need more sophisticated measurement
                     // Set placeholder values for now
                     vitals.value.lcp = {
-                        value: 'Requires interaction',
+                        value: t('web_vitals.status.requires_interaction'),
                         score: 'unknown',
-                        description: 'Time to render the largest content element',
+                        description: t('web_vitals.lcp.description'),
                     };
 
                     vitals.value.fid = {
-                        value: 'Requires interaction',
+                        value: t('web_vitals.status.requires_interaction'),
                         score: 'unknown',
-                        description: 'Time from first interaction to browser response',
+                        description: t('web_vitals.fid.description'),
                     };
 
                     vitals.value.cls = {
-                        value: 'Measuring...',
+                        value: t('web_vitals.status.measuring'),
                         score: 'unknown',
-                        description: 'Amount of unexpected layout shift',
+                        description: t('web_vitals.cls.description'),
                     };
 
                     resolve();
@@ -164,27 +166,27 @@ export default {
                 lcp: {
                     value: formatValue(lcpValue),
                     score: determineScore(lcpValue, { good: 2500, needsImprovement: 4000 }),
-                    description: 'Time to render the largest content element',
+                    description: t('web_vitals.lcp.description'),
                 },
                 fid: {
                     value: formatValue(fidValue),
                     score: determineScore(fidValue, { good: 100, needsImprovement: 300 }),
-                    description: 'Time from first interaction to browser response',
+                    description: t('web_vitals.fid.description'),
                 },
                 cls: {
                     value: formatValue(clsValue, 'score'),
                     score: determineScore(clsValue, { good: 0.1, needsImprovement: 0.25 }),
-                    description: 'Amount of unexpected layout shift',
+                    description: t('web_vitals.cls.description'),
                 },
                 fcp: {
                     value: formatValue(fcpValue),
                     score: determineScore(fcpValue, { good: 1800, needsImprovement: 3000 }),
-                    description: 'Time to first contentful paint',
+                    description: t('web_vitals.fcp.description'),
                 },
                 ttfb: {
                     value: formatValue(ttfbValue),
                     score: determineScore(ttfbValue, { good: 800, needsImprovement: 1800 }),
-                    description: 'Time to first byte from server',
+                    description: t('web_vitals.ttfb.description'),
                 },
             };
         };
@@ -192,29 +194,29 @@ export default {
         const setFallbackValues = () => {
             vitals.value = {
                 lcp: {
-                    value: 'N/A',
+                    value: t('web_vitals.status.not_available'),
                     score: 'unknown',
-                    description: 'Time to render the largest content element',
+                    description: t('web_vitals.lcp.description'),
                 },
                 fid: {
-                    value: 'N/A',
+                    value: t('web_vitals.status.not_available'),
                     score: 'unknown',
-                    description: 'Time from first interaction to browser response',
+                    description: t('web_vitals.fid.description'),
                 },
                 cls: {
-                    value: 'N/A',
+                    value: t('web_vitals.status.not_available'),
                     score: 'unknown',
-                    description: 'Amount of unexpected layout shift',
+                    description: t('web_vitals.cls.description'),
                 },
                 fcp: {
-                    value: 'N/A',
+                    value: t('web_vitals.status.not_available'),
                     score: 'unknown',
-                    description: 'Time to first contentful paint',
+                    description: t('web_vitals.fcp.description'),
                 },
                 ttfb: {
-                    value: 'N/A',
+                    value: t('web_vitals.status.not_available'),
                     score: 'unknown',
-                    description: 'Time to first byte from server',
+                    description: t('web_vitals.ttfb.description'),
                 },
             };
         };
@@ -229,6 +231,7 @@ export default {
             measuring,
             measureVitals,
             getScoreClass,
+            t,
         };
     },
 };
@@ -238,56 +241,56 @@ export default {
     <div class="web-vitals-page">
         <div class="page-container">
             <header class="page-header">
-                <h1 class="page-title">Web Vitals Dashboard</h1>
+                <h1 class="page-title">{{ $t('web_vitals.title') }}</h1>
                 <p class="page-description">
-                    Monitor your website's Core Web Vitals and performance metrics in real-time.
+                    {{ $t('web_vitals.description') }}
                 </p>
             </header>
 
             <div class="vitals-grid">
                 <!-- Core Web Vitals -->
                 <div class="vitals-section">
-                    <h2 class="section-title">Core Web Vitals</h2>
+                    <h2 class="section-title">{{ $t('web_vitals.core_vitals') }}</h2>
                     <div class="metrics-grid">
                         <div class="metric-card" :class="getScoreClass(vitals.lcp.score)">
                             <div class="metric-header">
-                                <h3>Largest Contentful Paint</h3>
-                                <span class="metric-abbreviation">LCP</span>
+                                <h3>{{ $t('web_vitals.lcp.name') }}</h3>
+                                <span class="metric-abbreviation">{{ $t('web_vitals.lcp.abbreviation') }}</span>
                             </div>
                             <div class="metric-value">{{ vitals.lcp.value }}</div>
                             <div class="metric-description">{{ vitals.lcp.description }}</div>
                             <div class="metric-threshold">
-                                <span class="good">Good: ≤ 2.5s</span>
-                                <span class="needs-improvement">Needs Improvement: ≤ 4s</span>
-                                <span class="poor">Poor: > 4s</span>
+                                <span class="good">{{ $t('web_vitals.lcp.thresholds.good') }}</span>
+                                <span class="needs-improvement">{{ $t('web_vitals.lcp.thresholds.needs_improvement') }}</span>
+                                <span class="poor">{{ $t('web_vitals.lcp.thresholds.poor') }}</span>
                             </div>
                         </div>
 
                         <div class="metric-card" :class="getScoreClass(vitals.fid.score)">
                             <div class="metric-header">
-                                <h3>First Input Delay</h3>
-                                <span class="metric-abbreviation">FID</span>
+                                <h3>{{ $t('web_vitals.fid.name') }}</h3>
+                                <span class="metric-abbreviation">{{ $t('web_vitals.fid.abbreviation') }}</span>
                             </div>
                             <div class="metric-value">{{ vitals.fid.value }}</div>
                             <div class="metric-description">{{ vitals.fid.description }}</div>
                             <div class="metric-threshold">
-                                <span class="good">Good: ≤ 100ms</span>
-                                <span class="needs-improvement">Needs Improvement: ≤ 300ms</span>
-                                <span class="poor">Poor: > 300ms</span>
+                                <span class="good">{{ $t('web_vitals.fid.thresholds.good') }}</span>
+                                <span class="needs-improvement">{{ $t('web_vitals.fid.thresholds.needs_improvement') }}</span>
+                                <span class="poor">{{ $t('web_vitals.fid.thresholds.poor') }}</span>
                             </div>
                         </div>
 
                         <div class="metric-card" :class="getScoreClass(vitals.cls.score)">
                             <div class="metric-header">
-                                <h3>Cumulative Layout Shift</h3>
-                                <span class="metric-abbreviation">CLS</span>
+                                <h3>{{ $t('web_vitals.cls.name') }}</h3>
+                                <span class="metric-abbreviation">{{ $t('web_vitals.cls.abbreviation') }}</span>
                             </div>
                             <div class="metric-value">{{ vitals.cls.value }}</div>
                             <div class="metric-description">{{ vitals.cls.description }}</div>
                             <div class="metric-threshold">
-                                <span class="good">Good: ≤ 0.1</span>
-                                <span class="needs-improvement">Needs Improvement: ≤ 0.25</span>
-                                <span class="poor">Poor: > 0.25</span>
+                                <span class="good">{{ $t('web_vitals.cls.thresholds.good') }}</span>
+                                <span class="needs-improvement">{{ $t('web_vitals.cls.thresholds.needs_improvement') }}</span>
+                                <span class="poor">{{ $t('web_vitals.cls.thresholds.poor') }}</span>
                             </div>
                         </div>
                     </div>
@@ -295,12 +298,12 @@ export default {
 
                 <!-- Additional Metrics -->
                 <div class="vitals-section">
-                    <h2 class="section-title">Additional Performance Metrics</h2>
+                    <h2 class="section-title">{{ $t('web_vitals.additional_metrics') }}</h2>
                     <div class="metrics-grid additional-metrics">
                         <div class="metric-card" :class="getScoreClass(vitals.fcp.score)">
                             <div class="metric-header">
-                                <h3>First Contentful Paint</h3>
-                                <span class="metric-abbreviation">FCP</span>
+                                <h3>{{ $t('web_vitals.fcp.name') }}</h3>
+                                <span class="metric-abbreviation">{{ $t('web_vitals.fcp.abbreviation') }}</span>
                             </div>
                             <div class="metric-value">{{ vitals.fcp.value }}</div>
                             <div class="metric-description">{{ vitals.fcp.description }}</div>
@@ -308,8 +311,8 @@ export default {
 
                         <div class="metric-card" :class="getScoreClass(vitals.ttfb.score)">
                             <div class="metric-header">
-                                <h3>Time to First Byte</h3>
-                                <span class="metric-abbreviation">TTFB</span>
+                                <h3>{{ $t('web_vitals.ttfb.name') }}</h3>
+                                <span class="metric-abbreviation">{{ $t('web_vitals.ttfb.abbreviation') }}</span>
                             </div>
                             <div class="metric-value">{{ vitals.ttfb.value }}</div>
                             <div class="metric-description">{{ vitals.ttfb.description }}</div>
@@ -356,7 +359,7 @@ export default {
                             <path d="M18 21v-5h-5" />
                             <path d="M3 16.5L12 12l5.5 4" />
                         </svg>
-                        {{ measuring ? 'Measuring...' : 'Refresh Metrics' }}
+                        {{ measuring ? $t('web_vitals.actions.measuring') : $t('web_vitals.actions.refresh_metrics') }}
                     </button>
 
                     <router-link to="/" class="button button--secondary button--medium">
@@ -374,21 +377,15 @@ export default {
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                             <path d="M3 3v5h5" />
                         </svg>
-                        Back to Tests
+                        {{ $t('web_vitals.actions.back_to_tests') }}
                     </router-link>
                 </div>
             </div>
 
             <div class="info-section">
-                <h2 class="section-title">About Web Vitals</h2>
-                <p>
-                    Core Web Vitals are a set of real-world, user-centered metrics that quantify key
-                    aspects of the user experience. They measure dimensions of web usability such as
-                    load time, interactivity, and the stability of content as it loads.
-                </p>
-                <p>
-                    <strong>Note:</strong> Some metrics may require user interaction to be measured
-                    accurately. Interact with the page and refresh metrics to get complete readings.
+                <h2 class="section-title">{{ $t('web_vitals.about.title') }}</h2>
+                <p v-for="(paragraph, index) in $t('web_vitals.about.content')" :key="index">
+                    {{ paragraph }}
                 </p>
             </div>
         </div>

@@ -34,7 +34,7 @@
       "description": "Prueba tu teclado presionando teclas y verificando que se registren correctamente."
     },
     "mouse": {
-      "name": "Prueba de Ratón",
+      "name": "Pruceba de Ratón",
       "shortName": "Ratón",
       "description": "Prueba tu ratón haciendo clic en botones y desplazándote para verificar la funcionalidad."
     },
@@ -46,7 +46,7 @@
     "battery": {
       "name": "Prueba de Batería",
       "shortName": "Batería",
-      "description": "Prueba tu batería y funcionalidad de carga siguiendo las instrucciones."
+      "description": "Prueba tu batería y funcionalidad de carga sigiendo las instrucciones."
     },
     "completed": {
       "name": "Todas las Pruebas Completadas",
@@ -138,13 +138,14 @@
     "minimize": "Minimizar",
     "maximize": "Maximizar",
     "fullscreen": "Pantalla Completa",
-    "exitFullscreen": "Salir de Pantalla Completa"
+    "exitFullscreen": "Salir de Pantalla Completa",
+    "view_source_code": "Ver Código Fuente en GitHub"
   },
   
   "permissions": {
     "camera": "Acceso a Cámara",
     "microphone": "Acceso a Micrófono",
-    "speaker": "Acceso a Altavoces",
+    "speaker": "Acceso to Altavoces",
     "location": "Acceso a Ubicación",
     "notifications": "Notificaciones",
     "storage": "Acceso a Almacenamiento",
@@ -173,18 +174,98 @@
   
   "about": {
     "title": "Acerca de MMIT Lab",
-    "description": "Pruebas de hardware completas hechas simples y accesibles",
-    "features": "Características Principales",
-    "technology": "Construido Con",
-    "version": "Información de Versión",
-    "support": "Soporte y Contacto",
-    "credits": "Créditos y Agradecimientos",
-    "featureCamera": "Pruebas de Cámara - Prueba múltiples cámaras, verifica la calidad de video y la funcionalidad de cambio de cámara.",
-    "featureAudio": "Pruebas de Audio - Pruebas completas de micrófono y altavoces con monitoreo de niveles de audio en tiempo real.",
-    "featureInput": "Pruebas de Entrada - Prueba teclas del teclado, botones del ratón, ruedas de desplazamiento y capacidad de respuesta de la pantalla táctil.",
-    "featureBattery": "Pruebas de Batería - Monitorea la salud de la batería, estado de carga y capacidades de gestión de energía.",
-    "featurePerformance": "Monitoreo de Rendimiento - Métricas de rendimiento en tiempo real y monitoreo de Web Vitals para una experiencia óptima.",
-    "featureReports": "Informes Detallados - Exporta resultados completos de pruebas en múltiples formatos (PDF, JSON, CSV)."
+    "subtitle": "Pruebas de hardware completas hechas simples y accesibles",
+    "what_is_mmit": {
+      "title": "¿Qué es MMIT Lab?",
+      "paragraphs": [
+        "MMIT Lab es un conjunto completo de pruebas de hardware diseñado para ayudar a los usuarios a probar exhaustivamente sus dispositivos y garantizar un rendimiento óptimo. Nuestra plataforma proporciona pruebas fáciles de usar para cámaras, micrófonos, altavoces, teclados, ratones, pantallas táctiles y sistemas de batería.",
+        "Ya sea que esté solucionando problemas de hardware, verificando la funcionalidad del dispositivo antes de una compra o realizando controles de mantenimiento de rutina, MMIT Lab proporciona las herramientas que necesita en una interfaz simple e intuitiva."
+      ]
+    },
+    "features": {
+      "title": "Características Principales",
+      "camera": {
+        "title": "Pruebas de Cámara",
+        "description": "Prueba múltiples cámaras, verifica la calidad de video y la funcionalidad de cambio de cámara."
+      },
+      "audio": {
+        "title": "Pruebas de Audio",
+        "description": "Pruebas completas de micrófono y altavoces con monitoreo de nivel de audio en tiempo real."
+      },
+      "input": {
+        "title": "Pruebas de Entrada",
+        "description": "Prueba teclas del teclado, botones del ratón, ruedas de desplazamiento y capacidad de respuesta de la pantalla táctil."
+      },
+      "battery": {
+        "title": "Pruebas de Batería",
+        "description": "Monitorea la salud de la batería, estado de carga y capacidades de gestión de energía."
+      },
+      "performance": {
+        "title": "Monitoreo de Rendimiento",
+        "description": "Métricas de rendimiento en tiempo real y monitoreo de Web Vitals para una experiencia óptima."
+      },
+      "reports": {
+        "title": "Informes Detallados",
+        "description": "Exporta resultados completos de pruebas en múltiples formatos (PDF, JSON, CSV)."
+      }
+    },
+    "technology": {
+      "title": "Construido Con",
+      "frontend": "Frontend",
+      "testing": "Pruebas",
+      "tools": "Herramientas"
+    },
+    "version": {
+      "title": "Información de Versión",
+      "current_version": "Versión Actual",
+      "release_date": "Fecha de Lanzamiento",
+      "build": "Compilación",
+      "environment": "Entorno",
+      "environment_dev": "Desarrollo",
+      "environment_prod": "Producción",
+      "recent_updates": "Actualizaciones Recientes",
+      "updates": [
+        "✨ Pruebas de batería completas añadidas",
+        "🎨 Interfaz de usuario mejorada con diseño moderno",
+        "📊 Monitoreo de rendimiento mejorado",
+        "🔧 Mejor manejo de errores y reportes",
+        "📱 Mejor capacidad de respuesta móvil"
+      ]
+    },
+    "support": {
+      "title": "Soporte y Contacto",
+      "email": {
+        "title": "Soporte por Email",
+        "response_time": "Normalmente respondemos dentro de 24 horas"
+      },
+      "documentation": {
+        "title": "Documentación",
+        "description": "Guías completas y documentación de API",
+        "link": "Ver Documentación"
+      },
+      "issues": {
+        "title": "Reportar Problemas",
+        "description": "¿Encontraste un error o tienes una sugerencia?",
+        "link": "Enviar Problema"
+      }
+    },
+    "credits": {
+      "title": "Créditos y Agradecimientos",
+      "description": "MMIT Lab es posible gracias a la comunidad de código abierto y varios estándares web que permiten el acceso al hardware a través de navegadores.",
+      "special_thanks": "Agradecimientos Especiales",
+      "icons_assets": "Iconos y Recursos",
+      "thanks_list": [
+        "Equipo de Plataforma Web por MediaDevices API",
+        "Equipo Principal de Vue.js",
+        "Fabricantes de navegadores por implementaciones de API",
+        "Contribuyentes de código abierto"
+      ],
+      "assets_list": [
+        "Iconos de emoji de Unicode Consortium",
+        "Iconos SVG de Feather Icons",
+        "Ilustraciones y gráficos personalizados"
+      ]
+    }
   },
   
   "sidebar": {
@@ -245,6 +326,86 @@
     "custom": "Personalizado"
   },
 
+  "errors": {
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Ocurrió un error inesperado. Por favor intenta actualizar la página."
+    },
+    "update_available": {
+      "title": "Actualización Disponible",
+      "message": "Una nueva versión de la aplicación está disponible. Por favor recarga para obtener la última versión."
+    },
+    "network": {
+      "title": "Problema de Conexión",
+      "message": "No se puede conectar al servidor. Por favor verifica tu conexión a internet e intenta de nuevo."
+    },
+    "technical_details": "Detalles Técnicos",
+    "permission": {
+      "camera_denied": "Acceso a Cámara Denegado",
+      "camera_enable_settings": "Por favor habilita los permisos de cámara en la configuración de tu navegador e intenta de nuevo.",
+      "microphone_dened": "Acceso a Micrófono Denegado",
+      "microphone_enable_settings": "Por favor habilita los permisos de micrófono en la configuración de tu navegador e intenta de nuevo.",
+      "speaker_denied": "Acceso a Altavoces Denegado",
+      "speaker_enable_settings": "Por favor habilita los permisos de altavoces en la configuración de tu navegador e intenta de nuevo."
+    },
+    "device": {
+      "camera_not_found": "No se Encontraron Cámaras",
+      "camera_not_connected": "No se detectaron cámaras en tu sistema. Por favor asegúrate de que tu cámara esté correctamente conectada.",
+      "microphone_not_found": "No se Encontraron Micrófonos",
+      "microphone_not_connected": "No se detectaron micrófonos en tu sistema. Por favor asegúrate de que tu micrófono esté correctamente conectado.",
+      "speaker_not_found": "No se Encontraron Altavoces",
+      "speaker_not_connected": "No se detectaron altavoces en tu sistema. Por favor asegúrate de que tus altavoces estén correctamente conectados.",
+      "camera_error": "Error de Cámara",
+      "microphone_error": "Error de Micrófono",
+      "speaker_error": "Error de Altavoces",
+      "device_not_found": "Dispositivo no encontrado: {deviceType}",
+      "battery_not_supported": "API de Batería No Compatible",
+      "browser_not_support_battery": "Tu navegador no admite la detección del estado de la batería."
+    },
+    "browser": {
+      "compatibility_notice": "⚠️ Aviso de Compatibilidad del Navegador",
+      "recommendation": "Recomendación: {browser}"
+    },
+    "audio_analysis": "Error al configurar el análisis de audio: {error}",
+    "audio_playback": "Error al reproducir sonido: {error}",
+    "autoplay_policy": "Por favor haz clic en los botones de altavoz para iniciar la reproducción de audio. El navegador requiere interacción del usuario para el audio."
+  },
+
+  "device_testing": {
+    "permission": {
+      "camera_required": "Permiso de Cámara Requerido",
+      "camera_grant_access": "Por favor permite el acceso a la cámara para probar tu webcam.",
+      "camera_grant_button": "Conceder Acceso a Cámara",
+      "microphone_required": "Permiso de Micrófono Requerido",
+      "microphone_grant_access": "Por favor permite el acceso al micrófono para probar tu micrófono.",
+      "microphone_grant_button": "Conceder Acceso a Micrófono"
+    },
+    "detection": {
+      "detecting_cameras": "Detectando cámaras...",
+      "detecting_microphones": "Detectando micrófonos...",
+      "detecting_speakers": "Detectando altavoces...",
+      "please_wait_search": "Por favor espera mientras buscamos {deviceType} disponibles",
+      "detecting_devices": "Detectando {deviceType}s...",
+      "searching_devices": "Por favor espera mientras buscamos {deviceType}s disponibles",
+      "no_devices_found": "No se encontraron {deviceType}s",
+      "no_devices_message": "No se encontraron {deviceType}s en tu sistema.",
+      "select_device": "Seleccionar {deviceType}"
+    },
+    "webcam": {
+      "camera_preview": "Vista previa de cámara para pruebas",
+      "live_feed": "Transmisión en vivo de cámara para fines de prueba"
+    },
+    "microphone": {
+      "volume_meter": "Indicador de nivel de volumen"
+    },
+    "speaker": {
+      "left_channel": "Izquierdo",
+      "right_channel": "Derecho",
+      "both_channels": "Ambos",
+      "test_sound": "Prueba de reproducción de sonido"
+    }
+  },
+
   "touchTest": {
     "startPrompt": "Toca en cualquier lugar para comenzar la prueba táctil",
     "tapToBegin": "Toca en cualquier lugar para comenzar",
@@ -264,9 +425,136 @@
     }
   },
 
+  "performance": {
+    "monitor": "Monitor de Rendimiento",
+    "web_vitals": "Core Web Vitals",
+    "browser_capabilities": "Capacidades del Navegador",
+    "score": "Puntuación",
+    "web_vitals_score": "Web Vitals",
+    "browser_support_score": "Soporte del Navegador",
+    "vitals": {
+      "lcp": "Largest Contentful Paint",
+      "fid": "First Input Delay",
+      "cls": "Cumulative Layout Shift",
+      "fcp": "First Contentful Paint",
+      "ttfb": "Time to First Byte",
+      "memory": "Memoria",
+      "memory_description": "Tamaño del Montón JS"
+    }
+  },
+
   "alerts": {
     "pdfGenerationError": "Error al generar PDF. Por favor, inténtalo de nuevo.",
     "errorDetailsCopied": "Detalles del error copiados al portapapeles",
     "unableToCopyErrorDetails": "No se pudieron copiar los detalles del error"
+  },
+
+  "footer": {
+    "buyMeCoffee": "Invítame un café",
+    "builtWith": "Construido con 🤖",
+    "webVitals": "Web Vitals",
+    "resetTests": "Reiniciar Pruebas",
+    "exportResults": "Exportar Resultados"
+  },
+  
+  "battery": {
+    "chargeLabel": "Carga",
+    "statusLabel": "Estado",
+    "charging": "Cargando",
+    "notCharging": "No Cargando",
+    "step1": {
+      "title": "Paso 1: Conectar Cargador",
+      "description": "Por favor, conecta tu cargador para comenzar la prueba."
+    },
+    "step2": {
+      "title": "Desconectar Cargador",
+      "description": "Por favor, desconecta tu cargador para continuar."
+    },
+    "step3": {
+      "title": "Prueba Completada",
+      "description": "La detección del estado de la batería está funcionando."
+    },
+    "ready": {
+      "title": "Prueba de Batería Lista",
+      "description": "El estado de la batería está siendo detectado."
+    },
+    "startingTest": "Iniciando prueba en {seconds}s..."
+  },
+
+
+  "keyboard": {
+    "mobile_unavailable": "Prueba de Teclado No Disponible en Móvil",
+    "mobile_description": "La prueba de teclado está diseñada para teclados físicos y no está disponible en dispositivos móviles. Esta prueba requiere un teclado de hardware para detectar correctamente las pulsaciones de teclas y validar la funcionalidad.",
+    "mobile_what_can_do": "¿Qué puedes hacer?",
+    "mobile_options": [
+      "Usa una computadora de escritorio o portátil para la prueba completa de teclado",
+      "Omite esta prueba si estás en un dispositivo móvil",
+      "Regresa al menú de pruebas para continuar con otras pruebas de dispositivos"
+    ],
+    "skip_test": "Omitir Prueba de Teclado"
+  },
+
+  "web_vitals": {
+    "title": "Panel de Web Vitals",
+    "description": "Monitorea las Core Web Vitals y métricas de rendimiento de tu sitio web en tiempo real.",
+    "core_vitals": "Core Web Vitals",
+    "additional_metrics": "Métricas de Rendimiento Adicionales",
+    "lcp": {
+      "name": "Largest Contentful Paint",
+      "abbreviation": "LCP",
+      "description": "Tiempo para renderizar el elemento de contenido más grande",
+      "thresholds": {
+        "good": "Bueno: ≤ 2.5s",
+        "needs_improvement": "Necesita Mejora: ≤ 4s",
+        "poor": "Pobre: > 4s"
+      }
+    },
+    "fid": {
+      "name": "First Input Delay",
+      "abbreviation": "FID",
+      "description": "Tiempo desde la primera interacción hasta la respuesta del navegador",
+      "thresholds": {
+        "good": "Bueno: ≤ 100ms",
+        "needs_improvement": "Necesita Mejora: ≤ 300ms",
+        "poor": "Pobre: > 300ms"
+      }
+    },
+    "cls": {
+      "name": "Cumulative Layout Shift",
+      "abbreviation": "CLS",
+      "description": "Cantidad de cambio de diseño inesperado",
+      "thresholds": {
+        "good": "Bueno: ≤ 0.1",
+        "needs_improvement": "Necesita Mejora: ≤ 0.25",
+        "poor": "Pobre: > 0.25"
+      }
+    },
+    "fcp": {
+      "name": "First Contentful Paint",
+      "abbreviation": "FCP",
+      "description": "Tiempo hasta el primer contenido pintado"
+    },
+    "ttfb": {
+      "name": "Time to First Byte",
+      "abbreviation": "TTFB",
+      "description": "Tiempo hasta el primer byte del servidor"
+    },
+    "actions": {
+      "refresh_metrics": "Actualizar Métricas",
+      "measuring": "Midiendo...",
+      "back_to_tests": "Volver a Pruebas"
+    },
+    "about": {
+      "title": "Acerca de Web Vitals",
+      "content": [
+        "Core Web Vitals son un conjunto de métricas centradas en el usuario que cuantifican aspectos clave de la experiencia del usuario. Miden dimensiones de la usabilidad web como el tiempo de carga, la interactividad y la estabilidad del contenido mientras se carga.",
+        "Nota: Algunas métricas pueden requerir interacción del usuario para medirse con precisión. Interactúa con la página y actualiza las métricas para obtener lecturas completas."
+      ]
+    },
+    "status": {
+      "measuring": "Midiendo...",
+      "requires_interaction": "Requiere interacción",
+      "not_available": "N/A"
+    }
   }
 }
