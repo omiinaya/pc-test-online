@@ -1292,7 +1292,6 @@ export default {
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="brand-icon">📋</div>
                 <h2>{{ $t('navigation.tests') }}</h2>
             </div>
             <nav class="test-navigation">
@@ -1447,7 +1446,6 @@ export default {
         <!-- Right Sidebar - Simple Navigation Style -->
         <aside class="sidebar right-sidebar">
             <div class="sidebar-header">
-                <div class="brand-icon">📋</div>
                 <h2>{{ $t('sidebar.summary') }}</h2>
             </div>
             <nav class="test-navigation">

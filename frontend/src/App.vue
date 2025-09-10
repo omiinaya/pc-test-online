@@ -1122,7 +1122,6 @@ export default {
             >
                 <div class="summary-modal-content" @click.stop>
                     <div class="sidebar-header">
-                        <div class="brand-icon">📋</div>
                         <h2>{{ t('sidebar.summary') }}</h2>
                         <button @click="showSummaryModal = false" class="close-modal-btn">
                             {{ t('ui.closeSymbol') }}
