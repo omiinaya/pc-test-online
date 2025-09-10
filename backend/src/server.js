@@ -49,7 +49,23 @@ app.use((req, res, next) => {
 app.use(i18n.init);
 
 // Enhanced middleware with i18n support
-app.use(helmet());
+// Configure helmet with CSP that allows Vue to work properly
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'", "http:", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "http:", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "http:", "https:"],
+      imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
+      mediaSrc: ["'self'", "mediastream:", "blob:", "http:", "https:"],
+      connectSrc: ["'self'", "ws:", "wss:", "http:", "https:"],
+      fontSrc: ["'self'", "http:", "https:"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'self'"],
+      workerSrc: ["'self'", "blob:"]
+    }
+  }
+}));
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
