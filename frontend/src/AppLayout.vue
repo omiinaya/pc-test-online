@@ -50,6 +50,9 @@ export default {
         handleToggleExportMenu() {
             this.footerState.showExportMenu = !this.footerState.showExportMenu;
         },
+        handleCloseExportMenu() {
+            this.footerState.showExportMenu = false;
+        },
         handleExportPdf() {
             // Dispatch a global event that TestsPage can listen to
             window.dispatchEvent(new CustomEvent('app-footer-export-pdf'));
@@ -86,6 +89,7 @@ export default {
             :total-tests="footerState.totalTests"
             @reset-tests="handleResetTests"
             @toggle-export-menu="handleToggleExportMenu"
+            @close-export-menu="handleCloseExportMenu"
             @export-pdf="handleExportPdf"
             @export-json="handleExportJson"
             @export-csv="handleExportCsv"
