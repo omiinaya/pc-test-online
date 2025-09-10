@@ -17,6 +17,37 @@ export interface WebRTCCapabilities {
     audioContext: boolean;
 }
 
+// Extended Navigator interface for legacy getUserMedia APIs
+interface NavigatorWithLegacyMedia extends Navigator {
+    webkitGetUserMedia?: (
+        constraints: MediaStreamConstraints,
+        success: (stream: MediaStream) => void,
+        error: (error: Error) => void
+    ) => void;
+    mozGetUserMedia?: (
+        constraints: MediaStreamConstraints,
+        success: (stream: MediaStream) => void,
+        error: (error: Error) => void
+    ) => void;
+    msGetUserMedia?: (
+        constraints: MediaStreamConstraints,
+        success: (stream: MediaStream) => void,
+        error: (error: Error) => void
+    ) => void;
+}
+
+// Extended Window interface for WebRTC APIs
+interface WindowWithWebRTC extends Window {
+    RTCPeerConnection?: typeof RTCPeerConnection;
+    webkitRTCPeerConnection?: typeof RTCPeerConnection;
+    mozRTCPeerConnection?: typeof RTCPeerConnection;
+    MediaRecorder?: typeof MediaRecorder;
+    AudioContext?: typeof AudioContext;
+    webkitAudioContext?: typeof AudioContext;
+}
+
+// Electron API interfaces removed since Electron is no longer used
+
 export interface WebRTCCompatibilityState {
     isSupported: boolean;
     capabilities: WebRTCCapabilities;
@@ -84,11 +115,12 @@ export function useWebRTCCompatibility() {
         const warnings = state.value.compatibilityWarnings;
 
         // Check getUserMedia support
+        const nav = navigator as NavigatorWithLegacyMedia;
         capabilities.getUserMedia = !!(
             navigator.mediaDevices?.getUserMedia ||
-            (navigator as any).webkitGetUserMedia ||
-            (navigator as any).mozGetUserMedia ||
-            (navigator as any).msGetUserMedia
+            nav.webkitGetUserMedia ||
+            nav.mozGetUserMedia ||
+            nav.msGetUserMedia
         );
 
         // Check getDisplayMedia support (screen sharing)
@@ -98,19 +130,18 @@ export function useWebRTCCompatibility() {
         capabilities.enumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
 
         // Check MediaRecorder support
-        capabilities.mediaRecorder = !!(window as any).MediaRecorder;
+        const win = window as WindowWithWebRTC;
+        capabilities.mediaRecorder = !!win.MediaRecorder;
 
         // Check RTCPeerConnection support
         capabilities.webRTC = !!(
-            (window as any).RTCPeerConnection ||
-            (window as any).webkitRTCPeerConnection ||
-            (window as any).mozRTCPeerConnection
+            win.RTCPeerConnection ||
+            win.webkitRTCPeerConnection ||
+            win.mozRTCPeerConnection
         );
 
         // Check AudioContext support
-        capabilities.audioContext = !!(
-            (window as any).AudioContext || (window as any).webkitAudioContext
-        );
+        capabilities.audioContext = !!(win.AudioContext || win.webkitAudioContext);
 
         // Generate compatibility warnings
         if (!capabilities.getUserMedia) {
@@ -168,22 +199,7 @@ export function useWebRTCCompatibility() {
         }
 
         try {
-            // Check if running in Electron
-            const isElectron = !!(window as any).electronAPI && !!(window as any).electronMedia;
-
-            if (isElectron) {
-                console.log('Using Electron getUserMedia flow');
-
-                // For Electron, add a small delay to ensure permissions are set up
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                // For Electron, we still use the standard API but with better error handling
-                if (navigator.mediaDevices?.getUserMedia) {
-                    return await navigator.mediaDevices.getUserMedia(constraints);
-                } else {
-                    throw new Error('Electron: navigator.mediaDevices.getUserMedia not available');
-                }
-            }
+            // Electron-specific code removed since Electron is no longer used
 
             // Modern API for browsers
             if (navigator.mediaDevices?.getUserMedia) {
@@ -191,10 +207,9 @@ export function useWebRTCCompatibility() {
             }
 
             // Legacy APIs with Promise wrapper
+            const nav = navigator as NavigatorWithLegacyMedia;
             const legacyGetUserMedia =
-                (navigator as any).webkitGetUserMedia ||
-                (navigator as any).mozGetUserMedia ||
-                (navigator as any).msGetUserMedia;
+                nav.webkitGetUserMedia || nav.mozGetUserMedia || nav.msGetUserMedia;
 
             if (legacyGetUserMedia) {
                 return new Promise((resolve, reject) => {
@@ -206,10 +221,9 @@ export function useWebRTCCompatibility() {
         } catch (error) {
             console.error('getUserMedia error:', error);
 
-            // Provide helpful error messages based on browser/Electron
+            // Provide helpful error messages
             if (error instanceof Error) {
-                const isElectron = !!(window as any).electronAPI;
-                const errorPrefix = isElectron ? 'Electron: ' : '';
+                const errorPrefix = '';
 
                 if (error.name === 'NotAllowedError') {
                     throw new Error(
@@ -253,14 +267,17 @@ export function useWebRTCCompatibility() {
 
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            
+
             // Debug log to see what devices are actually enumerated
-            console.log('DEBUG: Enumerated devices:', devices.map(d => ({
-                kind: d.kind,
-                label: d.label,
-                deviceId: d.deviceId
-            })));
-            
+            console.log(
+                'DEBUG: Enumerated devices:',
+                devices.map(d => ({
+                    kind: d.kind,
+                    label: d.label,
+                    deviceId: d.deviceId,
+                }))
+            );
+
             // Additional handling for audio output devices
             // Many browsers don't enumerate audio output devices via standard API
             const processedDevices = devices.map(device => ({
@@ -269,17 +286,23 @@ export function useWebRTCCompatibility() {
                 label: device.label || `${device.kind} ${device.deviceId.slice(0, 8)}`,
                 groupId: device.groupId,
             }));
-            
+
             // Check if we have any audio output devices and log for debugging
             const audioOutputDevices = processedDevices.filter(d => d.kind === 'audiooutput');
-            console.log('DEBUG: Audio output devices found:', audioOutputDevices.length, audioOutputDevices);
-            
+            console.log(
+                'DEBUG: Audio output devices found:',
+                audioOutputDevices.length,
+                audioOutputDevices
+            );
+
             // Fallback for audio output: if no audio output devices are found but we have audio input,
             // assume there's a default audio output available (most systems have this)
             if (audioOutputDevices.length === 0) {
                 const hasAudioInput = processedDevices.some(d => d.kind === 'audioinput');
                 if (hasAudioInput) {
-                    console.log('DEBUG: No audio output devices enumerated, but audio input exists. Adding default audio output device.');
+                    console.log(
+                        'DEBUG: No audio output devices enumerated, but audio input exists. Adding default audio output device.'
+                    );
                     processedDevices.push({
                         deviceId: 'default',
                         kind: 'audiooutput',
@@ -288,7 +311,7 @@ export function useWebRTCCompatibility() {
                     });
                 }
             }
-            
+
             return processedDevices;
         } catch (error) {
             console.error('enumerateDevices error:', error);

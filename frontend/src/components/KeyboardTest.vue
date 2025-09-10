@@ -227,10 +227,10 @@ export default {
         };
 
         // Helper method to convert old style classes to BEM modifiers
-        const getKeyModifierClass = (style) => {
+        const getKeyModifierClass = style => {
             if (!style) return '';
             const styleMap = {
-                'utility': 'keyboard__key--utility',
+                utility: 'keyboard__key--utility',
                 'key-space': 'keyboard__key--space',
                 'key-backspace': 'keyboard__key--backspace',
                 'key-tab': 'keyboard__key--tab',
@@ -240,7 +240,7 @@ export default {
                 'key-shift-right': 'keyboard__key--shift-right',
                 'key-backslash': 'keyboard__key--backslash',
                 'key-blank': 'keyboard__key--blank',
-                'key-blank-f': 'keyboard__key--blank-f'
+                'key-blank-f': 'keyboard__key--blank-f',
             };
             return styleMap[style] || '';
         };
@@ -298,9 +298,14 @@ export default {
                     <strong>{{ $t('keyboard.mobile_what_can_do') }}</strong>
                 </p>
                 <ul>
-                    <li v-for="(option, index) in $t('keyboard.mobile_options')" :key="index">{{ option }}</li>
+                    <li v-for="(option, index) in $t('keyboard.mobile_options')" :key="index">
+                        {{ option }}
+                    </li>
                 </ul>
-                <button class="button button--primary button--medium" @click="$emit('test-skipped')">
+                <button
+                    class="button button--primary button--medium"
+                    @click="$emit('test-skipped')"
+                >
                     {{ $t('keyboard.skip_test') }}
                 </button>
             </div>

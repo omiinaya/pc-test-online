@@ -31,6 +31,15 @@ export interface BrowserCapabilities {
     supportsIntersectionObserver: boolean;
 }
 
+// Extended Performance interface with memory API
+interface PerformanceWithMemory extends Performance {
+    memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+    };
+}
+
 export interface PerformanceBudget {
     LCP: number; // < 2.5s good, < 4.0s needs improvement
     FID: number; // < 100ms good, < 300ms needs improvement
@@ -106,7 +115,7 @@ export function usePerformance() {
 
         // Feature detection
         capabilities.value.supportsWebVitals = !!(window.performance && window.PerformanceObserver);
-        capabilities.value.supportsMemoryAPI = !!(performance as any).memory;
+        capabilities.value.supportsMemoryAPI = !!(performance as PerformanceWithMemory).memory;
         capabilities.value.supportsNavigationTiming = !!(
             window.performance && window.performance.navigation
         );
@@ -253,7 +262,7 @@ export function usePerformance() {
 
         // Memory usage (Chrome only)
         if (capabilities.value.supportsMemoryAPI) {
-            const memory = (performance as any).memory;
+            const memory = (performance as PerformanceWithMemory).memory;
             metrics.value.memoryUsage = Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
         }
     };

@@ -23,7 +23,7 @@ export default {
     mounted() {
         // Set up global event handlers for AppFooter actions
         this.setupGlobalEventHandlers();
-        
+
         // Debug router state
         console.log('AppLayout mounted - route:', this.$route);
         console.log('Router matched:', this.$route.matched);
@@ -64,7 +64,7 @@ export default {
         },
         setupGlobalEventHandlers() {
             // Set up event listeners for global events from TestsPage
-            window.addEventListener('tests-page-update-footer', (event) => {
+            window.addEventListener('tests-page-update-footer', event => {
                 this.handleFooterUpdate(event.detail);
             });
         },
@@ -79,7 +79,7 @@ export default {
             <component :is="Component" @update-footer="handleFooterUpdate" />
         </router-view>
         <!-- Fallback: If router-view is empty, show TestsPage directly -->
-        <TestsPage v-if="showFallback" @update-footer="handleFooterUpdate" ref="testsPageComponent" />
+        <TestsPage v-if="showFallback" @update-footer="handleFooterUpdate" />
         <AppFooter
             :show-export-menu="footerState.showExportMenu"
             :completed-tests="footerState.completedTests"

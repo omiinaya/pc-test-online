@@ -336,7 +336,6 @@ export default {
     margin-top: var(--spacing-md);
 }
 
-
 .spinning {
     animation: spin var(--animation-morphing) linear infinite;
 }

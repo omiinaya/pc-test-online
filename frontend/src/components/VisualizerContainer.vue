@@ -101,7 +101,7 @@ export default {
         transform var(--transition-morphing) ease-out,
         opacity var(--transition-morphing) ease-out,
         box-shadow var(--animation-slower) ease-out;
-    
+
     /* Will-change hints for browser optimization */
     will-change: transform, opacity;
 }
@@ -133,7 +133,7 @@ export default {
             opacity var(--transition-morphing) ease-out,
             box-shadow var(--animation-slower) ease-out;
     }
-    
+
     .visualizer--keyboard-mode {
         padding: var(--spacing-md);
         max-width: none;

@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue';
+import { ref, onUnmounted, nextTick, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
@@ -33,12 +33,7 @@ export default {
 
         // Canvas for waveform visualization
         const waveformCanvas = ref(null);
-        const {
-            context: canvasCtx,
-            initializeCanvas,
-            resizeCanvas,
-            clearCanvas,
-        } = useCanvas(waveformCanvas);
+        const { context: canvasCtx, initializeCanvas, clearCanvas } = useCanvas(waveformCanvas);
 
         // Animation management
         const { requestAnimationFrame, cleanupAnimations } = useAnimations();
@@ -75,7 +70,7 @@ export default {
                 // Setup audio context and analyser only if not already created
                 if (!audioContext.value || audioContext.value.state === 'closed') {
                     audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
-                    
+
                     // Handle suspended state (common in browsers with autoplay restrictions)
                     if (audioContext.value.state === 'suspended') {
                         await audioContext.value.resume();
@@ -84,7 +79,9 @@ export default {
 
                 if (!analyser.value) {
                     analyser.value = audioContext.value.createAnalyser();
-                    const source = audioContext.value.createMediaStreamSource(deviceTest.stream.value);
+                    const source = audioContext.value.createMediaStreamSource(
+                        deviceTest.stream.value
+                    );
                     source.connect(analyser.value);
                     analyser.value.fftSize = 2048;
                     dataArray.value = new Uint8Array(analyser.value.frequencyBinCount);
@@ -338,7 +335,11 @@ export default {
                 <StatePanel
                     state="loading"
                     :title="$t('device_testing.detection.detecting_microphones')"
-                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'microphones' })"
+                    :message="
+                        $t('device_testing.detection.please_wait_search', {
+                            deviceType: 'microphones',
+                        })
+                    "
                 />
             </div>
 
@@ -396,7 +397,9 @@ export default {
                 </li>
             </ul>
             <div v-if="recommendedBrowser" class="recommendation">
-                <strong>{{ $t('errors.browser.recommendation', { browser: recommendedBrowser }) }}</strong>
+                <strong>{{
+                    $t('errors.browser.recommendation', { browser: recommendedBrowser })
+                }}</strong>
             </div>
         </div>
     </div>
@@ -461,7 +464,6 @@ export default {
     border-radius: var(--border-radius-small);
     box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
 }
-
 
 .compatibility-warnings {
     background: var(--warning-bg, #fff8e1);

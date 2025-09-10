@@ -138,10 +138,7 @@ export default {
                 battery: this.t('tests.battery.description'),
                 testsCompleted: this.t('tests.completed.description'),
             };
-            return (
-                descriptionMap[this.activeTest] ||
-                this.t('tests.webcam.description')
-            );
+            return descriptionMap[this.activeTest] || this.t('tests.webcam.description');
         },
         // Dynamic component mapping for keep-alive functionality
         currentTestComponent() {
@@ -825,7 +822,7 @@ export default {
                 this.t('results.testDetails'),
                 this.t('status.status'),
                 this.t('results.runCount'),
-                this.t('results.duration') + ' (s)'
+                `${this.t('results.duration')} (s)`,
             ];
             const rows = [header];
             const tests = Object.keys(this.results);
@@ -917,18 +914,12 @@ export default {
 <template>
     <div v-if="!isMobile" class="app-layout">
         <!-- App Header with test title only in navbar -->
-        <AppHeader
-            :test-title="currentTestTitle"
-            :test-icon="currentTestIcon"
-        />
+        <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />
 
         <!-- Main Content Only - Sidebars removed to avoid duplication with TestsPage.vue -->
         <main class="main-content">
             <!-- Test Header with description only -->
-            <TestHeader
-                :test-description="currentTestDescription"
-                :center-align="true"
-            />
+            <TestHeader :test-description="currentTestDescription" :center-align="true" />
 
             <!-- Single persistent VisualizerContainer for smooth morphing -->
             <VisualizerContainer
@@ -1004,13 +995,22 @@ export default {
         <!-- Mobile Footer with Test Actions and Navigation -->
         <footer class="mobile-footer">
             <div class="mobile-action-buttons" v-if="activeTest !== 'testsCompleted'">
-                <button @click="onTestFailed(activeTest)" class="button button--danger button--medium">
+                <button
+                    @click="onTestFailed(activeTest)"
+                    class="button button--danger button--medium"
+                >
                     {{ t('buttons.fail') }}
                 </button>
-                <button @click="onTestCompleted(activeTest)" class="button button--success button--medium">
+                <button
+                    @click="onTestCompleted(activeTest)"
+                    class="button button--success button--medium"
+                >
                     {{ t('buttons.pass') }}
                 </button>
-                <button @click="onTestSkipped(activeTest)" class="button button--skip button--medium">
+                <button
+                    @click="onTestSkipped(activeTest)"
+                    class="button button--skip button--medium"
+                >
                     {{ t('buttons.skip') }}
                 </button>
             </div>
@@ -1057,19 +1057,22 @@ export default {
                     <div class="mobile-summary-body">
                         <div class="test-summary">
                             <div class="test-summary__overview">
-                                <div class="test-summary__badge" :class="`test-summary__badge--${summaryClass}`">
+                                <div
+                                    class="test-summary__badge"
+                                    :class="`test-summary__badge--${summaryClass}`"
+                                >
                                     <span class="test-summary__completion-text"
-                                        >{{ $t('export.summaryLabels.completed') }} {{ completedTestsCount }}/{{
-                                            totalTestsCount
-                                        }}</span
+                                        >{{ $t('export.summaryLabels.completed') }}
+                                        {{ completedTestsCount }}/{{ totalTestsCount }}</span
                                     >
                                 </div>
                             </div>
-                            
+
                             <div class="test-summary__results">
                                 <div v-if="pendingTests.length > 0" class="test-summary__section">
                                     <div class="test-summary__section-header">
-                                        <span class="test-summary__section-label test-summary__section-label--pending"
+                                        <span
+                                            class="test-summary__section-label test-summary__section-label--pending"
                                             >Pending: {{ pendingTests.length }}</span
                                         >
                                     </div>
@@ -1086,9 +1089,13 @@ export default {
                                     </ul>
                                 </div>
                                 <div v-if="failedTests.length > 0" class="test-summary__section">
-                                    <div v-if="pendingTests.length > 0" class="test-summary__divider"></div>
+                                    <div
+                                        v-if="pendingTests.length > 0"
+                                        class="test-summary__divider"
+                                    ></div>
                                     <div class="test-summary__section-header">
-                                        <span class="test-summary__section-label test-summary__section-label--failed"
+                                        <span
+                                            class="test-summary__section-label test-summary__section-label--failed"
                                             >Failed: {{ failedTests.length }}</span
                                         >
                                     </div>
@@ -1119,14 +1126,19 @@ export default {
                                         </li>
                                     </ul>
                                 </div>
-                                <div v-if="skippedTestsList.length > 0" class="test-summary__section">
+                                <div
+                                    v-if="skippedTestsList.length > 0"
+                                    class="test-summary__section"
+                                >
                                     <div
                                         v-if="pendingTests.length > 0 || failedTests.length > 0"
                                         class="test-summary__divider"
                                     ></div>
                                     <div class="test-summary__section-header">
-                                        <span class="test-summary__section-label test-summary__section-label--skipped"
-                                            >{{ t('status.skipped') }}: {{ skippedTestsList.length }}</span
+                                        <span
+                                            class="test-summary__section-label test-summary__section-label--skipped"
+                                            >{{ t('status.skipped') }}:
+                                            {{ skippedTestsList.length }}</span
                                         >
                                     </div>
                                     <ul class="test-summary__list">
@@ -1164,7 +1176,8 @@ export default {
                                         class="test-summary__divider"
                                     ></div>
                                     <div class="test-summary__section-header">
-                                        <span class="test-summary__section-label test-summary__section-label--passed"
+                                        <span
+                                            class="test-summary__section-label test-summary__section-label--passed"
                                             >Passed: {{ passedTests.length }}</span
                                         >
                                     </div>
@@ -1196,7 +1209,7 @@ export default {
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <div v-if="completedTestsCount > 0" class="test-summary__total-time">
                                 <div class="test-summary__total-container">
                                     <span class="test-summary__total-label">Total Time:</span
@@ -1262,7 +1275,6 @@ export default {
     min-width: 0;
     position: relative; /* Required for absolute positioning of action buttons */
 }
-
 
 /* Transition animations */
 .expand-fade-enter-active,
@@ -1763,8 +1775,6 @@ export default {
     border: 1px solid rgba(241, 245, 249, 0.2);
 }
 
-
-
 /* Mobile Layout Styles */
 .mobile-layout {
     display: flex;
@@ -1774,7 +1784,6 @@ export default {
     color: #fff;
     overflow: hidden;
 }
-
 
 .mobile-header {
     flex-shrink: 0;

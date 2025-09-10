@@ -120,7 +120,9 @@ export default {
             v-if="deviceEnumeration.loadingDevices.value"
             state="loading"
             :title="$t('device_testing.detecting_devices', { deviceType })"
-            :message="$t('device_testing.searching_devices', { deviceType: deviceType.toLowerCase() })"
+            :message="
+                $t('device_testing.searching_devices', { deviceType: deviceType.toLowerCase() })
+            "
         />
 
         <!-- Error state: no devices -->
@@ -128,7 +130,9 @@ export default {
             v-else-if="!hasDevices && !deviceEnumeration.loadingDevices.value"
             state="error"
             :title="$t('device_testing.no_devices_found', { deviceType })"
-            :message="$t('device_testing.no_devices_message', { deviceType: deviceType.toLowerCase() })"
+            :message="
+                $t('device_testing.no_devices_message', { deviceType: deviceType.toLowerCase() })
+            "
         >
             <template #icon>
                 <svg

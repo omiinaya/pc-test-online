@@ -20,7 +20,7 @@ i18n.configure({
   autoReload: false,
   syncFiles: false,
   // Function to parse accept-language header
-  parseLocaleFn: function (locale) {
+  parseLocaleFn (locale) {
     return locale.toLowerCase().split('-')[0];
   }
 });

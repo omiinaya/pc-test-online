@@ -7,6 +7,7 @@ export default {
     name: 'PerformanceMonitor',
     setup() {
         const performanceMonitor = usePerformance();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { t } = useI18n();
 
         const webVitalsScore = computed(() => {
@@ -91,9 +92,9 @@ export default {
             </h3>
             <div class="browser-info">
                 {{ capabilities.name }} {{ capabilities.version }}
-                <span v-if="!browserSupportsFullMonitoring" class="limited-support"
-                    >{{ t('compatibility.warnings.limited_support') }}</span
-                >
+                <span v-if="!browserSupportsFullMonitoring" class="limited-support">{{
+                    t('compatibility.warnings.limited_support')
+                }}</span>
             </div>
         </div>
 
@@ -110,7 +111,9 @@ export default {
                         <span class="breakdown-value">{{ webVitalsScore }}%</span>
                     </div>
                     <div class="breakdown-item">
-                        <span class="breakdown-label">{{ t('performance.browser_support_score') }}</span>
+                        <span class="breakdown-label">{{
+                            t('performance.browser_support_score')
+                        }}</span>
                         <span class="breakdown-value">{{ browserCapabilityScore }}%</span>
                     </div>
                 </div>
@@ -149,7 +152,9 @@ export default {
                 <div class="vital-item" v-if="metrics.memoryUsage">
                     <div class="vital-label">{{ t('performance.vitals.memory') }}</div>
                     <div class="vital-value">{{ metrics.memoryUsage }}MB</div>
-                    <div class="vital-description">{{ t('performance.vitals.memory_description') }}</div>
+                    <div class="vital-description">
+                        {{ t('performance.vitals.memory_description') }}
+                    </div>
                 </div>
             </div>
         </div>

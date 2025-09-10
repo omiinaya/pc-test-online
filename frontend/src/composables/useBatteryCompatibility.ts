@@ -17,6 +17,12 @@ export interface MockBatteryManager extends BatteryManager {
     _demoInterval?: number;
 }
 
+// Event types for battery events
+interface BatteryEvent extends Event {
+    type: 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange' | 'levelchange';
+    target: BatteryManager | MockBatteryManager;
+}
+
 export interface BatteryCompatibilityState {
     isSupported: boolean;
     batteryInfo: BatteryManager | MockBatteryManager | null;
@@ -71,7 +77,9 @@ export function useBatteryCompatibility() {
         // Try native Battery API first
         if (state.value.isSupported) {
             try {
-                const battery = await (navigator as any).getBattery();
+                const battery = await (
+                    navigator as { getBattery?: () => Promise<BatteryManager> }
+                ).getBattery?.();
                 state.value.batteryInfo = battery;
                 state.value.fallbackMode = false;
 
@@ -134,10 +142,11 @@ export function useBatteryCompatibility() {
                         mockBattery.level = Math.max(0, Math.min(1, currentLevel + change));
 
                         // Call the listener with a mock event
-                        listener({
+                        const event: BatteryEvent = {
                             type: 'levelchange',
                             target: mockBattery,
-                        } as any);
+                        } as BatteryEvent;
+                        listener(event);
                     }, 30000); // Every 30 seconds
 
                     // Store interval for cleanup
@@ -230,7 +239,7 @@ export function useBatteryCompatibility() {
 
         // Clean up any demo intervals
         if (state.value.batteryInfo && 'isMock' in state.value.batteryInfo) {
-            const mockBattery = state.value.batteryInfo as any;
+            const mockBattery = state.value.batteryInfo as MockBatteryManager;
             if (mockBattery._demoInterval) {
                 clearInterval(mockBattery._demoInterval);
             }

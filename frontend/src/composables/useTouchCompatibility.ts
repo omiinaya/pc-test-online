@@ -108,11 +108,16 @@ export function useTouchCompatibility() {
             capabilities.value.platform = 'desktop';
         }
 
+        // Extended Window interface for DocumentTouch
+        interface WindowWithDocumentTouch extends Window {
+            DocumentTouch?: typeof Touch;
+        }
+
         // Touch capabilities
         capabilities.value.touchSupported =
             'ontouchstart' in window ||
             navigator.maxTouchPoints > 0 ||
-            (window as any).DocumentTouch !== undefined;
+            (window as WindowWithDocumentTouch).DocumentTouch !== undefined;
 
         capabilities.value.pointerSupported = 'onpointerdown' in window;
         capabilities.value.maxTouchPoints = navigator.maxTouchPoints || 0;

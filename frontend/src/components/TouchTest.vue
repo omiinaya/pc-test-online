@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
 import { useTestResults } from '../composables/useTestResults.js';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle.js';
-import { useEventListeners, usePointerEvents } from '../composables/useEventListeners.js';
+import { useEventListeners } from '../composables/useEventListeners.js';
 import { useGlobalReset } from '../composables/useTestState.js';
 import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
 import { useI18n } from 'vue-i18n';
@@ -20,7 +20,7 @@ export default {
         const testResults = useTestResults('touch', emit);
         const lifecycle = useComponentLifecycle();
         const eventListeners = useEventListeners();
-        const pointerEvents = usePointerEvents();
+        // pointerEvents composable intentionally removed as unused
         const touchCompatibility = useTouchCompatibility();
 
         // Touch test constants
@@ -180,10 +180,7 @@ export default {
             return distance;
         };
 
-        // Keep original method for backward compatibility
-        const getStyle = target => {
-            return getOptimizedStyle(target);
-        };
+        // getStyle method intentionally removed as unused
 
         // Add retry counter for safe area calculation
         const safeAreaCalculationAttempts = ref(0);
@@ -564,7 +561,7 @@ export default {
         // Watch for global resets
         useGlobalReset(restartTest);
 
-        const handlePointerDown = (touchData, gesture) => {
+        const handlePointerDown = (touchData, _gesture) => {
             if (stage.value === 'idle') {
                 startTest();
                 return;
@@ -604,7 +601,7 @@ export default {
             }
         };
 
-        const handlePointerMove = (touchData, gesture) => {
+        const handlePointerMove = (touchData, _gesture) => {
             if (stage.value !== 'drag' || !dragSource.value.isDragging) return;
 
             // Throttle pointer move events for better performance
@@ -645,7 +642,7 @@ export default {
             }
         };
 
-        const handlePointerUp = (touchData, gesture) => {
+        const handlePointerUp = (touchData, _gesture) => {
             const challengeArea = document.querySelector('.challenge-area');
             if (!challengeArea) return;
 
@@ -679,14 +676,7 @@ export default {
             }
         };
 
-        const handleMouseLeave = () => {
-            if (stage.value === 'drag' && dragSource.value.isDragging) {
-                dragSource.value.isDragging = false;
-                dragSource.value.touchId = null;
-                dragSource.value.x = dragSource.value.originalX;
-                dragSource.value.y = dragSource.value.originalY;
-            }
-        };
+        // handleMouseLeave method intentionally removed as unused
 
         const isInsideCircle = (point, circle) => {
             const radius = circle.size * 0.5; // Use multiplication instead of division
@@ -957,7 +947,10 @@ export default {
                         {{
                             completedChallenges >= 4
                                 ? t('touchTest.allChallengesCompleted')
-                                : t('touchTest.challengesProgress', { completed: completedChallenges, total: 4 })
+                                : t('touchTest.challengesProgress', {
+                                      completed: completedChallenges,
+                                      total: 4,
+                                  })
                         }}
                     </div>
                     <div class="progress-bar">

@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onUnmounted, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
@@ -34,13 +34,9 @@ export default {
         const currentTestStep = ref('');
         const audioContext = ref(null);
         const oscillator = ref(null);
-        const gainNode = ref(null);
-        const panNode = ref(null);
         const testTimeout = ref(null);
         const audioContextReady = ref(false);
         const audioContextInitialized = ref(false);
-        const firefoxRetryCount = ref(0);
-        const maxFirefoxRetries = 3;
 
         /**
          * Initialize audio context with selected speaker
@@ -129,7 +125,9 @@ export default {
                 console.error('Error playing sound:', error);
                 // Handle autoplay policy violations gracefully
                 if (error.name === 'NotAllowedError' || error.message.includes('user gesture')) {
-                    deviceTest.errorHandling.setError('Please click the speaker buttons to start audio playback. Browser requires user interaction for audio.');
+                    deviceTest.errorHandling.setError(
+                        'Please click the speaker buttons to start audio playback. Browser requires user interaction for audio.'
+                    );
                 } else {
                     deviceTest.errorHandling.setError(`Failed to play sound: ${error.message}`);
                 }
@@ -319,7 +317,7 @@ export default {
 
             // Reset audio context ready state but keep the instance
             audioContextReady.value = false;
-            
+
             // Resume audio context if it exists
             if (audioContext.value && audioContext.value.state !== 'closed') {
                 try {
@@ -363,7 +361,7 @@ export default {
                 // console.log('Is loading:', deviceTest.isLoading.value);
                 // console.log('Show no devices state:', deviceTest.showNoDevicesState.value);
                 // console.log('Has devices:', deviceTest.hasDevices.value);
-                
+
                 // For audio output, many systems have default devices that work
                 // even when not explicitly enumerated. We should be more permissive.
                 if (deviceTest.availableDevices.value.length === 0) {
@@ -380,27 +378,9 @@ export default {
         // For audio output devices, browsers often have default output that works
         // even when no devices are enumerated. We should be very permissive.
         const actualShowNoDevicesState = computed(() => {
-            // Only show no devices state in very specific circumstances:
-            // 1. Device detection delay has completed AND
-            // 2. We're certain there are truly no audio capabilities
-            
-            // For audio output, most systems have default audio, so rarely show "no devices"
-            const shouldShow = deviceTest.showNoDevicesState.value &&
-                             deviceTest.availableDevices.value.length === 0 &&
-                             !deviceTest.isLoading.value &&
-                             !deviceTest.hasError.value;
-            
-            // Debug logging removed for production
-            // console.log('SpeakerTest - Device State:', {
-            //     showNoDevicesState: deviceTest.showNoDevicesState.value,
-            //     availableDevices: deviceTest.availableDevices.value.length,
-            //     isLoading: deviceTest.isLoading.value,
-            //     hasError: deviceTest.hasError.value,
-            //     finalResult: shouldShow
-            // });
-            
             // For audio output, default to allowing testing even if no devices enumerated
-            return false; // Never show "no devices" for audio output
+            // Never show "no devices" for audio output as most systems have default audio
+            return false;
         });
 
         // Watch for device enumeration completion with safe debugging
@@ -411,17 +391,20 @@ export default {
             setTimeout(handleDeviceEnumeration, 100);
 
             // Watch for available devices changes to handle audio output device selection
-            watch(() => deviceTest.availableDevices.value, (newDevices, oldDevices) => {
-                // console.log('DEBUG: Available devices changed:', newDevices.length, 'devices');
-                
-                // If we have audio output devices, ensure one is selected
-                if (newDevices.length > 0 && !deviceTest.selectedDeviceId.value) {
-                    // Prefer a device with a proper label, otherwise select the first one
-                    const deviceToSelect = newDevices.find(d => d.label && !d.label.includes('...')) || newDevices[0];
-                    deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
-                    // console.log('DEBUG: Auto-selected audio output device:', deviceToSelect.deviceId, deviceToSelect.label);
-                }
-            }, { immediate: true });
+            watch(
+                () => deviceTest.availableDevices.value,
+                (newDevices, _oldDevices) => {
+                    // If we have audio output devices, ensure one is selected
+                    if (newDevices.length > 0 && !deviceTest.selectedDeviceId.value) {
+                        // Prefer a device with a proper label, otherwise select the first one
+                        const deviceToSelect =
+                            newDevices.find(d => d.label && !d.label.includes('...')) ||
+                            newDevices[0];
+                        deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
+                    }
+                },
+                { immediate: true }
+            );
 
             // Simple periodic check for state changes (removed for production)
             // const debugInterval = setInterval(() => {
@@ -499,7 +482,9 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">{{ $t('device_testing.speaker.left_channel') }}</span>
+                    <span class="speaker-label">{{
+                        $t('device_testing.speaker.left_channel')
+                    }}</span>
                 </div>
                 <div
                     class="speaker-box"
@@ -544,7 +529,9 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">{{ $t('device_testing.speaker.both_channels') }}</span>
+                    <span class="speaker-label">{{
+                        $t('device_testing.speaker.both_channels')
+                    }}</span>
                 </div>
                 <div
                     class="speaker-box"
@@ -574,7 +561,9 @@ export default {
                             <line x1="12" y1="6" x2="12" y2="6"></line>
                         </svg>
                     </div>
-                    <span class="speaker-label">{{ $t('device_testing.speaker.right_channel') }}</span>
+                    <span class="speaker-label">{{
+                        $t('device_testing.speaker.right_channel')
+                    }}</span>
                 </div>
             </div>
 
@@ -593,7 +582,11 @@ export default {
                 <StatePanel
                     state="loading"
                     :title="$t('device_testing.detection.detecting_speakers')"
-                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'speakers' })"
+                    :message="
+                        $t('device_testing.detection.please_wait_search', {
+                            deviceType: 'speakers',
+                        })
+                    "
                 />
             </div>
 

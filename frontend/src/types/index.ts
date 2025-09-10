@@ -107,6 +107,13 @@ export interface ErrorInfo {
     originalError?: Error;
 }
 
+// Vue error capture info type
+export interface VueErrorInfo {
+    componentName?: string;
+    componentStack?: string;
+    type?: string;
+}
+
 // ==================== COMPONENT PROPS ====================
 
 export interface BaseTestProps {

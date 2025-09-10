@@ -52,7 +52,11 @@ export default {
             </svg>
             <span>Fail</span>
         </button>
-        <button @click="$emit('skip')" class="button button--skip button--medium" :disabled="actionsDisabled">
+        <button
+            @click="$emit('skip')"
+            class="button button--skip button--medium"
+            :disabled="actionsDisabled"
+        >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -70,7 +74,11 @@ export default {
             </svg>
             <span>Skip</span>
         </button>
-        <button @click="$emit('working')" class="button button--success button--medium" :disabled="actionsDisabled">
+        <button
+            @click="$emit('working')"
+            class="button button--success button--medium"
+            :disabled="actionsDisabled"
+        >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"

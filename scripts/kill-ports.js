@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 /**
  * Utility script to kill processes running on specified ports

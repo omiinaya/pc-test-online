@@ -47,7 +47,7 @@ export default {
             touch: { running: false, startTime: null, elapsed: 0 },
             battery: { running: false, startTime: null, elapsed: 0 },
         };
-        
+
         return {
             activeTest: 'webcam', // Start with webcam test
             results: {
@@ -96,7 +96,7 @@ export default {
                 touch: 0,
                 battery: 0,
             },
-            realTimeTimers: realTimeTimers,
+            realTimeTimers,
             timerInterval: null,
             showExportMenu: false,
             switchDebounceTime: null,
@@ -108,19 +108,19 @@ export default {
         realTimeElapsed() {
             const elapsed = {};
             const now = Date.now();
-            
+
             Object.keys(this.realTimeTimers).forEach(test => {
                 const timer = this.realTimeTimers[test];
                 if (timer.running && timer.startTime) {
-                    elapsed[test] = ((now - timer.startTime) / 1000) + timer.elapsed;
+                    elapsed[test] = (now - timer.startTime) / 1000 + timer.elapsed;
                 } else {
                     elapsed[test] = timer.elapsed;
                 }
             });
-            
+
             return elapsed;
         },
-        
+
         // Formatted real-time timers with two decimal places
         formattedRealTimeTimers() {
             const formatted = {};
@@ -128,10 +128,10 @@ export default {
                 const time = this.realTimeElapsed[test];
                 formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
             });
-            
+
             return formatted;
         },
-        
+
         // Test header content
         currentTestIcon() {
             const iconMap = {
@@ -170,10 +170,7 @@ export default {
                 battery: this.t('tests.battery.description'),
                 testsCompleted: this.t('tests.completed.description'),
             };
-            return (
-                descriptionMap[this.activeTest] ||
-                this.t('tests.webcam.description')
-            );
+            return descriptionMap[this.activeTest] || this.t('tests.webcam.description');
         },
         // Dynamic component mapping for keep-alive functionality
         currentTestComponent() {
@@ -204,19 +201,19 @@ export default {
             return Object.keys(this.results).length;
         },
         passedTests() {
-            return Object.keys(this.results).filter(
-                test => this.results[test] === true && !this.skippedTests.includes(test)
-            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
+            return Object.keys(this.results)
+                .filter(test => this.results[test] === true && !this.skippedTests.includes(test))
+                .map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         failedTests() {
-            return Object.keys(this.results).filter(
-                test => this.results[test] === false && !this.skippedTests.includes(test)
-            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
+            return Object.keys(this.results)
+                .filter(test => this.results[test] === false && !this.skippedTests.includes(test))
+                .map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         pendingTests() {
-            return Object.keys(this.results).filter(
-                test => this.results[test] === null && !this.skippedTests.includes(test)
-            ).map(test => String(test)); // Ensure simple strings, not Proxy objects
+            return Object.keys(this.results)
+                .filter(test => this.results[test] === null && !this.skippedTests.includes(test))
+                .map(test => String(test)); // Ensure simple strings, not Proxy objects
         },
         skippedTestsList() {
             return this.skippedTests.map(test => String(test)); // Ensure simple strings, not Proxy objects
@@ -289,7 +286,7 @@ export default {
                     formatted[test] = '0.00s';
                 }
             });
-            
+
             return formatted;
         },
         // Container styles for smooth morphing based on active test
@@ -324,21 +321,25 @@ export default {
                 };
                 return fallbackMap[test] || this.getSafeFallback(test);
             }
-            
+
             // Validate that test parameter is a valid primitive
-            if (test === null || test === undefined || typeof test !== 'string' && typeof test !== 'number') {
+            if (
+                test === null ||
+                test === undefined ||
+                (typeof test !== 'string' && typeof test !== 'number')
+            ) {
                 console.warn(`Invalid test parameter: ${typeof test}`, test);
                 return this.getSafeFallback(test);
             }
-            
+
             // Get the name from the map, ensuring it's a string
             const name = this.i18nTestNameMap[test];
-            
+
             // Return the mapped name if it's a valid string, otherwise fallback
             if (typeof name === 'string' && name.trim().length > 0) {
                 return name;
             }
-            
+
             return this.getSafeFallback(test);
         },
 
@@ -346,7 +347,7 @@ export default {
         getSafeFallback(test) {
             // Handle Vue Proxy objects and complex types safely
             let testStr = 'unknown';
-            
+
             try {
                 if (test === null || test === undefined) {
                     testStr = 'unknown';
@@ -372,13 +373,18 @@ export default {
                 console.warn('Error converting test to string:', error);
                 testStr = 'conversion-error';
             }
-            
+
             // Return a meaningful fallback that won't cause conversion issues
-            if (testStr === 'unknown' || testStr === 'null' || testStr === 'undefined' ||
-                testStr === 'reactive-object' || testStr === 'conversion-error') {
+            if (
+                testStr === 'unknown' ||
+                testStr === 'null' ||
+                testStr === 'undefined' ||
+                testStr === 'reactive-object' ||
+                testStr === 'conversion-error'
+            ) {
                 return this.t('errors.unknownTest');
             }
-            
+
             // Use translation for the test name based on the test key
             const translationMap = {
                 webcam: this.t('tests.webcam.name'),
@@ -389,7 +395,7 @@ export default {
                 touch: this.t('tests.touch.name'),
                 battery: this.t('tests.battery.name'),
             };
-            
+
             return translationMap[testStr] || testStr.charAt(0).toUpperCase() + testStr.slice(1);
         },
 
@@ -428,7 +434,7 @@ export default {
             if (this.activeTest && this.activeTest !== testType) {
                 this.stopTimer(this.activeTest);
             }
-            
+
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
             if (this.timings[testType]) {
                 if (this.activeTest !== testType || this.timings[testType].start === null) {
@@ -446,7 +452,7 @@ export default {
             }
             // Stop real-time timer
             this.stopTimer(testType);
-            
+
             // Remove from skippedTests if present (robust reactivity)
             this.skippedTests = this.skippedTests.filter(t => t !== testType);
             this.results[testType] = true;
@@ -454,7 +460,11 @@ export default {
             this.timings[testType].end = Date.now();
 
             // Validate timing data before calculation
-            if (this.timings[testType] && this.timings[testType].start && this.timings[testType].end) {
+            if (
+                this.timings[testType] &&
+                this.timings[testType].start &&
+                this.timings[testType].end
+            ) {
                 const sessionDuration =
                     (this.timings[testType].end - this.timings[testType].start) / 1000;
                 // Ensure duration is reasonable (between 0 and 10 minutes)
@@ -477,7 +487,7 @@ export default {
             }
             // Stop real-time timer
             this.stopTimer(testType);
-            
+
             // Remove from skippedTests if present (robust reactivity)
             this.skippedTests = this.skippedTests.filter(t => t !== testType);
             this.results[testType] = false;
@@ -485,7 +495,11 @@ export default {
             this.timings[testType].end = Date.now();
 
             // Validate timing data before calculation
-            if (this.timings[testType] && this.timings[testType].start && this.timings[testType].end) {
+            if (
+                this.timings[testType] &&
+                this.timings[testType].start &&
+                this.timings[testType].end
+            ) {
                 const sessionDuration =
                     (this.timings[testType].end - this.timings[testType].start) / 1000;
                 // Ensure duration is reasonable (between 0 and 10 minutes)
@@ -515,7 +529,7 @@ export default {
             }
             // Stop real-time timer
             this.stopTimer(testType);
-            
+
             if (!this.skippedTests.includes(testType)) {
                 this.skippedTests.push(testType);
             }
@@ -591,9 +605,9 @@ export default {
         resetTests() {
             // Stop all running timers
             Object.keys(this.realTimeTimers).forEach(test => {
-            this.stopTimer(test);
+                this.stopTimer(test);
             });
-            
+
             this.results = {
                 webcam: null,
                 microphone: null,
@@ -621,7 +635,7 @@ export default {
             resetAllTestStates();
             // Set active test and start timing
             this.setActiveTest('webcam');
-            
+
             // Emit reset event for AppFooter
             this.$emit('reset-tests');
             this.emitProgressUpdate();
@@ -630,19 +644,21 @@ export default {
         // Timer management methods
         startTimer(testType) {
             if (!this.realTimeTimers[testType]) return;
-            
+
             // Stop any existing timer for this test
             this.stopTimer(testType);
-            
+
             // Create a new object to ensure reactivity
             this.realTimeTimers[testType] = {
                 ...this.realTimeTimers[testType],
                 running: true,
-                startTime: Date.now()
+                startTime: Date.now(),
             };
-            
-            console.log(`Timer started for ${testType}, running: ${this.realTimeTimers[testType].running}`);
-            
+
+            console.log(
+                `Timer started for ${testType}, running: ${this.realTimeTimers[testType].running}`
+            );
+
             // Start update interval if not already running
             if (!this.timerInterval) {
                 this.timerInterval = setInterval(() => {
@@ -652,29 +668,29 @@ export default {
                 }, 100); // Update every 100ms for smooth animation
             }
         },
-        
+
         stopTimer(testType) {
             if (!this.realTimeTimers[testType]) return;
-            
+
             if (this.realTimeTimers[testType].running) {
                 // Calculate and store elapsed time
                 const elapsed = (Date.now() - this.realTimeTimers[testType].startTime) / 1000;
-                
+
                 // Create a new object to ensure reactivity
                 this.realTimeTimers[testType] = {
                     ...this.realTimeTimers[testType],
                     elapsed: this.realTimeTimers[testType].elapsed + elapsed,
                     running: false,
-                    startTime: null
+                    startTime: null,
                 };
-                
+
                 // console.log(`Timer stopped for ${testType}, total elapsed: ${this.realTimeTimers[testType].elapsed.toFixed(2)}s`);
             }
-            
+
             // Clean up interval if no timers are running
             this.cleanupTimerInterval();
         },
-        
+
         cleanupTimerInterval() {
             const anyTimerRunning = Object.values(this.realTimeTimers).some(timer => timer.running);
             if (!anyTimerRunning && this.timerInterval) {
@@ -692,7 +708,7 @@ export default {
         emitProgressUpdate() {
             this.$emit('update-footer', {
                 completedTests: this.completedTestsCount,
-                totalTests: this.totalTestsCount
+                totalTests: this.totalTestsCount,
             });
         },
         exportResults() {
@@ -1068,16 +1084,20 @@ export default {
         hasTimingData(test) {
             try {
                 // Ensure test parameter is a valid primitive
-                if (test === null || test === undefined || typeof test !== 'string' && typeof test !== 'number') {
+                if (
+                    test === null ||
+                    test === undefined ||
+                    (typeof test !== 'string' && typeof test !== 'number')
+                ) {
                     return false;
                 }
-                
+
                 // Safely access the timing value
                 const timingValue = this.formattedTimings[test];
-                
+
                 // Debug logging
                 // console.log(`hasTimingData - ${test}: ${timingValue}, type: ${typeof timingValue}`);
-                
+
                 // Handle cases where timing value might be undefined, null, or non-string
                 // Allow "0.00s" to be displayed for pending tests
                 const result = typeof timingValue === 'string' && timingValue !== '';
@@ -1092,13 +1112,13 @@ export default {
         exportAsCSV() {
             // Emit event for AppFooter
             this.$emit('export-csv');
-            
+
             // Prepare CSV header with translated labels
             const header = [
                 this.t('results.testDetails'),
                 this.t('status.status'),
                 this.t('results.runCount'),
-                this.t('results.duration') + ' (s)'
+                `${this.t('results.duration')} (s)`,
             ];
             const rows = [header];
             const tests = Object.keys(this.results);
@@ -1212,7 +1232,7 @@ export default {
             clearTimeout(this.switchDebounceTime);
             this.switchDebounceTime = null;
         }
-        
+
         // Clean up timer interval
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
@@ -1226,113 +1246,138 @@ export default {
 </script>
 
 <template>
-  <div class="app-layout">
-      <!-- App Header with test title only in navbar -->
-      <AppHeader
-          :test-title="currentTestTitle"
-          :test-icon="currentTestIcon"
-      />
+    <div class="app-layout">
+        <!-- App Header with test title only in navbar -->
+        <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />
 
-      <!-- Left Sidebar -->
-      <aside class="sidebar">
-          <div class="sidebar-header">
-              <div class="brand-icon">📋</div>
-              <h2>{{ $t('navigation.tests') }}</h2>
-          </div>
-          <nav class="test-navigation">
-            <ul class="test-navigation__list">
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'webcam' }"
-                @click="debouncedSetActiveTest('webcam')"
-              >
-                <span class="test-navigation__icon">📹</span>
-                <span class="test-navigation__name">{{ $t('tests.webcam.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('webcam')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'microphone' }"
-                @click="debouncedSetActiveTest('microphone')"
-              >
-                <span class="test-navigation__icon">🎤</span>
-                <span class="test-navigation__name">{{ $t('tests.microphone.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('microphone')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'speakers' }"
-                @click="debouncedSetActiveTest('speakers')"
-              >
-                <span class="test-navigation__icon">🔊</span>
-                <span class="test-navigation__name">{{ $t('tests.speakers.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('speakers')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'keyboard' }"
-                @click="debouncedSetActiveTest('keyboard')"
-              >
-                <span class="test-navigation__icon">⌨️</span>
-                <span class="test-navigation__name">{{ $t('tests.keyboard.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('keyboard')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'mouse' }"
-                @click="debouncedSetActiveTest('mouse')"
-              >
-                <span class="test-navigation__icon">🖱️</span>
-                <span class="test-navigation__name">{{ $t('tests.mouse.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('mouse')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'touch' }"
-                @click="debouncedSetActiveTest('touch')"
-              >
-                <span class="test-navigation__icon">👆</span>
-                <span class="test-navigation__name">{{ $t('tests.touch.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('touch')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{ 'test-navigation__item--active': activeTest === 'battery' }"
-                @click="debouncedSetActiveTest('battery')"
-              >
-                <span class="test-navigation__icon">🔋</span>
-                <span class="test-navigation__name">{{ $t('tests.battery.shortName') }}</span>
-                <span class="test-navigation__status" :class="'test-navigation__status--' + getTestStatusClass('battery')"></span>
-              </li>
-              <li
-                class="test-navigation__item"
-                :class="{
-                  'test-navigation__item--active': activeTest === 'testsCompleted',
-                  'test-navigation__item--disabled': !allTestsCompleted,
-                }"
-                @click="handleTestsCompletedClick"
-              >
-                <span class="test-navigation__icon">✅</span>
-                <span class="test-navigation__name">{{ $t('tests.completed.name') }}</span>
-                <span
-                  class="test-navigation__status"
-                  :class="{
-                    'test-navigation__status--completed-success': allTestsCompleted,
-                    'test-navigation__status--pending': !allTestsCompleted,
-                  }"
-                ></span>
-                </li>
-            </ul>
-          </nav>
-      </aside>
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-icon">📋</div>
+                <h2>{{ $t('navigation.tests') }}</h2>
+            </div>
+            <nav class="test-navigation">
+                <ul class="test-navigation__list">
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'webcam' }"
+                        @click="debouncedSetActiveTest('webcam')"
+                    >
+                        <span class="test-navigation__icon">📹</span>
+                        <span class="test-navigation__name">{{
+                            $t('tests.webcam.shortName')
+                        }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('webcam')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'microphone' }"
+                        @click="debouncedSetActiveTest('microphone')"
+                    >
+                        <span class="test-navigation__icon">🎤</span>
+                        <span class="test-navigation__name">{{
+                            $t('tests.microphone.shortName')
+                        }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('microphone')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'speakers' }"
+                        @click="debouncedSetActiveTest('speakers')"
+                    >
+                        <span class="test-navigation__icon">🔊</span>
+                        <span class="test-navigation__name">{{
+                            $t('tests.speakers.shortName')
+                        }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('speakers')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'keyboard' }"
+                        @click="debouncedSetActiveTest('keyboard')"
+                    >
+                        <span class="test-navigation__icon">⌨️</span>
+                        <span class="test-navigation__name">{{
+                            $t('tests.keyboard.shortName')
+                        }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('keyboard')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'mouse' }"
+                        @click="debouncedSetActiveTest('mouse')"
+                    >
+                        <span class="test-navigation__icon">🖱️</span>
+                        <span class="test-navigation__name">{{ $t('tests.mouse.shortName') }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('mouse')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'touch' }"
+                        @click="debouncedSetActiveTest('touch')"
+                    >
+                        <span class="test-navigation__icon">👆</span>
+                        <span class="test-navigation__name">{{ $t('tests.touch.shortName') }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('touch')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{ 'test-navigation__item--active': activeTest === 'battery' }"
+                        @click="debouncedSetActiveTest('battery')"
+                    >
+                        <span class="test-navigation__icon">🔋</span>
+                        <span class="test-navigation__name">{{
+                            $t('tests.battery.shortName')
+                        }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="'test-navigation__status--' + getTestStatusClass('battery')"
+                        ></span>
+                    </li>
+                    <li
+                        class="test-navigation__item"
+                        :class="{
+                            'test-navigation__item--active': activeTest === 'testsCompleted',
+                            'test-navigation__item--disabled': !allTestsCompleted,
+                        }"
+                        @click="handleTestsCompletedClick"
+                    >
+                        <span class="test-navigation__icon">✅</span>
+                        <span class="test-navigation__name">{{ $t('tests.completed.name') }}</span>
+                        <span
+                            class="test-navigation__status"
+                            :class="{
+                                'test-navigation__status--completed-success': allTestsCompleted,
+                                'test-navigation__status--pending': !allTestsCompleted,
+                            }"
+                        ></span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Test Header with description only -->
-            <TestHeader
-                :test-description="currentTestDescription"
-                :center-align="true"
-            />
+            <TestHeader :test-description="currentTestDescription" :center-align="true" />
 
             <!-- Single persistent VisualizerContainer for smooth morphing -->
             <VisualizerContainer
@@ -1368,18 +1413,21 @@ export default {
             </div>
             <nav class="test-navigation">
                 <ul class="test-navigation__list">
-
                     <!-- Pending Tests Section -->
                     <div v-if="pendingTests.length > 0" class="test-section test-section--pending">
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">{{ $t('sidebar.pendingTests') }}</span>
+                            <span class="test-section__title">{{
+                                $t('sidebar.pendingTests')
+                            }}</span>
                         </div>
                         <li v-for="test in pendingTests" :key="test" class="test-navigation__item">
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                    >●</span
+                                >
                             </span>
                         </li>
                     </div>
@@ -1394,22 +1442,35 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                    >●</span
+                                >
                             </span>
                         </li>
                     </div>
 
                     <!-- Skipped Tests Section -->
-                    <div v-if="skippedTestsList.length > 0" class="test-section test-section--skipped">
+                    <div
+                        v-if="skippedTestsList.length > 0"
+                        class="test-section test-section--skipped"
+                    >
                         <div class="test-section__header">
                             <span class="test-section__status-indicator"></span>
-                            <span class="test-section__title">{{ $t('sidebar.skippedTests') }}</span>
+                            <span class="test-section__title">{{
+                                $t('sidebar.skippedTests')
+                            }}</span>
                         </div>
-                        <li v-for="test in skippedTestsList" :key="test" class="test-navigation__item">
+                        <li
+                            v-for="test in skippedTestsList"
+                            :key="test"
+                            class="test-navigation__item"
+                        >
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                    >●</span
+                                >
                             </span>
                         </li>
                     </div>
@@ -1424,15 +1485,15 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator">●</span>
+                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                    >●</span
+                                >
                             </span>
                         </li>
                     </div>
-
                 </ul>
             </nav>
         </aside>
-
     </div>
 </template>
 
@@ -1484,7 +1545,6 @@ export default {
     min-width: 0;
     position: relative; /* Required for absolute positioning of action buttons */
 }
-
 
 /* Transition animations */
 .expand-fade-enter-active,
@@ -1820,9 +1880,15 @@ export default {
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .detailed-summary {
@@ -2015,6 +2081,4 @@ export default {
     text-align: center;
     margin-bottom: 1rem;
 }
-
-
 </style>

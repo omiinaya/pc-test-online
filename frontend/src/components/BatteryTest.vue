@@ -42,13 +42,13 @@ export default {
         // Watch for changes in battery support
         watch(
             batterySupported,
-            (newVal, oldVal) => {
+            (_newVal, _oldVal) => {
                 // Battery support status changed
             },
             { immediate: true }
         );
 
-        watch(testPhase, (newVal, oldVal) => {
+        watch(testPhase, (_newVal, _oldVal) => {
             // Test phase changed
         });
 

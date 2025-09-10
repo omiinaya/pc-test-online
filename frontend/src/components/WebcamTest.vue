@@ -210,7 +210,9 @@ export default {
                 <StatePanel
                     state="loading"
                     :title="$t('device_testing.detection.detecting_cameras')"
-                    :message="$t('device_testing.detection.please_wait_search', { deviceType: 'cameras' })"
+                    :message="
+                        $t('device_testing.detection.please_wait_search', { deviceType: 'cameras' })
+                    "
                 />
             </div>
 
@@ -268,7 +270,9 @@ export default {
                 </li>
             </ul>
             <div v-if="recommendedBrowser" class="recommendation">
-                <strong>{{ $t('errors.browser.recommendation', { browser: recommendedBrowser }) }}</strong>
+                <strong>{{
+                    $t('errors.browser.recommendation', { browser: recommendedBrowser })
+                }}</strong>
             </div>
         </div>
     </div>

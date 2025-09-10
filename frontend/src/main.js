@@ -50,5 +50,4 @@ if (typeof window !== 'undefined') {
             }
         },
     };
-
 }

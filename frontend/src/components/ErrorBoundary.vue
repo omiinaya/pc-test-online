@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onErrorCaptured, onMounted, readonly } from 'vue';
-import type { ErrorInfo, ErrorType } from '@/types';
+import type { ErrorInfo, ErrorType, VueErrorInfo } from '@/types';
 
 interface Props {
     fallbackTitle?: string;
@@ -17,12 +17,12 @@ interface Props {
 const { t } = useI18n();
 
 const props = withDefaults(defineProps<Props>(), {
-  fallbackTitle: t('errors.generic.title'),
-  fallbackMessage: t('errors.generic.message'),
-  showDetails: false,
-  showReload: true,
-  showReport: false,
-  maxRetries: 3,
+    fallbackTitle: t('errors.generic.title'),
+    fallbackMessage: t('errors.generic.message'),
+    showDetails: false,
+    showReload: true,
+    showReport: false,
+    maxRetries: 3,
 });
 
 // Error state
@@ -51,23 +51,23 @@ const mapErrorType = (errorName: string): ErrorType => {
 
 // Computed properties
 const errorTitle = computed(() => {
-  if (error.value?.name === 'ChunkLoadError') {
-    return t('errors.update_available.title');
-  }
-  if (error.value?.name === 'NetworkError') {
-    return t('errors.network.title');
-  }
-  return props.fallbackTitle;
+    if (error.value?.name === 'ChunkLoadError') {
+        return t('errors.update_available.title');
+    }
+    if (error.value?.name === 'NetworkError') {
+        return t('errors.network.title');
+    }
+    return props.fallbackTitle;
 });
 
 const errorMessage = computed(() => {
-  if (error.value?.name === 'ChunkLoadError') {
-    return t('errors.update_available.message');
-  }
-  if (error.value?.name === 'NetworkError') {
-    return t('errors.network.message');
-  }
-  return error.value?.message || props.fallbackMessage;
+    if (error.value?.name === 'ChunkLoadError') {
+        return t('errors.update_available.message');
+    }
+    if (error.value?.name === 'NetworkError') {
+        return t('errors.network.message');
+    }
+    return error.value?.message || props.fallbackMessage;
 });
 
 const errorDetails = computed(() => {
@@ -85,7 +85,7 @@ const errorDetails = computed(() => {
 });
 
 // Error capture
-onErrorCaptured((err: Error, info: any) => {
+onErrorCaptured((err: Error, info: VueErrorInfo) => {
     console.error('ErrorBoundary caught error:', err);
     console.error('Error info:', info);
 
@@ -246,7 +246,9 @@ defineExpose({
 
             <div v-if="showDetails && errorDetails" class="error-boundary__details">
                 <details class="error-boundary__accordion">
-                  <summary class="error-boundary__summary">{{ t('errors.technical_details') }}</summary>
+                    <summary class="error-boundary__summary">
+                        {{ t('errors.technical_details') }}
+                    </summary>
                     <div class="error-boundary__content">
                         <pre class="error-boundary__stack">{{ errorDetails }}</pre>
                     </div>
@@ -267,7 +269,7 @@ defineExpose({
                     ></span>
                     {{ isRetrying ? t('buttons.retrying') : t('buttons.retry') }}
                 </button>
-        
+
                 <button
                     v-if="showReload"
                     type="button"
@@ -276,7 +278,7 @@ defineExpose({
                 >
                     {{ t('buttons.reload') }}
                 </button>
-        
+
                 <button
                     v-if="showReport"
                     type="button"
