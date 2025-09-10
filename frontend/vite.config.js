@@ -3,7 +3,8 @@ import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
 
 export default defineConfig({
-    base: process.env.VITE_BASE_URL || '',
+    // Use '/' as base for production deployments to ensure assets load correctly
+    base: process.env.NODE_ENV === 'production' ? '/' : (process.env.VITE_BASE_URL || ''),
     plugins: [vue(), WindiCSS()],
 
     server: {

@@ -55,7 +55,7 @@ For Coolify deployment, you can use the following configuration:
 
 ### Environment Variables for Coolify:
 ```env
-VITE_BASE_URL=/
+NODE_ENV=production
 VITE_APP_TITLE=MMIT Lab
 VITE_APP_DESCRIPTION=Hardware testing application
 VITE_API_BASE_URL=/api
