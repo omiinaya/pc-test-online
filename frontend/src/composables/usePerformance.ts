@@ -263,7 +263,7 @@ export function usePerformance() {
         // Memory usage (Chrome only)
         if (capabilities.value.supportsMemoryAPI) {
             const memory = (performance as PerformanceWithMemory).memory;
-            metrics.value.memoryUsage = Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
+            metrics.value.memoryUsage = Math.round((memory?.usedJSHeapSize || 0) / 1024 / 1024); // MB
         }
     };
 

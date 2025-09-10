@@ -18,7 +18,7 @@ export interface MockBatteryManager extends BatteryManager {
 }
 
 // Event types for battery events
-interface BatteryEvent extends Event {
+interface BatteryEvent extends Omit<Event, 'target'> {
     type: 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange' | 'levelchange';
     target: BatteryManager | MockBatteryManager;
 }
@@ -80,11 +80,11 @@ export function useBatteryCompatibility() {
                 const battery = await (
                     navigator as { getBattery?: () => Promise<BatteryManager> }
                 ).getBattery?.();
-                state.value.batteryInfo = battery;
+                state.value.batteryInfo = battery || null;
                 state.value.fallbackMode = false;
 
                 console.log('✅ Native Battery API initialized');
-                return battery;
+                return battery || createMockBatteryManager();
             } catch (error) {
                 console.warn('❌ Battery API failed despite detection:', error);
             }
@@ -146,7 +146,7 @@ export function useBatteryCompatibility() {
                             type: 'levelchange',
                             target: mockBattery,
                         } as BatteryEvent;
-                        listener(event);
+                        listener(event as unknown as Event);
                     }, 30000); // Every 30 seconds
 
                     // Store interval for cleanup
