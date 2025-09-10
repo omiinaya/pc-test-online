@@ -21,20 +21,12 @@ export default {
         };
     },
     mounted() {
-        // Check if we need to show fallback after a short delay
-        setTimeout(() => {
-            const routerView = document.querySelector('.router-view');
-            const hasContent = routerView && routerView.children.length > 0;
-
-            // If router-view is empty and we're not on a route, show fallback
-            if (!hasContent && (!this.$route.matched || this.$route.matched.length === 0)) {
-                console.log('Router not working, showing TestsPage fallback');
-                this.showFallback = true;
-            }
-        }, 100);
-        
         // Set up global event handlers for AppFooter actions
         this.setupGlobalEventHandlers();
+        
+        // Debug router state
+        console.log('AppLayout mounted - route:', this.$route);
+        console.log('Router matched:', this.$route.matched);
     },
     methods: {
         handleFooterUpdate(payload) {
