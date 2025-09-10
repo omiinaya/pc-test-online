@@ -49,7 +49,7 @@
       "description": "Test your battery and charging functionality by following the instructions."
     },
     "completed": {
-      "name": "All Tests Complete",
+      "name": "Tests Complete",
       "description": "Review your test results and download the complete report."
     }
   },

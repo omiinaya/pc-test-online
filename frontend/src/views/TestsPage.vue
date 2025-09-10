@@ -1155,6 +1155,7 @@ export default {
             window.addEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
             window.addEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
             window.addEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
+            window.addEventListener('app-footer-close-export-menu', this.handleCloseExportMenuFromFooter);
         },
         cleanupGlobalEventListeners() {
             // Remove AppFooter event listeners
@@ -1162,6 +1163,7 @@ export default {
             window.removeEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
             window.removeEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
             window.removeEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
+            window.removeEventListener('app-footer-close-export-menu', this.handleCloseExportMenuFromFooter);
         },
         handleResetFromFooter() {
             this.resetTests();
@@ -1174,6 +1176,9 @@ export default {
         },
         handleExportCsvFromFooter() {
             this.exportAsCSV();
+        },
+        handleCloseExportMenuFromFooter() {
+            this.showExportMenu = false;
         },
     },
     mounted() {
@@ -1204,18 +1209,6 @@ export default {
             }
             this.setActiveTest(this.activeTest);
         });
-
-        // Expose methods to window for Electron integration
-        if (typeof window !== 'undefined') {
-            window.app = {
-                setActiveTest: this.setActiveTest.bind(this),
-                resetTests: this.resetTests.bind(this),
-                exportResults: this.exportResults.bind(this),
-                exportAsPDF: this.exportAsPDF?.bind(this),
-                exportAsJSON: this.exportAsJSON?.bind(this),
-                exportAsCSV: this.exportAsCSV?.bind(this),
-            };
-        }
 
         // Initialize CSS compatibility system
         const cssCompat = useCSSCompatibility();
@@ -1372,19 +1365,6 @@ export default {
                     </li>
                 </ul>
             </nav>
-
-            <!-- Google AdSense Container -->
-            <div class="ad-container">
-                <ins class="adsbygoogle"
-                    style="display:block"
-                    data-ad-client="ca-pub-1440039437221216"
-                    data-ad-slot="YOUR_AD_SLOT_ID"
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -1528,7 +1508,7 @@ export default {
 /* Global Layout */
 .app-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100%;
     background-color: #0d0d0d;
     color: #d4d4d4;
     font-family:
@@ -1570,6 +1550,7 @@ export default {
     padding: 2rem;
     overflow-y: auto;
     min-width: 0;
+    min-height: 0; /* Allow flex item to shrink properly */
     position: relative; /* Required for absolute positioning of action buttons */
 }
 

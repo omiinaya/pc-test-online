@@ -73,7 +73,7 @@ export default {
 </script>
 
 <template>
-    <div>
+    <div class="app-layout-container">
         <AppHeader />
         <router-view v-slot="{ Component }">
             <component :is="Component" @update-footer="handleFooterUpdate" />
@@ -96,7 +96,7 @@ export default {
 <style>
 /* Global styles for the app layout */
 #app {
-    min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -107,11 +107,13 @@ export default {
 /* Ensure main content doesn't get hidden behind the header/footer */
 .router-view {
     flex: 1;
+    min-height: 0; /* Allow flex item to shrink properly */
 }
 
-/* Override any existing body padding */
-body {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+/* Style the root div to take full height */
+.app-layout-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 </style>

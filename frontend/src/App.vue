@@ -1304,7 +1304,6 @@ export default {
 /* Global Layout */
 .app-layout {
     display: flex;
-    min-height: 100vh;
     background-color: #0d0d0d;
     color: #d4d4d4;
     font-family:
@@ -1853,7 +1852,7 @@ export default {
 .mobile-layout {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    
     background-color: #000;
     color: #fff;
     overflow: hidden;

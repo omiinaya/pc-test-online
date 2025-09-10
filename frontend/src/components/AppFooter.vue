@@ -35,6 +35,26 @@ export default {
         handleExportCsv() {
             this.$emit('export-csv');
         },
+        handleClickOutsideExportMenu(event) {
+            if (this.showExportMenu) {
+                const exportMenu = this.$refs.exportOptions;
+                const exportButton = this.$refs.exportButton;
+                
+                if (exportMenu && exportButton &&
+                    !exportMenu.contains(event.target) &&
+                    !exportButton.contains(event.target)) {
+                    this.$emit('close-export-menu');
+                    // Dispatch custom event for TestsPage to handle
+                    window.dispatchEvent(new CustomEvent('app-footer-close-export-menu'));
+                }
+            }
+        },
+    },
+    mounted() {
+        document.addEventListener('click', this.handleClickOutsideExportMenu);
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.handleClickOutsideExportMenu);
     },
 };
 </script>
@@ -98,6 +118,7 @@ export default {
 
                         <div class="export-menu-footer">
                             <button
+                                ref="exportButton"
                                 @click="handleToggleExport"
                                 class="button button--primary button--small"
                                 :title="$t('footer.exportResults')"
@@ -117,7 +138,7 @@ export default {
                                 <span>{{ $t('buttons.export') }}</span>
                             </button>
                             <transition name="expand-fade">
-                                <div v-if="showExportMenu" class="export-options-footer">
+                                <div v-if="showExportMenu" ref="exportOptions" class="export-options-footer">
                                     <button
                                         @click="handleExportPdf"
                                         class="button button--text export-option-footer"
