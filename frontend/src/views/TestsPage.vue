@@ -1372,6 +1372,19 @@ export default {
                     </li>
                 </ul>
             </nav>
+
+            <!-- Google AdSense Container -->
+            <div class="ad-container">
+                <ins class="adsbygoogle"
+                    style="display:block"
+                    data-ad-client="ca-pub-1440039437221216"
+                    data-ad-slot="YOUR_AD_SLOT_ID"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -1498,6 +1511,20 @@ export default {
 </template>
 
 <style scoped>
+/* Ad Container Styles */
+.ad-container {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #404040;
+}
+
+.ad-container ins {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
 /* Global Layout */
 .app-layout {
     display: flex;
