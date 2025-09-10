@@ -37,16 +37,12 @@ export default {
         return { t };
     },
     data() {
-        // Create reactive timers object
-        const realTimeTimers = {
-            webcam: { running: false, startTime: null, elapsed: 0 },
-            microphone: { running: false, startTime: null, elapsed: 0 },
-            speakers: { running: false, startTime: null, elapsed: 0 },
-            keyboard: { running: false, startTime: null, elapsed: 0 },
-            mouse: { running: false, startTime: null, elapsed: 0 },
-            touch: { running: false, startTime: null, elapsed: 0 },
-            battery: { running: false, startTime: null, elapsed: 0 },
-        };
+        // Create individual reactive timer objects for better reactivity
+        const createTimer = () => ({
+            running: false,
+            startTime: null,
+            elapsed: 0
+        });
 
         return {
             activeTest: 'webcam', // Start with webcam test
@@ -96,21 +92,41 @@ export default {
                 touch: 0,
                 battery: 0,
             },
-            realTimeTimers,
+            // Individual timer objects for better reactivity
+            realTimeTimerWebcam: createTimer(),
+            realTimeTimerMicrophone: createTimer(),
+            realTimeTimerSpeakers: createTimer(),
+            realTimeTimerKeyboard: createTimer(),
+            realTimeTimerMouse: createTimer(),
+            realTimeTimerTouch: createTimer(),
+            realTimeTimerBattery: createTimer(),
             timerInterval: null,
+            timerTick: 0, // Reactive property to force computed updates
             showExportMenu: false,
             switchDebounceTime: null,
             isSwitching: false,
         };
     },
     computed: {
-        // Real-time elapsed time for each test
+        // Real-time elapsed time for each test - optimized for reactivity
         realTimeElapsed() {
-            const elapsed = {};
+            // This computed property depends on timerTick to force re-evaluation
+            const tick = this.timerTick;
             const now = Date.now();
+            const elapsed = {};
 
-            Object.keys(this.realTimeTimers).forEach(test => {
-                const timer = this.realTimeTimers[test];
+            // Access individual timers directly for optimal reactivity
+            const timers = [
+                { test: 'webcam', timer: this.realTimeTimerWebcam },
+                { test: 'microphone', timer: this.realTimeTimerMicrophone },
+                { test: 'speakers', timer: this.realTimeTimerSpeakers },
+                { test: 'keyboard', timer: this.realTimeTimerKeyboard },
+                { test: 'mouse', timer: this.realTimeTimerMouse },
+                { test: 'touch', timer: this.realTimeTimerTouch },
+                { test: 'battery', timer: this.realTimeTimerBattery },
+            ];
+
+            timers.forEach(({ test, timer }) => {
                 if (timer.running && timer.startTime) {
                     elapsed[test] = (now - timer.startTime) / 1000 + timer.elapsed;
                 } else {
@@ -123,6 +139,8 @@ export default {
 
         // Formatted real-time timers with two decimal places
         formattedRealTimeTimers() {
+            // This computed property depends on timerTick to force re-evaluation
+            const tick = this.timerTick;
             const formatted = {};
             Object.keys(this.realTimeElapsed).forEach(test => {
                 const time = this.realTimeElapsed[test];
@@ -274,7 +292,7 @@ export default {
                     } else if (this.results[test] !== null || this.skippedTests.includes(test)) {
                         // Test completed but no timing data (skipped or quick completion)
                         formatted[test] = '0.00s';
-                    } else if (this.realTimeTimers[test].running) {
+                    } else if (this.getTimer(test)?.running) {
                         // Test is currently running - show real-time timer
                         formatted[test] = `${this.formattedRealTimeTimers[test]}s`;
                     } else {
@@ -602,9 +620,24 @@ export default {
                 this.activeTest = 'testsCompleted';
             }
         },
+        // Helper method to get timer by test type
+        getTimer(testType) {
+            switch (testType) {
+                case 'webcam': return this.realTimeTimerWebcam;
+                case 'microphone': return this.realTimeTimerMicrophone;
+                case 'speakers': return this.realTimeTimerSpeakers;
+                case 'keyboard': return this.realTimeTimerKeyboard;
+                case 'mouse': return this.realTimeTimerMouse;
+                case 'touch': return this.realTimeTimerTouch;
+                case 'battery': return this.realTimeTimerBattery;
+                default: return null;
+            }
+        },
+
         resetTests() {
             // Stop all running timers
-            Object.keys(this.realTimeTimers).forEach(test => {
+            const testTypes = ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery'];
+            testTypes.forEach(test => {
                 this.stopTimer(test);
             });
 
@@ -627,10 +660,21 @@ export default {
                 touch: { start: null, end: null, duration: null },
                 battery: { start: null, end: null, duration: null },
             };
-            // Reset real-time timers
-            Object.keys(this.realTimeTimers).forEach(test => {
-                this.realTimeTimers[test] = { running: false, startTime: null, elapsed: 0 };
-            });
+            // Reset individual real-time timers
+            const resetTimer = (timer) => {
+                timer.running = false;
+                timer.startTime = null;
+                timer.elapsed = 0;
+            };
+            
+            resetTimer(this.realTimeTimerWebcam);
+            resetTimer(this.realTimeTimerMicrophone);
+            resetTimer(this.realTimeTimerSpeakers);
+            resetTimer(this.realTimeTimerKeyboard);
+            resetTimer(this.realTimeTimerMouse);
+            resetTimer(this.realTimeTimerTouch);
+            resetTimer(this.realTimeTimerBattery);
+            
             // Reset shared component states
             resetAllTestStates();
             // Set active test and start timing
@@ -643,48 +687,42 @@ export default {
 
         // Timer management methods
         startTimer(testType) {
-            if (!this.realTimeTimers[testType]) return;
+            const timer = this.getTimer(testType);
+            if (!timer) return;
 
             // Stop any existing timer for this test
             this.stopTimer(testType);
 
-            // Create a new object to ensure reactivity
-            this.realTimeTimers[testType] = {
-                ...this.realTimeTimers[testType],
-                running: true,
-                startTime: Date.now(),
-            };
+            // Update individual timer properties directly for better reactivity
+            timer.running = true;
+            timer.startTime = Date.now();
 
-            console.log(
-                `Timer started for ${testType}, running: ${this.realTimeTimers[testType].running}`
-            );
+            console.log(`Timer started for ${testType}, running: ${timer.running}`);
 
             // Start update interval if not already running
             if (!this.timerInterval) {
                 this.timerInterval = setInterval(() => {
-                    // Simply access the reactive properties to trigger updates
-                    // Vue's reactivity system will handle the rest
-                    this.$forceUpdate();
+                    // Force computed properties to update by modifying a reactive property
+                    // This ensures realTimeElapsed and formattedRealTimeTimers recompute
+                    this.timerTick = Date.now();
                 }, 100); // Update every 100ms for smooth animation
             }
         },
 
         stopTimer(testType) {
-            if (!this.realTimeTimers[testType]) return;
+            const timer = this.getTimer(testType);
+            if (!timer) return;
 
-            if (this.realTimeTimers[testType].running) {
+            if (timer.running) {
                 // Calculate and store elapsed time
-                const elapsed = (Date.now() - this.realTimeTimers[testType].startTime) / 1000;
+                const elapsed = (Date.now() - timer.startTime) / 1000;
+                
+                // Update individual properties for better reactivity
+                timer.elapsed += elapsed;
+                timer.running = false;
+                timer.startTime = null;
 
-                // Create a new object to ensure reactivity
-                this.realTimeTimers[testType] = {
-                    ...this.realTimeTimers[testType],
-                    elapsed: this.realTimeTimers[testType].elapsed + elapsed,
-                    running: false,
-                    startTime: null,
-                };
-
-                // console.log(`Timer stopped for ${testType}, total elapsed: ${this.realTimeTimers[testType].elapsed.toFixed(2)}s`);
+                // console.log(`Timer stopped for ${testType}, total elapsed: ${timer.elapsed.toFixed(2)}s`);
             }
 
             // Clean up interval if no timers are running
@@ -692,7 +730,12 @@ export default {
         },
 
         cleanupTimerInterval() {
-            const anyTimerRunning = Object.values(this.realTimeTimers).some(timer => timer.running);
+            const testTypes = ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery'];
+            const anyTimerRunning = testTypes.some(test => {
+                const timer = this.getTimer(test);
+                return timer && timer.running;
+            });
+            
             if (!anyTimerRunning && this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
@@ -1095,13 +1138,16 @@ export default {
                 // Safely access the timing value
                 const timingValue = this.formattedTimings[test];
 
-                // Debug logging
-                // console.log(`hasTimingData - ${test}: ${timingValue}, type: ${typeof timingValue}`);
-
                 // Handle cases where timing value might be undefined, null, or non-string
-                // Allow "0.00s" to be displayed for pending tests
+                // Allow "0.00s" to be displayed for pending tests and real-time timers
                 const result = typeof timingValue === 'string' && timingValue !== '';
-                // console.log(`hasTimingData result for ${test}: ${result}`);
+                
+                // Always return true if there's a running timer to ensure real-time updates show
+                const timer = this.getTimer(test);
+                if (timer && timer.running) {
+                    return true;
+                }
+                
                 return result;
             } catch (error) {
                 console.warn('Error checking timing data for test:', test, error);
@@ -1418,7 +1464,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                <span v-if="getTimer(test)?.running" class="live-indicator"
                                     >●</span
                                 >
                             </span>
@@ -1435,7 +1481,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                <span v-if="getTimer(test)?.running" class="live-indicator"
                                     >●</span
                                 >
                             </span>
@@ -1461,7 +1507,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                <span v-if="getTimer(test)?.running" class="live-indicator"
                                     >●</span
                                 >
                             </span>
@@ -1478,7 +1524,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="realTimeTimers[test].running" class="live-indicator"
+                                <span v-if="getTimer(test)?.running" class="live-indicator"
                                     >●</span
                                 >
                             </span>
