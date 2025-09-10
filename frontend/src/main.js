@@ -18,22 +18,8 @@ app.use(i18n);
 // Mount the app and expose methods for Electron integration
 const vueApp = app.mount('#app');
 
-// Add error handling for router navigation
-const initializeRouter = () => {
-    // Only force navigation if we're not already on the home route
-    if (router.currentRoute.value.path !== '/') {
-        router.push('/').catch(err => {
-            console.warn('Router navigation failed:', err);
-        });
-    }
-};
-
-// Wait for router to be ready before initializing
-router.isReady().then(() => {
-    initializeRouter();
-}).catch(err => {
-    console.error('Router initialization failed:', err);
-});
+// Simple navigation to ensure we're on the home route
+// This is handled more gracefully by the router's catch-all route
 
 // Expose app methods to window for Electron menu integration
 if (typeof window !== 'undefined') {
