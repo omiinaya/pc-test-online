@@ -11,7 +11,7 @@ const ports = process.argv.slice(2).map(port => parseInt(port));
 
 if (ports.length === 0) {
   console.log('Usage: node scripts/kill-ports.js [port1] [port2] ...');
-  process.exit(1);
+  throw new Error('No ports specified');
 }
 
 function killPort(port) {

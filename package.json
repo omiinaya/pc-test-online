@@ -4,7 +4,7 @@
   "description": "Computer repair testing application",
   "main": "backend/src/server.js",
   "author": "OmarM",
-  "engines": { "node": "24" },
+  "engines": { "node": "22" },
   "scripts": {
     "dev": "node scripts/kill-ports.js 3000 5173 && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "cd frontend && npm run dev",

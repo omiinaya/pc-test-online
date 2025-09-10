@@ -35,6 +35,11 @@
     "promise/no-promise-in-callback": "warn",
     "promise/no-callback-in-promise": "warn"
   },
+  "settings": {
+    "node": {
+      "version": "22"
+    }
+  },
   "overrides": [
     {
       "files": ["*.mjs"],

@@ -5,6 +5,7 @@
     "es2022": true
   },
   "rules": {
-    "node/no-unpublished-require": "off"
+    "node/no-unpublished-require": "off",
+    "node/no-unsupported-features/es-syntax": ["error", { "ignores": ["restSpreadProperties"] }]
   }
 }
