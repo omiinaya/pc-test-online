@@ -41,7 +41,7 @@ export default {
         const createTimer = () => ({
             running: false,
             startTime: null,
-            elapsed: 0
+            elapsed: 0,
         });
 
         return {
@@ -111,7 +111,6 @@ export default {
         // Real-time elapsed time for each test - optimized for reactivity
         realTimeElapsed() {
             // This computed property depends on timerTick to force re-evaluation
-            const tick = this.timerTick;
             const now = Date.now();
             const elapsed = {};
 
@@ -140,7 +139,6 @@ export default {
         // Formatted real-time timers with two decimal places
         formattedRealTimeTimers() {
             // This computed property depends on timerTick to force re-evaluation
-            const tick = this.timerTick;
             const formatted = {};
             Object.keys(this.realTimeElapsed).forEach(test => {
                 const time = this.realTimeElapsed[test];
@@ -623,20 +621,36 @@ export default {
         // Helper method to get timer by test type
         getTimer(testType) {
             switch (testType) {
-                case 'webcam': return this.realTimeTimerWebcam;
-                case 'microphone': return this.realTimeTimerMicrophone;
-                case 'speakers': return this.realTimeTimerSpeakers;
-                case 'keyboard': return this.realTimeTimerKeyboard;
-                case 'mouse': return this.realTimeTimerMouse;
-                case 'touch': return this.realTimeTimerTouch;
-                case 'battery': return this.realTimeTimerBattery;
-                default: return null;
+                case 'webcam':
+                    return this.realTimeTimerWebcam;
+                case 'microphone':
+                    return this.realTimeTimerMicrophone;
+                case 'speakers':
+                    return this.realTimeTimerSpeakers;
+                case 'keyboard':
+                    return this.realTimeTimerKeyboard;
+                case 'mouse':
+                    return this.realTimeTimerMouse;
+                case 'touch':
+                    return this.realTimeTimerTouch;
+                case 'battery':
+                    return this.realTimeTimerBattery;
+                default:
+                    return null;
             }
         },
 
         resetTests() {
             // Stop all running timers
-            const testTypes = ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery'];
+            const testTypes = [
+                'webcam',
+                'microphone',
+                'speakers',
+                'keyboard',
+                'mouse',
+                'touch',
+                'battery',
+            ];
             testTypes.forEach(test => {
                 this.stopTimer(test);
             });
@@ -661,12 +675,12 @@ export default {
                 battery: { start: null, end: null, duration: null },
             };
             // Reset individual real-time timers
-            const resetTimer = (timer) => {
+            const resetTimer = timer => {
                 timer.running = false;
                 timer.startTime = null;
                 timer.elapsed = 0;
             };
-            
+
             resetTimer(this.realTimeTimerWebcam);
             resetTimer(this.realTimeTimerMicrophone);
             resetTimer(this.realTimeTimerSpeakers);
@@ -674,7 +688,7 @@ export default {
             resetTimer(this.realTimeTimerMouse);
             resetTimer(this.realTimeTimerTouch);
             resetTimer(this.realTimeTimerBattery);
-            
+
             // Reset shared component states
             resetAllTestStates();
             // Set active test and start timing
@@ -716,7 +730,7 @@ export default {
             if (timer.running) {
                 // Calculate and store elapsed time
                 const elapsed = (Date.now() - timer.startTime) / 1000;
-                
+
                 // Update individual properties for better reactivity
                 timer.elapsed += elapsed;
                 timer.running = false;
@@ -730,12 +744,20 @@ export default {
         },
 
         cleanupTimerInterval() {
-            const testTypes = ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery'];
+            const testTypes = [
+                'webcam',
+                'microphone',
+                'speakers',
+                'keyboard',
+                'mouse',
+                'touch',
+                'battery',
+            ];
             const anyTimerRunning = testTypes.some(test => {
                 const timer = this.getTimer(test);
                 return timer && timer.running;
             });
-            
+
             if (!anyTimerRunning && this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
@@ -1141,13 +1163,13 @@ export default {
                 // Handle cases where timing value might be undefined, null, or non-string
                 // Allow "0.00s" to be displayed for pending tests and real-time timers
                 const result = typeof timingValue === 'string' && timingValue !== '';
-                
+
                 // Always return true if there's a running timer to ensure real-time updates show
                 const timer = this.getTimer(test);
                 if (timer && timer.running) {
                     return true;
                 }
-                
+
                 return result;
             } catch (error) {
                 console.warn('Error checking timing data for test:', test, error);
@@ -1201,7 +1223,10 @@ export default {
             window.addEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
             window.addEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
             window.addEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
-            window.addEventListener('app-footer-close-export-menu', this.handleCloseExportMenuFromFooter);
+            window.addEventListener(
+                'app-footer-close-export-menu',
+                this.handleCloseExportMenuFromFooter
+            );
         },
         cleanupGlobalEventListeners() {
             // Remove AppFooter event listeners
@@ -1209,7 +1234,10 @@ export default {
             window.removeEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
             window.removeEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
             window.removeEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
-            window.removeEventListener('app-footer-close-export-menu', this.handleCloseExportMenuFromFooter);
+            window.removeEventListener(
+                'app-footer-close-export-menu',
+                this.handleCloseExportMenuFromFooter
+            );
         },
         handleResetFromFooter() {
             this.resetTests();
@@ -1462,9 +1490,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="getTimer(test)?.running" class="live-indicator"
-                                    >●</span
-                                >
+                                <span v-if="getTimer(test)?.running" class="live-indicator">●</span>
                             </span>
                         </li>
                     </div>
@@ -1479,9 +1505,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="getTimer(test)?.running" class="live-indicator"
-                                    >●</span
-                                >
+                                <span v-if="getTimer(test)?.running" class="live-indicator">●</span>
                             </span>
                         </li>
                     </div>
@@ -1505,9 +1529,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="getTimer(test)?.running" class="live-indicator"
-                                    >●</span
-                                >
+                                <span v-if="getTimer(test)?.running" class="live-indicator">●</span>
                             </span>
                         </li>
                     </div>
@@ -1522,9 +1544,7 @@ export default {
                             <span class="test-navigation__name">{{ getTestName(test) }}</span>
                             <span class="test-navigation__timing" v-if="hasTimingData(test)">
                                 {{ formattedTimings[test] }}
-                                <span v-if="getTimer(test)?.running" class="live-indicator"
-                                    >●</span
-                                >
+                                <span v-if="getTimer(test)?.running" class="live-indicator">●</span>
                             </span>
                         </li>
                     </div>

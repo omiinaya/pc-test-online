@@ -3,7 +3,7 @@ import { ref, onUnmounted, nextTick, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
-import { useEnhancedDeviceTest } from '../composables/useEnhancedDeviceTest.js';
+import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
 import { useCanvas } from '../composables/useCanvas.js';
 import { useAnimations } from '../composables/useAnimations.js';
 
@@ -16,8 +16,8 @@ export default {
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
         const { t } = useI18n();
-        // Enhanced device test with all normalized patterns
-        const deviceTest = useEnhancedDeviceTest(
+        // Media device test with all normalized patterns
+        const deviceTest = useMediaDeviceTest(
             {
                 deviceKind: 'audioinput',
                 deviceType: t('tests.microphone.name'),

@@ -39,10 +39,13 @@ export default {
             if (this.showExportMenu) {
                 const exportMenu = this.$refs.exportOptions;
                 const exportButton = this.$refs.exportButton;
-                
-                if (exportMenu && exportButton &&
+
+                if (
+                    exportMenu &&
+                    exportButton &&
                     !exportMenu.contains(event.target) &&
-                    !exportButton.contains(event.target)) {
+                    !exportButton.contains(event.target)
+                ) {
                     this.$emit('close-export-menu');
                     // Dispatch custom event for TestsPage to handle
                     window.dispatchEvent(new CustomEvent('app-footer-close-export-menu'));
@@ -138,7 +141,11 @@ export default {
                                 <span>{{ $t('buttons.export') }}</span>
                             </button>
                             <transition name="expand-fade">
-                                <div v-if="showExportMenu" ref="exportOptions" class="export-options-footer">
+                                <div
+                                    v-if="showExportMenu"
+                                    ref="exportOptions"
+                                    class="export-options-footer"
+                                >
                                     <button
                                         @click="handleExportPdf"
                                         class="button button--text export-option-footer"

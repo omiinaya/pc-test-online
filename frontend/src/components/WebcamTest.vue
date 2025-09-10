@@ -1,7 +1,7 @@
 <script>
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
-import { useEnhancedDeviceTest } from '../composables/useEnhancedDeviceTest.js';
+import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
 import { CameraIcon, CheckIcon } from '../composables/useIcons.js';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -18,13 +18,17 @@ export default {
 
     setup(props, { emit }) {
         const { t } = useI18n();
-        // Use the enhanced device test composable for all core functionality
-        const deviceTest = useEnhancedDeviceTest(
+        // Use the media device test composable for all core functionality
+        const deviceTest = useMediaDeviceTest(
             {
                 deviceKind: 'videoinput',
                 deviceType: t('tests.webcam.name'),
                 permissionType: 'camera',
                 testName: 'webcam',
+                autoInitialize: true,
+                enableEventListeners: true,
+                enableAnimations: true,
+                enableLifecycle: true,
             },
             emit
         );
@@ -152,6 +156,7 @@ export default {
                     });
                 };
 
+                // Use event listeners from composable if available
                 if (this.eventListeners) {
                     this.eventListeners.addEventListener(video, 'loadedmetadata', onVideoReady);
                     this.eventListeners.addEventListener(video, 'canplay', onVideoReady);

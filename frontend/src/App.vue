@@ -22,7 +22,7 @@ export default {
         console.log('[DEBUG] App.beforeCreate() - Component initialization starting', {
             timestamp: new Date().toISOString(),
             component: 'App',
-            environment: typeof window !== 'undefined' ? 'browser' : 'server'
+            environment: typeof window !== 'undefined' ? 'browser' : 'server',
         });
     },
     created() {
@@ -30,21 +30,21 @@ export default {
             timestamp: new Date().toISOString(),
             component: 'App',
             dataProperties: Object.keys(this.$data || {}),
-            computedProperties: Object.keys(this.$options.computed || {})
+            computedProperties: Object.keys(this.$options.computed || {}),
         });
     },
     beforeMount() {
         console.log('[DEBUG] App.beforeMount() - About to mount component to DOM', {
             timestamp: new Date().toISOString(),
             component: 'App',
-            templateSize: this.$options.template?.length || 'unknown'
+            templateSize: this.$options.template?.length || 'unknown',
         });
     },
     setup() {
         const { t } = useI18n();
         console.log('[DEBUG] App.setup() - Composition API setup complete', {
             timestamp: new Date().toISOString(),
-            hasI18n: !!t
+            hasI18n: !!t,
         });
         return { t };
     },
@@ -907,7 +907,7 @@ export default {
             component: 'App',
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
-            userAgent: navigator.userAgent
+            userAgent: navigator.userAgent,
         });
 
         // Set initial mobile state
@@ -922,7 +922,12 @@ export default {
 
         // Initialize the first test properly - force initialization even if activeTest is already set
         this.$nextTick(() => {
-            console.log('[DEBUG] Initializing activeTest:', this.activeTest, 'isMobile:', this.isMobile);
+            console.log(
+                '[DEBUG] Initializing activeTest:',
+                this.activeTest,
+                'isMobile:',
+                this.isMobile
+            );
             // Reset timing to ensure clean start
             if (this.timings[this.activeTest]) {
                 this.timings[this.activeTest].start = null;
@@ -936,7 +941,7 @@ export default {
             timestamp: new Date().toISOString(),
             component: 'App',
             activeTest: this.activeTest,
-            completedTests: this.completedTestsCount
+            completedTests: this.completedTestsCount,
         });
 
         window.removeEventListener('resize', this.handleResize);
@@ -956,7 +961,7 @@ export default {
             error: err.message,
             errorType: err.name,
             componentInfo: info,
-            stack: err.stack
+            stack: err.stack,
         });
         // Return false to prevent the error from propagating further
         return false;
@@ -967,7 +972,7 @@ export default {
             component: 'App',
             target: e.target,
             type: e.type,
-            key: e.key
+            key: e.key,
         });
     },
     renderTriggered(e) {
@@ -978,7 +983,7 @@ export default {
             type: e.type,
             key: e.key,
             newValue: e.newValue,
-            oldValue: e.oldValue
+            oldValue: e.oldValue,
         });
     },
 };
@@ -1851,7 +1856,7 @@ export default {
 .mobile-layout {
     display: flex;
     flex-direction: column;
-    
+
     background-color: #000;
     color: #fff;
     overflow: hidden;

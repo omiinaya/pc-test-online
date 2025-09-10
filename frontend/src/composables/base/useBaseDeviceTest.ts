@@ -1,63 +1,101 @@
-// Enhanced comprehensive test lifecycle composable with all new patterns
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useDeviceEnumeration } from './useDeviceEnumeration.js';
-import { useDeviceDetectionDelay } from './useDeviceDetectionDelay.js';
-import { useMediaPermissions } from './useMediaPermissions.js';
-import { useMediaStream } from './useMediaStream.js';
-import { useErrorHandling } from './useErrorHandling.js';
-import { useStatePanelConfigs } from './useStatePanelConfigs.js';
-import { useCommonTestPatterns, useTestTimers } from './useCommonTestPatterns.js';
-import { useComponentLifecycle } from './useComponentLifecycle.js';
-import { useEventListeners } from './useEventListeners.js';
-import { useTestResults } from './useTestResults.js';
-import { useAnimations } from './useAnimations.js';
+// Unified base composable for all device testing functionality
+import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { useDeviceEnumeration } from '../useDeviceEnumeration.js';
+import { useMediaPermissions } from '../useMediaPermissions.js';
+import { useMediaStream } from '../useMediaStream.js';
+import { useErrorHandling } from '../useErrorHandling.js';
+import { useStatePanelConfigs } from '../useStatePanelConfigs.js';
+import { useCommonTestPatterns, useTestTimers } from '../useCommonTestPatterns.js';
+import type {
+    DeviceKind,
+    DeviceType,
+    PermissionName,
+    ComponentState,
+    DeviceInfo,
+    StatePanelProps,
+} from '../../types';
+
+export interface UseBaseDeviceTestOptions {
+    deviceKind?: DeviceKind;
+    deviceType?: DeviceType;
+    permissionType?: PermissionName;
+    testName?: string;
+    autoInitialize?: boolean;
+    enableEventListeners?: boolean;
+    enableAnimations?: boolean;
+    enableLifecycle?: boolean;
+}
+
+export interface DeviceTestState {
+    isInitialized: Ref<boolean>;
+    currentState: Ref<ComponentState>;
+    availableDevices: ComputedRef<DeviceInfo[]>;
+    selectedDeviceId: Ref<string>;
+    hasDevices: ComputedRef<boolean>;
+    isLoading: ComputedRef<boolean>;
+    hasPermission: ComputedRef<boolean>;
+    needsPermission: ComputedRef<boolean>;
+    permissionBlocked: ComputedRef<boolean>;
+    hasActiveStream: ComputedRef<boolean>;
+    hasError: ComputedRef<boolean>;
+    currentError: ComputedRef<string | null>;
+    statePanelConfig: ComputedRef<StatePanelProps | null>;
+    showTestContent: ComputedRef<boolean>;
+    stream: Ref<MediaStream | null>;
+}
+
+export interface DeviceTestMethods {
+    initializeTest: () => Promise<void>;
+    requestPermission: () => Promise<boolean>;
+    getDeviceStream: (constraints?: MediaStreamConstraints | null) => Promise<MediaStream | null>;
+    switchDevice: (deviceId: string) => Promise<void>;
+    completeTest: (additionalData?: Record<string, unknown>) => void;
+    failTest: (reason?: string, additionalData?: Record<string, unknown>) => void;
+    skipTest: (reason?: string, additionalData?: Record<string, unknown>) => void;
+    resetTest: () => void;
+    cleanup: () => void;
+}
 
 /**
- * Enhanced comprehensive composable that combines ALL normalized test patterns
- * This provides a complete foundation for device test components with:
- * - Lifecycle management (mount, unmount, activate, deactivate)
- * - Event listener management with automatic cleanup
- * - Test result tracking and standardized emits
- * - Animation and transition control
- * - Error handling and state management
- * - Device enumeration and permissions
- * - Media stream management
- *
- * This supersedes the original useDeviceTest with enhanced patterns.
+ * Unified base composable for all device testing functionality
+ * Provides core device testing patterns with extension capabilities
  */
-export function useEnhancedDeviceTest(options = {}, emit = null) {
+export interface BaseDeviceTestComposables {
+    deviceEnumeration: ReturnType<typeof useDeviceEnumeration> | null;
+    mediaPermissions: ReturnType<typeof useMediaPermissions> | null;
+    mediaStream: ReturnType<typeof useMediaStream>;
+    errorHandling: ReturnType<typeof useErrorHandling>;
+    statePanelConfigs: ReturnType<typeof useStatePanelConfigs>;
+    commonPatterns: ReturnType<typeof useCommonTestPatterns>;
+    timers: ReturnType<typeof useTestTimers>;
+}
+
+export function useBaseDeviceTest(
+    options: UseBaseDeviceTestOptions = {},
+    emit?: (event: string, ...args: unknown[]) => void
+): DeviceTestState & DeviceTestMethods & BaseDeviceTestComposables {
     const {
-        deviceKind = null,
+        deviceKind,
         deviceType = 'device',
-        permissionType = null,
-        testName = 'test',
+        permissionType,
+        testName = 'device',
         autoInitialize = true,
-        enableEventListeners = true,
-        enableAnimations = true,
-        enableLifecycle = true,
     } = options;
 
-    // Core composables (existing patterns)
+    // Initialize core composables
     const deviceEnumeration = deviceKind ? useDeviceEnumeration(deviceKind, deviceType) : null;
-    const deviceDetectionDelay = deviceEnumeration
-        ? useDeviceDetectionDelay(deviceEnumeration, 2000)
+    const mediaPermissions = permissionType
+        ? useMediaPermissions(deviceType, permissionType)
         : null;
-    const mediaPermissions = permissionType ? useMediaPermissions(testName, permissionType) : null;
     const mediaStream = useMediaStream();
-    const errorHandling = useErrorHandling();
-    const statePanelConfigs = useStatePanelConfigs();
+    const errorHandling = useErrorHandling(testName);
+    const statePanelConfigs = useStatePanelConfigs(deviceType);
     const commonPatterns = useCommonTestPatterns();
     const timers = useTestTimers();
 
-    // Enhanced composables (new normalized patterns)
-    const lifecycle = enableLifecycle ? useComponentLifecycle({ autoInitialize: false }) : null;
-    const eventListeners = enableEventListeners ? useEventListeners() : null;
-    const testResults = emit ? useTestResults(testName, emit) : null;
-    const animations = enableAnimations ? useAnimations() : null;
-
     // State management
     const isInitialized = ref(false);
-    const currentState = ref('initializing');
+    const currentState = ref<ComponentState>('initializing');
 
     // Computed properties
     const availableDevices = computed(() => deviceEnumeration?.availableDevices.value || []);
@@ -66,42 +104,26 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
         set: value => deviceEnumeration && (deviceEnumeration.selectedDeviceId.value = value),
     });
     const hasDevices = computed(() => availableDevices.value.length > 0);
-
-    // Device detection with delay - only show "no devices" after 2 seconds
-    const showNoDevicesState = computed(() => {
-        if (!deviceDetectionDelay) return !hasDevices.value;
-        return deviceDetectionDelay.shouldShowNoDevices.value;
-    });
-    const isLoading = computed(() => {
-        const loading =
+    const isLoading = computed(
+        () =>
             deviceEnumeration?.loadingDevices.value ||
             mediaPermissions?.checkingPermission.value ||
             currentState.value === 'initializing' ||
-            false;
-        return loading;
-    });
-
-    // Permission state
+            false
+    );
     const hasPermission = computed(() => {
-        // If no permission is required (e.g., for audio output), always return true
         if (!mediaPermissions) return true;
         return mediaPermissions.permissionGranted.value || false;
     });
     const needsPermission = computed(() => {
-        // If no permission is required, never need permission
         if (!mediaPermissions) return false;
         return !hasPermission.value && !mediaPermissions.permissionDenied.value;
     });
     const permissionBlocked = computed(() => {
-        // If no permission is required, never blocked
         if (!mediaPermissions) return false;
         return mediaPermissions.permissionDenied.value || false;
     });
-
-    // Stream state
     const hasActiveStream = computed(() => !!mediaStream.stream.value);
-
-    // Error state
     const hasError = computed(() => {
         const hasErrorHandlingError = !!errorHandling.error.value;
         const hasEnumerationError = deviceEnumeration
@@ -109,7 +131,6 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
             : false;
         return hasErrorHandlingError || hasEnumerationError;
     });
-
     const currentError = computed(() => {
         const errorHandlingError = errorHandling.error.value;
         const enumerationError = deviceEnumeration
@@ -117,8 +138,6 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
             : null;
         return errorHandlingError || enumerationError || null;
     });
-
-    // State panel configuration
     const statePanelConfig = computed(() => {
         if (hasError.value) {
             return statePanelConfigs.getErrorConfig(currentError.value);
@@ -137,8 +156,6 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
         }
         return null;
     });
-
-    // Show test content when everything is ready
     const showTestContent = computed(
         () =>
             !hasError.value &&
@@ -148,12 +165,13 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     );
 
     /**
-     * Initialize the test with enhanced lifecycle
+     * Initialize the complete test setup
      */
-    const initializeTest = async () => {
+    const initializeTest = async (): Promise<void> => {
         if (isInitialized.value) return;
 
         currentState.value = 'initializing';
+        errorHandling.clearError();
 
         try {
             // First, check if devices exist at all (without permissions)
@@ -192,54 +210,22 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
                 await getDeviceStream();
             }
         } catch (error) {
-            errorHandling.setError(`Failed to initialize ${testName}: ${error.message}`);
+            const errorMessage =
+                error instanceof Error ? error.message : 'Unknown initialization error';
+            errorHandling.setError(`Failed to initialize ${testName}: ${errorMessage}`);
             currentState.value = 'error';
 
-            if (testResults) {
-                testResults.failTest(error.message);
+            if (emit) {
+                emit('test-failed', testName, { error: errorMessage });
             }
         }
     };
 
-    // Watcher to continue initialization when permissions are granted
-    if (mediaPermissions) {
-        watch(
-            () => hasPermission.value,
-            async newHasPermission => {
-                if (newHasPermission && currentState.value === 'permission-required') {
-                    // Continue with device enumeration to get proper labels
-                    if (deviceEnumeration) {
-                        try {
-                            await deviceEnumeration.enumerateDevices();
-
-                            if (!hasDevices.value) {
-                                currentState.value = 'no-devices';
-                                return;
-                            }
-                        } catch (error) {
-                            errorHandling.setError(`Device enumeration failed: ${error.message}`);
-                            currentState.value = 'error';
-                            return;
-                        }
-                    }
-
-                    currentState.value = 'ready';
-
-                    // Automatically get device stream after permission is granted
-                    if (deviceKind && hasDevices.value) {
-                        await getDeviceStream();
-                    }
-                }
-            },
-            { immediate: false }
-        );
-    }
-
     /**
-     * Request permission with enhanced error handling
+     * Request permission for the device
      */
-    const requestPermission = async () => {
-        // If no permissions are required (e.g., for audio output), return success
+    const requestPermission = async (): Promise<boolean> => {
+        // If no permissions are required, return success
         if (!mediaPermissions) {
             return true;
         }
@@ -253,11 +239,11 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
                       ? { audio: true }
                       : {};
 
-            const stream = await mediaPermissions.requestPermission(constraints);
+            const streamResult = await mediaPermissions.requestPermission(constraints);
 
-            if (stream) {
+            if (streamResult) {
                 // Store the stream in mediaStream composable
-                mediaStream.stream.value = stream;
+                mediaStream.stream.value = streamResult as MediaStream;
 
                 // Re-enumerate devices to get proper labels after permission
                 if (deviceEnumeration) {
@@ -265,7 +251,6 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
 
                     // Check if devices still exist after permission grant
                     if (!hasDevices.value) {
-                        // This shouldn't happen, but handle it gracefully
                         errorHandling.setError(
                             `No ${deviceType.toLowerCase()} devices found after permission grant`
                         );
@@ -279,14 +264,17 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
             return false;
         } catch (error) {
             // Handle specific device not found error
+            const errorMessage =
+                error instanceof Error ? error.message : 'Unknown permission error';
+
             if (
-                error.message.includes('device not found') ||
-                error.message.includes('NotFoundError')
+                errorMessage.includes('device not found') ||
+                errorMessage.includes('NotFoundError')
             ) {
                 errorHandling.setError(`No ${deviceType.toLowerCase()} device found`);
                 currentState.value = 'no-devices';
             } else {
-                errorHandling.setError(`Permission request failed: ${error.message}`);
+                errorHandling.setError(`Permission request failed: ${errorMessage}`);
             }
             return false;
         }
@@ -295,7 +283,9 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Get device stream with enhanced error handling
      */
-    const getDeviceStream = async (constraints = null) => {
+    const getDeviceStream = async (
+        constraints: MediaStreamConstraints | null = null
+    ): Promise<MediaStream | null> => {
         // Create default constraints if none provided
         if (!constraints) {
             if (deviceKind === 'videoinput') {
@@ -320,10 +310,11 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
 
             return stream;
         } catch (error) {
-            errorHandling.setError(`Failed to get device stream: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown stream error';
+            errorHandling.setError(`Failed to get device stream: ${errorMessage}`);
 
-            if (testResults) {
-                testResults.failTest(error.message);
+            if (emit) {
+                emit('test-failed', testName, { error: errorMessage });
             }
 
             return null;
@@ -333,8 +324,8 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Switch device with enhanced handling
      */
-    const switchDevice = async deviceId => {
-        if (!deviceEnumeration) return false;
+    const switchDevice = async (deviceId: string): Promise<void> => {
+        if (!deviceEnumeration) return;
 
         try {
             // Stop current stream
@@ -349,22 +340,33 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
                     ? { video: { deviceId: { exact: deviceId } } }
                     : { audio: { deviceId: { exact: deviceId } } };
 
-            return await getDeviceStream(constraints);
+            await getDeviceStream(constraints);
+
+            if (emit) {
+                emit('device-changed', {
+                    deviceId,
+                    device: availableDevices.value.find((d: DeviceInfo) => d.deviceId === deviceId),
+                });
+            }
         } catch (error) {
-            errorHandling.setError(`Failed to switch device: ${error.message}`);
-            return false;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown switch error';
+            errorHandling.setError(`Failed to switch device: ${errorMessage}`);
+
+            if (emit) {
+                emit('device-change-error', error);
+            }
         }
     };
 
     /**
      * Complete test with enhanced result tracking
      */
-    const completeTest = (additionalData = {}) => {
-        if (testResults) {
-            testResults.completeTest(additionalData);
-        } else {
-            commonPatterns.handleTestPass(testName, () => {});
-        }
+    const completeTest = (additionalData: Record<string, unknown> = {}): void => {
+        commonPatterns.handleTestPass(testName, () => {
+            if (emit) {
+                emit('test-completed', testName, { status: 'completed', ...additionalData });
+            }
+        });
 
         currentState.value = 'completed';
     };
@@ -372,12 +374,16 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Fail test with enhanced result tracking
      */
-    const failTest = (reason = '', additionalData = {}) => {
-        if (testResults) {
-            testResults.failTest(reason, additionalData);
-        } else {
-            commonPatterns.handleTestFail(testName, reason, () => {});
-        }
+    const failTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
+        commonPatterns.handleTestFail(testName, reason, () => {
+            if (emit) {
+                emit('test-failed', testName, {
+                    status: 'failed',
+                    error: reason,
+                    ...additionalData,
+                });
+            }
+        });
 
         currentState.value = 'failed';
     };
@@ -385,12 +391,12 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Skip test with enhanced result tracking
      */
-    const skipTest = (reason = '', additionalData = {}) => {
-        if (testResults) {
-            testResults.skipTest(reason, additionalData);
-        } else {
-            commonPatterns.handleTestSkip(testName, () => {});
-        }
+    const skipTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
+        commonPatterns.handleTestSkip(testName, () => {
+            if (emit) {
+                emit('test-skipped', testName, { status: 'skipped', reason, ...additionalData });
+            }
+        });
 
         currentState.value = 'skipped';
     };
@@ -398,24 +404,13 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Reset test to initial state
      */
-    const resetTest = () => {
+    const resetTest = (): void => {
         mediaStream.stopStream();
         if (mediaPermissions) {
             mediaPermissions.resetPermissions();
         }
-        if (deviceDetectionDelay) {
-            deviceDetectionDelay.resetDetection();
-        }
         errorHandling.clearError();
         timers.clearAllTimers();
-
-        if (testResults) {
-            testResults.resetTest();
-        }
-
-        if (animations) {
-            animations.cleanupAnimations();
-        }
 
         currentState.value = 'initializing';
         isInitialized.value = false;
@@ -424,26 +419,11 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
     /**
      * Enhanced cleanup with all patterns
      */
-    const cleanup = () => {
+    const cleanup = (): void => {
         mediaStream.stopStream();
         timers.clearAllTimers();
-
-        if (deviceDetectionDelay) {
-            deviceDetectionDelay.resetDetection();
-        }
-
-        if (animations) {
-            animations.cleanupAnimations();
-        }
-
-        // Event listeners are auto-cleaned by useEventListeners
+        errorHandling.clearError();
     };
-
-    // Setup lifecycle callbacks if enabled
-    if (lifecycle) {
-        lifecycle.onInitialize(initializeTest);
-        lifecycle.onCleanup(cleanup);
-    }
 
     // Auto-initialize if requested
     if (autoInitialize) {
@@ -460,7 +440,6 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
         availableDevices,
         selectedDeviceId,
         hasDevices,
-        showNoDevicesState,
         isLoading,
         hasPermission,
         needsPermission,
@@ -485,15 +464,8 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
         resetTest,
         cleanup,
 
-        // Enhanced features
-        lifecycle,
-        eventListeners,
-        testResults,
-        animations,
-
         // Direct access to composables if needed
         deviceEnumeration,
-        deviceDetectionDelay,
         mediaPermissions,
         mediaStream,
         errorHandling,
@@ -502,9 +474,3 @@ export function useEnhancedDeviceTest(options = {}, emit = null) {
         timers,
     };
 }
-
-/**
- * Legacy compatibility - exports the original useDeviceTest
- * @deprecated Use useEnhancedDeviceTest instead
- */
-export { useDeviceTest } from './useDeviceTest.js';

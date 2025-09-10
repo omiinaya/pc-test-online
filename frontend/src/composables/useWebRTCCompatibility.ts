@@ -58,6 +58,30 @@ export interface WebRTCCompatibilityState {
     recommendedBrowser: string | null;
 }
 
+export interface WebRTCCompatibilityReturn {
+    // State
+    state: WebRTCCompatibilityState;
+    
+    // Methods
+    getUserMedia: (constraints: MediaStreamConstraints) => Promise<MediaStream>;
+    enumerateDevices: () => Promise<MediaDeviceInfo[]>;
+    getDisplayMedia: (constraints?: MediaStreamConstraints) => Promise<MediaStream>;
+    createMediaRecorder: (stream: MediaStream, options?: MediaRecorderOptions) => MediaRecorder;
+    getBrowserInfo: () => {
+        name: string;
+        version: number;
+        isSupported: boolean;
+        capabilities: WebRTCCapabilities;
+        warnings: string[];
+        recommendedBrowser: string | null;
+    };
+    getCompatibilityRecommendations: () => string[];
+    
+    // Utilities
+    detectBrowser: () => void;
+    checkCapabilities: () => void;
+}
+
 /**
  * Cross-browser WebRTC and Media API compatibility composable
  * Provides graceful fallbacks and compatibility warnings for media APIs

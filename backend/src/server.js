@@ -407,13 +407,20 @@ process.on('uncaughtException', (error) => {
     stack: error.stack,
     code: error.code
   });
-  process.exit(1);
+  
+  // Log the fatal error
+  console.error('FATAL ERROR - Uncaught Exception:', error.message);
+  console.error(error.stack);
+  
+  // Throw the error to be handled by the error handling middleware
+  // This allows proper cleanup and graceful shutdown
+  throw error;
 });
 
 // Handle unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
   debugLog('UNHANDLED REJECTION - Promise rejection not handled', {
     reason: reason instanceof Error ? reason.message : reason,
-    promise: promise
+    promise
   });
 });
