@@ -30,53 +30,6 @@ export default {
                 </div>
             </div>
 
-            <nav class="header-nav">
-                <div class="nav-links">
-                    <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M9 12l2 2 4-4" />
-                            <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
-                            <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
-                            <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
-                            <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1" />
-                        </svg>
-                        {{ t('navigation.tests') }}
-                    </router-link>
-
-                    <router-link
-                        to="/about"
-                        class="nav-link"
-                        :class="{ active: $route.path === '/about' }"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                        </svg>
-                        {{ t('navigation.about') }}
-                    </router-link>
-                </div>
-            </nav>
 
             <div class="header-right">
                 <div class="status-indicator-group">

@@ -1,17 +1,11 @@
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router';
 import TestsPage from '../views/TestsPage.vue';
-import AboutPage from '../views/AboutPage.vue';
 
 const routes = [
     {
         path: '/',
         name: 'Home',
         component: TestsPage,
-    },
-    {
-        path: '/about',
-        name: 'About',
-        component: AboutPage,
     },
     // Catch-all route - redirect anything else to TestsPage
     {
