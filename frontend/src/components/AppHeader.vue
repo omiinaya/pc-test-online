@@ -7,6 +7,16 @@ export default {
     components: {
         LanguageSwitcher
     },
+    props: {
+        testTitle: {
+            type: String,
+            default: ''
+        },
+        testIcon: {
+            type: String,
+            default: ''
+        }
+    },
     setup() {
         const { t } = useI18n();
         return { t };
@@ -30,6 +40,14 @@ export default {
                 </div>
             </div>
 
+
+            <!-- Center area for test title -->
+            <div class="header-center" v-if="testTitle">
+                <div class="test-title-center">
+                    <span v-if="testIcon" class="test-icon-center">{{ testIcon }}</span>
+                    <span class="test-title-text">{{ testTitle }}</span>
+                </div>
+            </div>
 
             <div class="header-right">
                 <div class="status-indicator-group">
@@ -115,6 +133,44 @@ export default {
     margin: 0;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
+
+.header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 1;
+    min-width: 0;
+    max-width: 400px;
+}
+
+.test-title-center {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.test-icon-center {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.test-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 .header-nav {
     position: absolute;
@@ -295,6 +351,25 @@ export default {
         padding: 0 var(--spacing-md);
     }
 
+    .header-center {
+        position: static;
+        transform: none;
+        flex: 1;
+        margin: 0 1rem;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .test-title-center {
+        font-size: var(--font-size-base);
+        justify-content: center;
+    }
+
+    .test-icon-center {
+        font-size: 1rem;
+    }
+
+
     .nav-links {
         gap: 1rem;
     }
@@ -316,6 +391,46 @@ export default {
 
     .brand-section {
         gap: 0.5rem;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 640px) {
+    .header-center {
+        margin: 0 0.5rem;
+    }
+
+    .test-title-center {
+        font-size: var(--font-size-sm);
+    }
+
+    .test-icon-center {
+        display: none; /* Hide icon on very small screens */
+    }
+
+    .nav-link span:not(.sr-only) {
+        display: none;
+    }
+
+    .nav-links {
+        gap: 0.5rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem;
+        min-width: 32px;
+        justify-content: center;
+    }
+
+    .language-switcher-wrapper :deep(.language-switcher__trigger) {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+    }
+    
+    .language-switcher-wrapper :deep(.language-switcher__flag) {
+        font-size: 1.1rem;
+        transform: translateY(0.25px); /* Slightly less adjustment on mobile */
     }
 }
 

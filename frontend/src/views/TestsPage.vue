@@ -9,6 +9,7 @@ import BatteryTest from '../components/BatteryTest.vue';
 import TestsCompleted from '../components/TestsCompleted.vue';
 import VisualizerContainer from '../components/VisualizerContainer.vue';
 import TestActionButtons from '../components/TestActionButtons.vue';
+import AppHeader from '../components/AppHeader.vue';
 import TestHeader from '../components/TestHeader.vue';
 import { resetAllTestStates } from '../composables/useTestState.js';
 import { useCSSCompatibility } from '../composables/useCSSCompatibility';
@@ -28,6 +29,7 @@ export default {
         TestsCompleted,
         VisualizerContainer,
         TestActionButtons,
+        AppHeader,
         TestHeader,
     },
     setup() {
@@ -1225,6 +1227,12 @@ export default {
 
 <template>
   <div class="app-layout">
+      <!-- App Header with test title only in navbar -->
+      <AppHeader
+          :test-title="currentTestTitle"
+          :test-icon="currentTestIcon"
+      />
+
       <!-- Left Sidebar -->
       <aside class="sidebar">
           <div class="sidebar-header">
@@ -1313,17 +1321,18 @@ export default {
                     'test-navigation__status--pending': !allTestsCompleted,
                   }"
                 ></span>
-              </li>
+                </li>
             </ul>
           </nav>
       </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Test Header Outside Container -->
-            <TestHeader :test-title="currentTestTitle" :test-description="currentTestDescription">
-                <template #icon>{{ currentTestIcon }}</template>
-            </TestHeader>
+            <!-- Test Header with description only -->
+            <TestHeader
+                :test-description="currentTestDescription"
+                :center-align="true"
+            />
 
             <!-- Single persistent VisualizerContainer for smooth morphing -->
             <VisualizerContainer

@@ -2,21 +2,9 @@
 export default {
     name: 'TestHeader',
     props: {
-        testTitle: {
-            type: String,
-            required: true,
-        },
         testDescription: {
             type: String,
             default: '',
-        },
-        icon: {
-            type: [String, Object],
-            default: null,
-        },
-        showIcon: {
-            type: Boolean,
-            default: true,
         },
         centerAlign: {
             type: Boolean,
@@ -28,14 +16,6 @@ export default {
 
 <template>
     <div class="test-header" :class="{ 'center-align': centerAlign }">
-        <h2 class="test-title">
-            <span v-if="showIcon" class="test-icon">
-                <slot name="icon">
-                    <component :is="icon" v-if="icon" />
-                </slot>
-            </span>
-            <span class="test-title-text">{{ testTitle }}</span>
-        </h2>
         <p v-if="testDescription" class="test-description">{{ testDescription }}</p>
         <slot></slot>
     </div>

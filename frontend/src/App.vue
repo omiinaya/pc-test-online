@@ -961,12 +961,19 @@ export default {
 
 <template>
     <div v-if="!isMobile" class="app-layout">
+        <!-- App Header with test title only in navbar -->
+        <AppHeader
+            :test-title="currentTestTitle"
+            :test-icon="currentTestIcon"
+        />
+
         <!-- Main Content Only - Sidebars removed to avoid duplication with TestsPage.vue -->
         <main class="main-content">
-            <!-- Test Header Outside Container -->
-            <TestHeader :test-title="currentTestTitle" :test-description="currentTestDescription">
-                <template #icon>{{ currentTestIcon }}</template>
-            </TestHeader>
+            <!-- Test Header with description only -->
+            <TestHeader
+                :test-description="currentTestDescription"
+                :center-align="true"
+            />
 
             <!-- Single persistent VisualizerContainer for smooth morphing -->
             <VisualizerContainer
