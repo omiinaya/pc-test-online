@@ -3,47 +3,10 @@ import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
 
 export default defineConfig({
-    base: process.env.ELECTRON === 'true' ? './' : process.env.VITE_BASE_URL || '/',
+    base: process.env.ELECTRON === 'true' ? './' : process.env.VITE_BASE_URL || '',
     plugins: [
         vue(),
-        WindiCSS(),
-        // Temporarily disabled PWA due to workbox issues
-        // VitePWA({
-        //   registerType: 'autoUpdate',
-        //   includeAssets: ['favicon.svg', 'robots.txt'],
-        //   workbox: {
-        //     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        //     maximumFileSizeToCacheInBytes: 5000000, // 5MB limit
-        //     runtimeCaching: [
-        //       {
-        //         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        //         handler: 'CacheFirst',
-        //         options: {
-        //           cacheName: 'google-fonts-cache',
-        //           expiration: {
-        //             maxEntries: 10,
-        //             maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
-        //           }
-        //         }
-        //       }
-        //     ]
-        //   },
-        //   manifest: {
-        //     name: 'MMIT Computer Testing Suite',
-        //     short_name: 'MMIT Lab',
-        //     description: 'Comprehensive computer hardware testing suite',
-        //     theme_color: '#2563eb',
-        //     background_color: '#ffffff',
-        //     display: 'standalone',
-        //     icons: [
-        //       {
-        //         src: '/favicon.svg',
-        //         sizes: 'any',
-        //         type: 'image/svg+xml'
-        //       }
-        //     ]
-        //   }
-        // })
+        WindiCSS()
     ],
 
     server: {
