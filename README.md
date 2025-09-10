@@ -1,7 +1,7 @@
 # MMIT Computer Testing Suite
 
 A cross-platform web application for testing computer hardware components in repair shops. Built
-with Vue 3, Node.js, and Electron for maximum compatibility across Windows, macOS, and Linux.
+with Vue 3 and Node.js for maximum compatibility across modern web browsers.
 
 ## Features
 
@@ -9,15 +9,13 @@ with Vue 3, Node.js, and Electron for maximum compatibility across Windows, macO
 - **Microphone Test**: Test audio input with volume visualization and recording playback
 - **Speaker Test**: Test audio output with stereo channel testing, frequency sweeps, and music
   playback
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Electron Support**: Can be packaged as a standalone desktop application
+- **Cross-Platform**: Works on Windows, macOS, and Linux through modern web browsers
 - **Modern UI**: Beautiful, responsive interface with step-by-step testing process
 
 ## Tech Stack
 
 - **Frontend**: Vue 3 + Vite
 - **Backend**: Node.js + Express
-- **Desktop**: Electron
 - **Styling**: Pure CSS with modern design patterns
 
 ## Prerequisites
@@ -62,14 +60,6 @@ npm run dev:frontend
 npm run dev:backend
 ```
 
-### Run as Electron app
-
-```bash
-npm run electron:dev
-```
-
-This will start the backend, wait for the frontend to be ready, then launch the Electron app.
-
 ## Building for Production
 
 ### Build web application
@@ -78,24 +68,12 @@ This will start the backend, wait for the frontend to be ready, then launch the 
 npm run build
 ```
 
-### Build Electron application
-
-```bash
-npm run electron:build
-```
-
-This creates platform-specific installers in the `dist` folder:
-
-- Windows: `.exe` installer
-- macOS: `.dmg` installer
-- Linux: `.AppImage` file
+This creates optimized production files in the `frontend/dist` folder.
 
 ## Project Structure
 
 ```
 mmit-testing-app/
-├── electron/              # Electron main process
-│   └── main.js
 ├── frontend/              # Vue 3 frontend application
 │   ├── src/
 │   │   ├── components/    # Test components
@@ -123,11 +101,6 @@ mmit-testing-app/
 2. Open your browser to `http://localhost:5173`
 3. Follow the step-by-step testing process
 
-### Desktop Application
-
-1. Build the Electron app: `npm run electron:build`
-2. Install the generated installer for your platform
-3. Launch the "MMITLab Testing App" from your applications
 
 ## Testing Process
 
@@ -179,9 +152,6 @@ The backend provides several API endpoints:
 - `NODE_ENV` - Set to 'production' for production builds
 - `PORT` - Backend server port (default: 3000)
 
-### Electron Configuration
-
-Electron build settings can be modified in the root `package.json` under the `build` section.
 
 ## Troubleshooting
 
@@ -190,7 +160,6 @@ Electron build settings can be modified in the root `package.json` under the `bu
 - Ensure browser permissions are granted
 - Check if another application is using the devices
 - Try refreshing the page
-- For Electron app, restart the application
 
 ### Audio Not Playing
 

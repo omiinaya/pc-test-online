@@ -59,7 +59,6 @@ VITE_BASE_URL=/
 VITE_APP_TITLE=MMIT Lab
 VITE_APP_DESCRIPTION=Hardware testing application
 VITE_API_BASE_URL=/api
-VITE_ELECTRON=false
 ```
 
 ## Troubleshooting Common Issues

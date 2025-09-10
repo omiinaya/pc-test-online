@@ -44,9 +44,6 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
-# Electron build outputs
-out/
-electron-builder-output/
 
 # Temporary folders
 tmp/

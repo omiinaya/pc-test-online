@@ -869,26 +869,9 @@ export default {
         },
         // Handle window resize to detect mobile/desktop mode
         handleResize() {
-            // In Electron, prefer desktop mode unless window is very small
-            // Check multiple ways to detect Electron
-            const isElectron =
-                window.electronAPI ||
-                window.electron ||
-                navigator.userAgent.toLowerCase().indexOf('electron') > -1 ||
-                (typeof process !== 'undefined' && process?.type === 'renderer') ||
-                window.process?.type === 'renderer';
-
-            if (isElectron) {
-                // Force desktop mode for Electron unless window is extremely small
-                this.isMobile = window.innerWidth <= 500;
-            } else {
-                this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
-            }
-
+            this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
             console.log(
-                'handleResize - isElectron:',
-                isElectron,
-                'window.innerWidth:',
+                'handleResize - window.innerWidth:',
                 window.innerWidth,
                 'isMobile:',
                 this.isMobile
@@ -896,31 +879,15 @@ export default {
         },
     },
     mounted() {
-        // Detect Electron environment first - do this synchronously
-        const isElectron =
-            window.electronAPI ||
-            window.electron ||
-            navigator.userAgent.toLowerCase().indexOf('electron') > -1 ||
-            (typeof process !== 'undefined' && process?.type === 'renderer') ||
-            window.process?.type === 'renderer';
-
-        // Set initial mobile state - force desktop mode for Electron
-        if (isElectron) {
-            this.isMobile = false; // Always start in desktop mode for Electron
-            document.body.classList.add('electron-app');
-            if (window.electronAPI?.platform) {
-                document.body.classList.add(`platform-${window.electronAPI.platform}`);
-            }
-        } else {
-            this.handleResize();
-        }
+        // Set initial mobile state
+        this.handleResize();
 
         window.addEventListener('resize', this.handleResize);
         this.debouncedSetActiveTest = this.debounce(this.setActiveTest, 300);
         const { supported, unsupported } = useCSSCompatibility();
         console.log('Supported CSS Properties:', supported);
         console.log('Unsupported CSS Properties:', unsupported);
-        console.log('Environment Detection - isElectron:', isElectron, 'isMobile:', this.isMobile);
+        console.log('Environment Detection - isMobile:', this.isMobile);
 
         // Initialize the first test properly - force initialization even if activeTest is already set
         this.$nextTick(() => {
@@ -932,18 +899,6 @@ export default {
             }
             this.setActiveTest(this.activeTest);
         });
-
-        // Expose methods to window for Electron integration
-        if (typeof window !== 'undefined') {
-            window.app = {
-                setActiveTest: this.setActiveTest.bind(this),
-                resetTests: this.resetTests.bind(this),
-                exportResults: this.exportResults.bind(this),
-                exportAsPDF: this.exportAsPDF.bind(this),
-                exportAsJSON: this.exportAsJSON.bind(this),
-                exportAsCSV: this.exportAsCSV.bind(this),
-            };
-        }
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -1820,77 +1775,6 @@ export default {
     overflow: hidden;
 }
 
-/* Electron-specific styles */
-.electron-app {
-    -webkit-app-region: drag; /* Allow dragging the app by the header */
-}
-
-.electron-app button,
-.electron-app .summary-button {
-    -webkit-app-region: no-drag; /* Prevent buttons from being draggable */
-}
-
-/* Platform-specific styles */
-body.platform-win32 .mobile-header {
-    height: 48px; /* Windows title bar height */
-}
-
-body.platform-darwin .mobile-header {
-    height: 44px; /* macOS title bar height */
-    padding-left: 78px; /* Account for traffic lights */
-}
-
-body.platform-linux .mobile-header {
-    height: 46px; /* Linux title bar height */
-}
-
-/* Electron window controls area */
-.electron-titlebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 30px;
-    -webkit-app-region: drag;
-    z-index: 9999;
-    background: transparent;
-}
-
-.electron-titlebar.platform-darwin {
-    height: 22px;
-}
-
-/* Improve scrollbars for desktop */
-.app-layout ::-webkit-scrollbar {
-    width: 8px;
-}
-
-.app-layout ::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-.app-layout ::-webkit-scrollbar-thumb {
-    background: #404040;
-    border-radius: 4px;
-}
-
-.app-layout ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Enhanced focus styles for desktop */
-.app-layout button:focus,
-.app-layout .test-nav li:focus {
-    outline: 2px solid #ff6b00;
-    outline-offset: 2px;
-}
-
-/* Electron-specific animations */
-@media (prefers-reduced-motion: no-preference) {
-    .electron-app * {
-        transition-duration: 0.15s; /* Faster transitions for desktop feel */
-    }
-}
 
 .mobile-header {
     flex-shrink: 0;

@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
 
 export default defineConfig({
-    base: process.env.ELECTRON === 'true' ? './' : process.env.VITE_BASE_URL || '',
+    base: process.env.VITE_BASE_URL || '',
     plugins: [
         vue(),
         WindiCSS()
@@ -53,11 +53,8 @@ export default defineConfig({
                     ],
                 },
 
-                // Optimize chunk names - use assets folder for Electron builds
+                // Optimize chunk names
                 chunkFileNames: chunkInfo => {
-                    if (process.env.ELECTRON === 'true') {
-                        return 'assets/[name]-[hash].js';
-                    }
                     const facadeModuleId = chunkInfo.facadeModuleId;
                     if (facadeModuleId) {
                         const fileName = facadeModuleId
@@ -69,11 +66,8 @@ export default defineConfig({
                     return 'js/[name]-[hash].js';
                 },
 
-                // Optimize asset names - use assets folder for Electron builds
+                // Optimize asset names
                 assetFileNames: assetInfo => {
-                    if (process.env.ELECTRON === 'true') {
-                        return 'assets/[name]-[hash][extname]';
-                    }
                     const extType = assetInfo.name?.split('.').pop() || '';
                     const assetMap = {
                         png: 'images',

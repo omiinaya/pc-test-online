@@ -20,5 +20,3 @@ bootable-iso/output/
 bootable-iso/alpine-extended/
 *.iso
 *.img
-# Electron specific ignores
-out/
