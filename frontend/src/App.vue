@@ -18,8 +18,34 @@ import { useCSSCompatibility } from './composables/useCSSCompatibility';
 
 export default {
     name: 'App',
+    beforeCreate() {
+        console.log('[DEBUG] App.beforeCreate() - Component initialization starting', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            environment: typeof window !== 'undefined' ? 'browser' : 'server'
+        });
+    },
+    created() {
+        console.log('[DEBUG] App.created() - Component instance created', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            dataProperties: Object.keys(this.$data || {}),
+            computedProperties: Object.keys(this.$options.computed || {})
+        });
+    },
+    beforeMount() {
+        console.log('[DEBUG] App.beforeMount() - About to mount component to DOM', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            templateSize: this.$options.template?.length || 'unknown'
+        });
+    },
     setup() {
         const { t } = useI18n();
+        console.log('[DEBUG] App.setup() - Composition API setup complete', {
+            timestamp: new Date().toISOString(),
+            hasI18n: !!t
+        });
         return { t };
     },
     components: {
@@ -876,19 +902,27 @@ export default {
         },
     },
     mounted() {
+        console.log('[DEBUG] App.mounted() - Component mounted to DOM', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight,
+            userAgent: navigator.userAgent
+        });
+
         // Set initial mobile state
         this.handleResize();
 
         window.addEventListener('resize', this.handleResize);
         this.debouncedSetActiveTest = this.debounce(this.setActiveTest, 300);
         const { supported, unsupported } = useCSSCompatibility();
-        console.log('Supported CSS Properties:', supported);
-        console.log('Unsupported CSS Properties:', unsupported);
-        console.log('Environment Detection - isMobile:', this.isMobile);
+        console.log('[DEBUG] Supported CSS Properties:', supported);
+        console.log('[DEBUG] Unsupported CSS Properties:', unsupported);
+        console.log('[DEBUG] Environment Detection - isMobile:', this.isMobile);
 
         // Initialize the first test properly - force initialization even if activeTest is already set
         this.$nextTick(() => {
-            console.log('Initializing activeTest:', this.activeTest, 'isMobile:', this.isMobile);
+            console.log('[DEBUG] Initializing activeTest:', this.activeTest, 'isMobile:', this.isMobile);
             // Reset timing to ensure clean start
             if (this.timings[this.activeTest]) {
                 this.timings[this.activeTest].start = null;
@@ -898,6 +932,13 @@ export default {
         });
     },
     beforeUnmount() {
+        console.log('[DEBUG] App.beforeUnmount() - Component about to be destroyed', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            activeTest: this.activeTest,
+            completedTests: this.completedTestsCount
+        });
+
         window.removeEventListener('resize', this.handleResize);
         if (this.switchDebounceTimer) {
             clearTimeout(this.switchDebounceTimer);
@@ -908,10 +949,43 @@ export default {
             delete window.app;
         }
     },
+    errorCaptured(err, vm, info) {
+        console.error('[DEBUG] App.errorCaptured() - Error captured in component hierarchy', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            error: err.message,
+            errorType: err.name,
+            componentInfo: info,
+            stack: err.stack
+        });
+        // Return false to prevent the error from propagating further
+        return false;
+    },
+    renderTracked(e) {
+        console.log('[DEBUG] App.renderTracked() - Reactive dependency tracked during render', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            target: e.target,
+            type: e.type,
+            key: e.key
+        });
+    },
+    renderTriggered(e) {
+        console.log('[DEBUG] App.renderTriggered() - Reactive dependency triggered re-render', {
+            timestamp: new Date().toISOString(),
+            component: 'App',
+            target: e.target,
+            type: e.type,
+            key: e.key,
+            newValue: e.newValue,
+            oldValue: e.oldValue
+        });
+    },
 };
 </script>
 
 <template>
+    <!-- [DEBUG] App template rendering started at: {{ new Date().toISOString() }} -->
     <div v-if="!isMobile" class="app-layout">
         <!-- App Header with test title only in navbar -->
         <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />

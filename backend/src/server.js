@@ -6,9 +6,34 @@ const path = require('path');
 const os = require('os');
 const i18n = require('./i18n');
 
+// Debug logging helper
+const debugLog = (message, context = {}) => {
+  const timestamp = new Date().toISOString();
+  const env = process.env.NODE_ENV || 'development';
+  const pid = process.pid;
+  
+  console.log(`[${timestamp}] [PID:${pid}] [${env}] DEBUG: ${message}`, context);
+};
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const VERSION = process.env.npm_package_version || '1.0.0';
+
+// Server startup debug logging
+debugLog('Server initialization started', {
+  nodeVersion: process.version,
+  platform: process.platform,
+  arch: process.arch,
+  memory: process.memoryUsage()
+});
+
+// Environment variable debug logging
+debugLog('Environment variables check', {
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
+  PORT_AVAILABLE: !!process.env.PORT,
+  NODE_ENV_AVAILABLE: !!process.env.NODE_ENV
+});
 
 // Enhanced language detection middleware
 app.use((req, res, next) => {
@@ -47,14 +72,29 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from frontend build (for production)
+debugLog('Checking static file serving configuration');
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+  const staticPath = path.join(__dirname, '../../frontend/dist');
+  debugLog('Production mode detected - configuring static file serving', {
+    staticPath,
+    pathExists: require('fs').existsSync(staticPath)
+  });
+  app.use(express.static(staticPath));
+} else {
+  debugLog('Development mode - static file serving disabled');
 }
 
 // API Routes with enhanced i18n support
+debugLog('Setting up API routes');
 
 // Health endpoint with comprehensive information
 app.get('/api/health', (req, res) => {
+  debugLog('Health endpoint accessed', {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+    headers: req.headers
+  });
   const uptime = process.uptime();
   const memoryUsage = process.memoryUsage();
   
@@ -89,6 +129,10 @@ app.get('/api/health', (req, res) => {
 
 // Welcome endpoint
 app.get('/api', (req, res) => {
+  debugLog('API welcome endpoint accessed', {
+    method: req.method,
+    path: req.path
+  });
   res.json({
     message: req.t('api.messages.welcome'),
     documentation: req.t('api.messages.documentation', {
@@ -101,6 +145,12 @@ app.get('/api', (req, res) => {
 
 // Enhanced test results endpoint with validation and i18n
 app.post('/api/test-results', (req, res) => {
+  debugLog('Test results endpoint accessed', {
+    method: req.method,
+    path: req.path,
+    contentType: req.get('Content-Type'),
+    contentLength: req.get('Content-Length')
+  });
   const { testResults, deviceInfo } = req.body;
 
   // Validation
@@ -145,6 +195,10 @@ app.post('/api/test-results', (req, res) => {
 
 // Enhanced system information endpoint
 app.get('/api/system-info', (req, res) => {
+  debugLog('System info endpoint accessed', {
+    method: req.method,
+    path: req.path
+  });
   const systemInfo = {
     platform: os.platform(),
     arch: os.arch(),
@@ -167,6 +221,11 @@ app.get('/api/system-info', (req, res) => {
 
 // Validation example endpoint
 app.post('/api/validate', (req, res) => {
+  debugLog('Validation endpoint accessed', {
+    method: req.method,
+    path: req.path,
+    contentType: req.get('Content-Type')
+  });
   const { email, password, age } = req.body;
   const errors = [];
 
@@ -206,14 +265,38 @@ app.post('/api/validate', (req, res) => {
 });
 
 // Catch all handler for production (serve frontend)
+debugLog('Setting up catch-all handler for production');
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
+  debugLog('Production catch-all handler configured', {
+    indexPath,
+    fileExists: require('fs').existsSync(indexPath)
   });
+  app.get('*', (req, res) => {
+    debugLog('Catch-all route triggered', {
+      originalUrl: req.originalUrl,
+      path: req.path,
+      method: req.method
+    });
+    res.sendFile(indexPath);
+  });
+} else {
+  debugLog('Development mode - catch-all handler disabled');
 }
 
 // Enhanced error handling middleware with i18n
 app.use((err, req, res, _next) => {
+  debugLog('ERROR HANDLER TRIGGERED - Unhandled exception', {
+    error: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    statusCode: err.statusCode || 500,
+    url: req.originalUrl,
+    headers: req.headers,
+    body: req.body
+  });
+  
   console.error(i18n.__('server.logs.errorOccurred', {
     error: err.message,
     stack: err.stack,
@@ -236,6 +319,14 @@ app.use((err, req, res, _next) => {
 
 // Enhanced 404 handler with i18n
 app.use((req, res) => {
+  debugLog('404 HANDLER TRIGGERED - Route not found', {
+    path: req.path,
+    method: req.method,
+    originalUrl: req.originalUrl,
+    query: req.query,
+    headers: req.headers
+  });
+  
   console.log(i18n.__('api.errors.notFound.resource', { resource: req.path }));
   
   res.status(404).json({
@@ -248,7 +339,20 @@ app.use((req, res) => {
 });
 
 // Enhanced server startup with comprehensive i18n logging
+debugLog('Starting server listener on port', { port: PORT });
 app.listen(PORT, () => {
+  debugLog('SERVER STARTUP COMPLETE - Server is now listening', {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version,
+    platform: os.platform(),
+    arch: os.arch(),
+    hostname: os.hostname(),
+    totalMemory: os.totalmem(),
+    freeMemory: os.freemem(),
+    cpus: os.cpus().length
+  });
+  
   console.log(i18n.__('server.startup.initializing'));
   console.log(i18n.__('server.startup.running', { port: PORT }));
   console.log(i18n.__('server.startup.healthCheck', { port: PORT }));
@@ -260,4 +364,40 @@ app.listen(PORT, () => {
   console.log(i18n.__('system.metrics.memoryUsage', {
     usage: ((memoryUsage.heapUsed / memoryUsage.heapTotal) * 100).toFixed(2)
   }));
+});
+
+// Handle server startup errors
+app.on('error', (error) => {
+  debugLog('SERVER STARTUP ERROR - Failed to start', {
+    error: error.message,
+    code: error.code,
+    port: PORT,
+    syscall: error.syscall,
+    stack: error.stack
+  });
+  
+  if (error.code === 'EADDRINUSE') {
+    debugLog('PORT ALREADY IN USE - Cannot bind to port', {
+      port: PORT,
+      alternativePort: parseInt(PORT) + 1
+    });
+  }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  debugLog('UNCAUGHT EXCEPTION - Process will exit', {
+    error: error.message,
+    stack: error.stack,
+    code: error.code
+  });
+  process.exit(1);
+});
+
+// Handle unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+  debugLog('UNHANDLED REJECTION - Promise rejection not handled', {
+    reason: reason instanceof Error ? reason.message : reason,
+    promise: promise
+  });
 });
