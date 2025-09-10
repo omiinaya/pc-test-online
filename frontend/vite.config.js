@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
 
 export default defineConfig({
-    base: process.env.ELECTRON === 'true' ? './' : '/',
+    base: process.env.ELECTRON === 'true' ? './' : process.env.VITE_BASE_URL || '/',
     plugins: [
         vue(),
         WindiCSS(),

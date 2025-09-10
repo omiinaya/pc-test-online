@@ -18,32 +18,21 @@ app.use(i18n);
 // Mount the app and expose methods for Electron integration
 const vueApp = app.mount('#app');
 
-// Detect if running in Electron
-const isElectron =
-    window.electronAPI ||
-    window.electron ||
-    navigator.userAgent.toLowerCase().indexOf('electron') > -1 ||
-    (typeof process !== 'undefined' && process?.type === 'renderer') ||
-    window.process?.type === 'renderer';
+// Add error handling for router navigation
+const initializeRouter = () => {
+    // Only force navigation if we're not already on the home route
+    if (router.currentRoute.value.path !== '/') {
+        router.push('/').catch(err => {
+            console.warn('Router navigation failed:', err);
+        });
+    }
+};
 
-// Force navigation to home route for Electron and add debugging
-console.log('App loaded - isElectron:', isElectron);
-console.log('Current route:', router.currentRoute.value.path);
-console.log('Router history mode:', router.options.history);
-
-// Always ensure we're on the Tests page
-router
-    .push('/')
-    .then(() => {
-        console.log('Successfully navigated to home route');
-    })
-    .catch(err => {
-        console.log('Navigation error:', err);
-    });
-
-// Add router debugging
-router.afterEach((to, from) => {
-    console.log('Router navigation:', from.path, '->', to.path);
+// Wait for router to be ready before initializing
+router.isReady().then(() => {
+    initializeRouter();
+}).catch(err => {
+    console.error('Router initialization failed:', err);
 });
 
 // Expose app methods to window for Electron menu integration

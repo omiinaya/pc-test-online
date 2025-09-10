@@ -1,0 +1,23 @@
+# Docker ignore file
+node_modules
+npm-debug.log
+dist
+build
+.coverage
+.nyc_output
+.DS_Store
+*.log
+.git
+.gitignore
+README.md
+.eslintrc.json
+.prettierrc.json
+tsconfig.json
+vite.config.js
+.env
+.env.local
+.env.development
+.env.test
+docs/
+src/
+public/
