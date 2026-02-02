@@ -1,44 +1,58 @@
-import { ref, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue';
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated, type Ref } from 'vue';
+
+/** @ignore */
+interface ComponentLifecycleOptions {
+    autoInitialize?: boolean;
+    pauseOnDeactivate?: boolean;
+    cleanupOnUnmount?: boolean;
+}
+
+/** @ignore */
+interface Timer {
+    type: 'timeout' | 'interval';
+    id: number;
+}
 
 /**
  * Composable for managing common component lifecycle patterns
  * Especially useful for test components with keep-alive behavior
+ * @ignore
  */
-export function useComponentLifecycle(options = {}) {
+export function useComponentLifecycle(options: ComponentLifecycleOptions = {}) {
     const { autoInitialize = true, pauseOnDeactivate = true, cleanupOnUnmount = true } = options;
 
-    const isActive = ref(true);
-    const isInitialized = ref(false);
-    const initializationCallbacks = ref([]);
-    const cleanupCallbacks = ref([]);
-    const pauseCallbacks = ref([]);
-    const resumeCallbacks = ref([]);
+    const isActive: Ref<boolean> = ref(true);
+    const isInitialized: Ref<boolean> = ref(false);
+    const initializationCallbacks: Ref<Array<() => Promise<void> | void>> = ref([]);
+    const cleanupCallbacks: Ref<Array<() => Promise<void> | void>> = ref([]);
+    const pauseCallbacks: Ref<Array<() => Promise<void> | void>> = ref([]);
+    const resumeCallbacks: Ref<Array<() => Promise<void> | void>> = ref([]);
 
     /**
      * Add initialization callback
      */
-    const onInitialize = callback => {
+    const onInitialize = (callback: () => Promise<void> | void) => {
         initializationCallbacks.value.push(callback);
     };
 
     /**
      * Add cleanup callback
      */
-    const onCleanup = callback => {
+    const onCleanup = (callback: () => Promise<void> | void) => {
         cleanupCallbacks.value.push(callback);
     };
 
     /**
      * Add pause callback (called on deactivate)
      */
-    const onPause = callback => {
+    const onPause = (callback: () => Promise<void> | void) => {
         pauseCallbacks.value.push(callback);
     };
 
     /**
      * Add resume callback (called on activate)
      */
-    const onResume = callback => {
+    const onResume = (callback: () => Promise<void> | void) => {
         resumeCallbacks.value.push(callback);
     };
 
@@ -46,7 +60,7 @@ export function useComponentLifecycle(options = {}) {
      * Initialize component
      * Can accept an optional callback for immediate initialization
      */
-    const initialize = async callback => {
+    const initialize = async (callback?: () => Promise<void> | void) => {
         // If callback is provided, add it
         if (callback) {
             onInitialize(callback);
@@ -81,7 +95,7 @@ export function useComponentLifecycle(options = {}) {
      * Cleanup component
      * Can accept an optional callback for immediate cleanup registration
      */
-    const cleanup = async callback => {
+    const cleanup = async (callback?: () => Promise<void> | void) => {
         // If callback is provided, add it and run immediately
         if (callback) {
             onCleanup(callback);
@@ -177,26 +191,26 @@ export function useComponentLifecycle(options = {}) {
  * Composable for timeout/interval management with automatic cleanup
  */
 export function useTimers() {
-    const timers = ref([]);
+    const timers: Ref<Timer[]> = ref([]);
 
-    const setTimeout = (callback, delay) => {
+    const setTimeout = (callback: TimerHandler, delay: number): number => {
         const id = window.setTimeout(callback, delay);
         timers.value.push({ type: 'timeout', id });
         return id;
     };
 
-    const setInterval = (callback, delay) => {
+    const setInterval = (callback: TimerHandler, delay: number): number => {
         const id = window.setInterval(callback, delay);
         timers.value.push({ type: 'interval', id });
         return id;
     };
 
-    const clearTimeout = id => {
+    const clearTimeout = (id: number) => {
         window.clearTimeout(id);
         timers.value = timers.value.filter(timer => timer.id !== id);
     };
 
-    const clearInterval = id => {
+    const clearInterval = (id: number) => {
         window.clearInterval(id);
         timers.value = timers.value.filter(timer => timer.id !== id);
     };

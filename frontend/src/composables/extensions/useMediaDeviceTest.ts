@@ -1,7 +1,7 @@
 // Media device extension for camera, microphone, and speaker testing
 import { computed, watch } from 'vue';
-import { useBaseDeviceTest, type UseBaseDeviceTestOptions } from '../base/useBaseDeviceTest.js';
-import { useDeviceDetectionDelay } from '../useDeviceDetectionDelay.js';
+import { useBaseDeviceTest, type UseBaseDeviceTestOptions } from '../base/useBaseDeviceTest';
+import { useDeviceDetectionDelay } from '../useDeviceDetectionDelay';
 
 export interface UseMediaDeviceTestOptions extends UseBaseDeviceTestOptions {
     enableDeviceDetectionDelay?: boolean;

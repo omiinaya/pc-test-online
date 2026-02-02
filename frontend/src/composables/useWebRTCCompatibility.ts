@@ -1,12 +1,9 @@
 // WebRTC and Media API compatibility layer for cross-browser support
 import { ref, onMounted } from 'vue';
+import type { DeviceInfo } from '../types';
 
-export interface MediaDeviceInfo {
-    deviceId: string;
-    kind: string;
-    label: string;
-    groupId: string;
-}
+// Re-export DeviceInfo as MediaDeviceInfo for compatibility
+export type MediaDeviceInfo = DeviceInfo;
 
 export interface WebRTCCapabilities {
     getUserMedia: boolean;
@@ -61,10 +58,10 @@ export interface WebRTCCompatibilityState {
 export interface WebRTCCompatibilityReturn {
     // State
     state: WebRTCCompatibilityState;
-    
+
     // Methods
     getUserMedia: (constraints: MediaStreamConstraints) => Promise<MediaStream>;
-    enumerateDevices: () => Promise<MediaDeviceInfo[]>;
+    enumerateDevices: () => Promise<DeviceInfo[]>;
     getDisplayMedia: (constraints?: MediaStreamConstraints) => Promise<MediaStream>;
     createMediaRecorder: (stream: MediaStream, options?: MediaRecorderOptions) => MediaRecorder;
     getBrowserInfo: () => {
@@ -76,7 +73,7 @@ export interface WebRTCCompatibilityReturn {
         recommendedBrowser: string | null;
     };
     getCompatibilityRecommendations: () => string[];
-    
+
     // Utilities
     detectBrowser: () => void;
     checkCapabilities: () => void;
@@ -270,7 +267,7 @@ export function useWebRTCCompatibility() {
      * Enumerate devices with cross-browser compatibility
      * Enhanced to handle audio output device enumeration limitations
      */
-    const enumerateDevices = async (): Promise<MediaDeviceInfo[]> => {
+    const enumerateDevices = async (): Promise<DeviceInfo[]> => {
         if (!state.value.capabilities.enumerateDevices) {
             // Return mock device list for unsupported browsers
             return [
@@ -304,9 +301,9 @@ export function useWebRTCCompatibility() {
 
             // Additional handling for audio output devices
             // Many browsers don't enumerate audio output devices via standard API
-            const processedDevices = devices.map(device => ({
+            const processedDevices: DeviceInfo[] = devices.map(device => ({
                 deviceId: device.deviceId,
-                kind: device.kind,
+                kind: device.kind as DeviceInfo['kind'],
                 label: device.label || `${device.kind} ${device.deviceId.slice(0, 8)}`,
                 groupId: device.groupId,
             }));

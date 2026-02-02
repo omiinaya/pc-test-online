@@ -1,9 +1,9 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useTestResults } from '../composables/useTestResults.js';
-import { useComponentLifecycle } from '../composables/useComponentLifecycle.js';
-import { usePointerEvents } from '../composables/useEventListeners.js';
-import { useGlobalReset } from '../composables/useTestState.js';
+import { useTestResults } from '../composables/useTestResults';
+import { useComponentLifecycle } from '../composables/useComponentLifecycle';
+import { usePointerEvents } from '../composables/useEventListeners';
+import { useGlobalReset } from '../composables/useTestState';
 import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
 
 const keyboardLayoutDefinition = {

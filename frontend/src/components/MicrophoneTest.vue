@@ -4,8 +4,9 @@ import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
-import { useCanvas } from '../composables/useCanvas.js';
-import { useAnimations } from '../composables/useAnimations.js';
+import { useCanvas } from '../composables/useCanvas';
+import { useAnimations } from '../composables/useAnimations';
+import { useMemoryManagement } from '../composables/useMemoryManagement';
 
 export default {
     name: 'MicrophoneTest',
@@ -31,6 +32,9 @@ export default {
             emit
         );
 
+        // Use memory management for tracking resources
+        const memoryManager = useMemoryManagement();
+
         // Canvas for waveform visualization
         const waveformCanvas = ref(null);
         const { context: canvasCtx, initializeCanvas, clearCanvas } = useCanvas(waveformCanvas);
@@ -44,6 +48,8 @@ export default {
         const dataArray = ref(null);
         const volumeLevel = ref(0);
         const isAnalyzing = ref(false);
+        const audioContextResourceId = ref(null);
+        const analyserResourceId = ref(null);
 
         /**
          * Setup audio analysis for visualization
@@ -71,6 +77,20 @@ export default {
                 if (!audioContext.value || audioContext.value.state === 'closed') {
                     audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
 
+                    // Track audio context for memory management
+                    if (audioContextResourceId.value !== null) {
+                        memoryManager.untrackResource(audioContextResourceId.value);
+                    }
+                    audioContextResourceId.value = memoryManager.trackResource(
+                        () => {
+                            if (audioContext.value && audioContext.value.state !== 'closed') {
+                                audioContext.value.close();
+                            }
+                        },
+                        'connection',
+                        'AudioContext for microphone analysis'
+                    );
+
                     // Handle suspended state (common in browsers with autoplay restrictions)
                     if (audioContext.value.state === 'suspended') {
                         await audioContext.value.resume();
@@ -85,6 +105,20 @@ export default {
                     source.connect(analyser.value);
                     analyser.value.fftSize = 2048;
                     dataArray.value = new Uint8Array(analyser.value.frequencyBinCount);
+
+                    // Track analyser for memory management
+                    if (analyserResourceId.value !== null) {
+                        memoryManager.untrackResource(analyserResourceId.value);
+                    }
+                    analyserResourceId.value = memoryManager.trackResource(
+                        () => {
+                            if (analyser.value) {
+                                analyser.value.disconnect();
+                            }
+                        },
+                        'connection',
+                        'AnalyserNode for microphone analysis'
+                    );
                 }
 
                 // Start visualization
@@ -224,6 +258,18 @@ export default {
          */
         const cleanup = () => {
             stopVisualization();
+
+            // Untrack and clean up audio context
+            if (audioContextResourceId.value !== null) {
+                memoryManager.untrackResource(audioContextResourceId.value);
+                audioContextResourceId.value = null;
+            }
+
+            // Untrack and clean up analyser
+            if (analyserResourceId.value !== null) {
+                memoryManager.untrackResource(analyserResourceId.value);
+                analyserResourceId.value = null;
+            }
 
             if (audioContext.value) {
                 audioContext.value.close();

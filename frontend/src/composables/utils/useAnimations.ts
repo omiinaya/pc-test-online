@@ -1,16 +1,34 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
+
+/** @ignore */
+interface AnimationOptions {
+    from?: number;
+    to?: number;
+    duration?: number;
+    easing?: (t: number) => number;
+    onUpdate?: (value: number, progress: number) => void;
+    onComplete?: (finalValue: number) => void;
+}
+
+/** @ignore */
+interface CheckmarkAnimationOptions {
+    duration?: number;
+    delay?: number;
+    onComplete?: () => void;
+}
 
 /**
  * Composable for managing common animation patterns
+ * @ignore
  */
 export function useAnimations() {
-    const animationFrames = ref([]);
-    const runningAnimations = ref(new Set());
+    const animationFrames: Ref<number[]> = ref([]);
+    const runningAnimations: Ref<Set<number>> = ref(new Set());
 
     /**
      * Request animation frame with automatic cleanup
      */
-    const requestAnimationFrame = callback => {
+    const requestAnimationFrame = (callback: FrameRequestCallback): number => {
         const id = window.requestAnimationFrame(callback);
         animationFrames.value.push(id);
         return id;
@@ -19,7 +37,7 @@ export function useAnimations() {
     /**
      * Cancel animation frame
      */
-    const cancelAnimationFrame = id => {
+    const cancelAnimationFrame = (id: number) => {
         window.cancelAnimationFrame(id);
         animationFrames.value = animationFrames.value.filter(frameId => frameId !== id);
     };
@@ -38,7 +56,10 @@ export function useAnimations() {
     /**
      * Create a delayed animation with automatic cleanup
      */
-    const createDelayedAnimation = (callback, delay = 0) => {
+    const createDelayedAnimation = (
+        callback: FrameRequestCallback,
+        delay = 0
+    ): (() => void) => {
         const timeoutId = setTimeout(() => {
             const animId = requestAnimationFrame(callback);
             runningAnimations.value.add(animId);
@@ -52,12 +73,12 @@ export function useAnimations() {
     /**
      * Animate a value over time using requestAnimationFrame
      */
-    const animateValue = (options = {}) => {
+    const animateValue = (options: AnimationOptions = {}) => {
         const {
             from = 0,
             to = 1,
             duration = 1000,
-            easing = t => t, // linear by default
+            easing = (t: number) => t, // linear by default
             onUpdate = () => {},
             onComplete = () => {},
         } = options;
@@ -94,11 +115,12 @@ export function useAnimations() {
 
 /**
  * Composable for checkmark animations (used in multiple components)
+ * @ignore
  */
 export function useCheckmarkAnimation() {
-    const isAnimating = ref(false);
+    const isAnimating: Ref<boolean> = ref(false);
 
-    const animateCheckmark = (element, options = {}) => {
+    const animateCheckmark = (element: HTMLElement | SVGElement | null, options: CheckmarkAnimationOptions = {}) => {
         const { duration = 600, delay = 0, onComplete = () => {} } = options;
 
         if (!element) return;
@@ -106,8 +128,9 @@ export function useCheckmarkAnimation() {
         isAnimating.value = true;
 
         // Set initial state
-        element.style.strokeDasharray = element.getTotalLength?.() || '50';
-        element.style.strokeDashoffset = element.getTotalLength?.() || '50';
+        const totalLength = (element as SVGElement).getTotalLength?.() || 50;
+        element.style.strokeDasharray = totalLength.toString();
+        element.style.strokeDashoffset = totalLength.toString();
 
         setTimeout(() => {
             element.style.transition = `stroke-dashoffset ${duration}ms ease-out`;
@@ -130,7 +153,7 @@ export function useCheckmarkAnimation() {
  * Composable for transition enabling (TouchTest pattern)
  */
 export function useTransitionControl() {
-    const transitionsEnabled = ref(false);
+    const transitionsEnabled: Ref<boolean> = ref(false);
 
     const enableTransitions = (delay = 350) => {
         setTimeout(() => {
@@ -153,14 +176,14 @@ export function useTransitionControl() {
  * Common easing functions for animations
  */
 export const easingFunctions = {
-    linear: t => t,
-    easeIn: t => t * t,
-    easeOut: t => t * (2 - t),
-    easeInOut: t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
-    easeInQuad: t => t * t,
-    easeOutQuad: t => t * (2 - t),
-    easeInOutQuad: t => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
-    easeInCubic: t => t * t * t,
-    easeOutCubic: t => --t * t * t + 1,
-    easeInOutCubic: t => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+    linear: (t: number) => t,
+    easeIn: (t: number) => t * t,
+    easeOut: (t: number) => t * (2 - t),
+    easeInOut: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+    easeInQuad: (t: number) => t * t,
+    easeOutQuad: (t: number) => t * (2 - t),
+    easeInOutQuad: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+    easeInCubic: (t: number) => t * t * t,
+    easeOutCubic: (t: number) => --t * t * t + 1,
+    easeInOutCubic: (t: number) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
 };

@@ -31,7 +31,8 @@ export type TestType =
     | 'keyboard'
     | 'mouse'
     | 'touch'
-    | 'battery';
+    | 'battery'
+    | 'testsCompleted';
 
 export interface TestResult {
     testType: TestType;
@@ -306,6 +307,127 @@ export interface ARIAAttributes {
     'aria-atomic'?: boolean;
 }
 
+// ==================== ANIMATION TYPES ====================
+
+export interface AnimationOptions {
+    from?: number;
+    to?: number;
+    duration?: number;
+    easing?: (t: number) => number;
+    onUpdate?: (value: number, progress: number) => void;
+    onComplete?: (value: number) => void;
+}
+
+export interface CheckmarkAnimationOptions {
+    duration?: number;
+    delay?: number;
+    onComplete?: () => void;
+}
+
+// ==================== EVENT TYPES ====================
+
+export interface EventListenerOptions {
+    capture?: boolean;
+    once?: boolean;
+    passive?: boolean;
+    signal?: AbortSignal;
+}
+
+export interface PointerHandlerOptions extends EventListenerOptions {
+    preventDefault?: boolean;
+    stopPropagation?: boolean;
+}
+
+// ==================== CANVAS TYPES ====================
+
+export interface CanvasStyle {
+    fillStyle?: string | CanvasGradient | CanvasPattern;
+    strokeStyle?: string | CanvasGradient | CanvasPattern;
+    lineWidth?: number;
+    lineCap?: CanvasLineCap;
+    lineJoin?: CanvasLineJoin;
+    font?: string;
+    textAlign?: CanvasTextAlign;
+    textBaseline?: CanvasTextBaseline;
+}
+
+export interface CanvasSize {
+    width: number;
+    height: number;
+    displayWidth: number;
+    displayHeight: number;
+}
+
+// ==================== COMPOSABLE RETURN TYPES ====================
+
+export interface UseAnimationsReturn {
+    requestAnimationFrame: (callback: FrameRequestCallback) => number;
+    cancelAnimationFrame: (id: number) => void;
+    cleanupAnimations: () => void;
+    createDelayedAnimation: (callback: FrameRequestCallback, delay?: number) => () => void;
+    animateValue: (options: AnimationOptions) => void;
+}
+
+export interface UseCheckmarkAnimationReturn {
+    isAnimating: Ref<boolean>;
+    animateCheckmark: (element: SVGElement | null, options?: CheckmarkAnimationOptions) => void;
+}
+
+export interface UseTransitionControlReturn {
+    transitionsEnabled: Ref<boolean>;
+    enableTransitions: (delay?: number) => void;
+    disableTransitions: () => void;
+}
+
+export interface UseCanvasReturn {
+    context: Ref<CanvasRenderingContext2D | null>;
+    canvasSize: Ref<CanvasSize>;
+    initializeCanvas: () => Promise<boolean>;
+    resizeCanvas: () => void;
+    clearCanvas: () => void;
+    setCanvasStyle: (styles: CanvasStyle) => void;
+}
+
+export interface UseAudioVisualizationReturn {
+    analyser: Ref<AnalyserNode | null>;
+    dataArray: Ref<Uint8Array | null>;
+    isVisualizing: Ref<boolean>;
+    setupAudioAnalysis: (stream: MediaStream) => boolean;
+    startVisualization: () => void;
+    stopVisualization: () => void;
+    initializeCanvas: () => Promise<boolean>;
+    resizeCanvas: () => void;
+    canvasSize: Ref<CanvasSize>;
+}
+
+// Missing types that were being imported
+export type EasingFunction = (t: number) => number;
+export type TestEmitCallback = (event: string, data?: any) => void;
+export type AudioContextType = AudioContext;
+
+// ==================== PROMISE TYPES ====================
+
+export interface PromiseWithTimeout<T> extends Promise<T> {
+    timeoutId?: number;
+}
+
+// ==================== GENERIC UTILITY TYPES ====================
+
+export type Nullable<T> = T | null;
+export type Optional<T> = T | undefined;
+export type ArrayElement<ArrayType extends readonly unknown[]> =
+    ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+
+// ==================== VUE COMPONENT TYPES ====================
+
+export interface VueComponentProps {
+    [key: string]: unknown;
+}
+
+export interface VueComponentEmits {
+    [key: string]: (...args: unknown[]) => void;
+}
+
 // ==================== TYPE GUARDS ====================
 
 export function isDeviceKind(value: string): value is DeviceKind {
@@ -317,9 +439,48 @@ export function isTestStatus(value: string): value is TestStatus {
 }
 
 export function isTestType(value: string): value is TestType {
-    return ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery'].includes(
+    return ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery', 'testsCompleted'].includes(
         value
     );
+}
+
+export function isNullable<T>(value: T | null): value is null {
+    return value === null;
+}
+
+export function isOptional<T>(value: T | undefined): value is undefined {
+    return value === undefined;
+}
+
+export function isCanvasElement(element: unknown): element is HTMLCanvasElement {
+    return element instanceof HTMLCanvasElement;
+}
+
+export function isSVGElement(element: unknown): element is SVGElement {
+    return element instanceof SVGElement;
+}
+
+// SVGElement getTotalLength method
+declare global {
+    interface SVGElement {
+        getTotalLength?(): number;
+    }
+}
+
+// StatePanelState type
+export type StatePanelState = 'loading' | 'success' | 'error' | 'info' | 'warning';
+
+// MediaDeviceKind type (browser built-in)
+export type MediaDeviceKind = 'videoinput' | 'audioinput' | 'audiooutput';
+export type MediaDeviceInfo = DeviceInfo; // Alias for compatibility
+
+// Container styles for morphing
+export interface ContainerStyles {
+    minHeight: string;
+    maxHeight?: string;
+    width?: string;
+    padding?: string;
+    margin?: string;
 }
 
 // ==================== CONSTANTS ====================
@@ -333,6 +494,7 @@ export const TEST_TYPES: TestType[] = [
     'mouse',
     'touch',
     'battery',
+    'testsCompleted',
 ];
 export const TEST_STATUSES: TestStatus[] = ['pending', 'running', 'completed', 'failed', 'skipped'];
 

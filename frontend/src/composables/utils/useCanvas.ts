@@ -1,27 +1,57 @@
-import { ref, nextTick } from 'vue';
-import { useEventListeners } from './useEventListeners.js';
-import { useAnimations } from './useAnimations.js';
+import { ref, type Ref } from 'vue';
+import { useEventListeners } from './useEventListeners';
+import { useAnimations } from './useAnimations';
+
+/** @ignore */
+interface CanvasSize {
+    width: number;
+    height: number;
+    displayWidth: number;
+    displayHeight: number;
+}
+
+/** @ignore */
+interface CanvasStyle {
+    [key: string]: string | number;
+}
+
+/** @ignore */
+interface CanvasContext {
+    context: Ref<CanvasRenderingContext2D | null>;
+    canvasSize: Ref<CanvasSize>;
+    initializeCanvas: () => Promise<boolean>;
+    resizeCanvas: () => void;
+    clearCanvas: () => void;
+    setCanvasStyle: (styles: CanvasStyle) => void;
+}
 
 /**
  * Composable for managing canvas operations
+ * @ignore
  */
-export function useCanvas(canvasRef = ref(null)) {
+export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null> = ref(null)): CanvasContext {
     const { addEventListener } = useEventListeners();
-    const context = ref(null);
-    const canvasSize = ref({ width: 0, height: 0 });
+    const context: Ref<CanvasRenderingContext2D | null> = ref(null);
+    const canvasSize: Ref<CanvasSize> = ref({ width: 0, height: 0, displayWidth: 0, displayHeight: 0 });
 
     /**
      * Initialize canvas context and size
      */
-    const initializeCanvas = async () => {
-        await nextTick();
+    const initializeCanvas = async (): Promise<boolean> => {
+        await new Promise(resolve => setTimeout(resolve, 0)); // nextTick equivalent
 
         if (!canvasRef.value) {
             console.error('Canvas element not found');
             return false;
         }
 
-        context.value = canvasRef.value.getContext('2d');
+        const ctx = canvasRef.value.getContext('2d');
+        if (!ctx) {
+            console.error('Failed to get 2D context');
+            return false;
+        }
+
+        context.value = ctx;
         resizeCanvas();
 
         // Auto-resize on window resize
@@ -74,11 +104,11 @@ export function useCanvas(canvasRef = ref(null)) {
     /**
      * Set canvas styles
      */
-    const setCanvasStyle = (styles = {}) => {
+    const setCanvasStyle = (styles: CanvasStyle = {}) => {
         if (!context.value) return;
 
         Object.entries(styles).forEach(([property, value]) => {
-            context.value[property] = value;
+            (context.value as any)[property] = value;
         });
     };
 
@@ -92,22 +122,39 @@ export function useCanvas(canvasRef = ref(null)) {
     };
 }
 
+/** @ignore */
+interface AudioVisualizationContext {
+    analyser: Ref<AnalyserNode | null>;
+    dataArray: Ref<Uint8Array | null>;
+    isVisualizing: Ref<boolean>;
+    setupAudioAnalysis: (stream: MediaStream) => boolean;
+    startVisualization: () => void;
+    stopVisualization: () => void;
+    initializeCanvas: () => Promise<boolean>;
+    resizeCanvas: () => void;
+    canvasSize: Ref<CanvasSize>;
+}
+
 /**
  * Composable for audio visualization (microphone test pattern)
+ * @ignore
  */
-export function useAudioVisualization(canvasRef, audioContext = null) {
+export function useAudioVisualization(
+    canvasRef: Ref<HTMLCanvasElement | null>,
+    audioContext: AudioContext | null = null
+): AudioVisualizationContext {
     const { context, initializeCanvas, clearCanvas, resizeCanvas, canvasSize } =
         useCanvas(canvasRef);
     const { requestAnimationFrame, cleanupAnimations } = useAnimations();
 
-    const analyser = ref(null);
-    const dataArray = ref(null);
-    const isVisualizing = ref(false);
+    const analyser: Ref<AnalyserNode | null> = ref(null);
+    const dataArray: Ref<Uint8Array | null> = ref(null);
+    const isVisualizing: Ref<boolean> = ref(false);
 
     /**
      * Setup audio analysis for visualization
      */
-    const setupAudioAnalysis = stream => {
+    const setupAudioAnalysis = (stream: MediaStream): boolean => {
         if (!audioContext || !stream) {
             console.error('Audio context or stream not provided');
             return false;
@@ -119,7 +166,8 @@ export function useAudioVisualization(canvasRef, audioContext = null) {
             source.connect(analyser.value);
 
             analyser.value.fftSize = 2048;
-            dataArray.value = new Uint8Array(analyser.value.frequencyBinCount);
+            const bufferLength = analyser.value.frequencyBinCount;
+            dataArray.value = new Uint8Array(bufferLength);
 
             return true;
         } catch (error) {
@@ -151,7 +199,7 @@ export function useAudioVisualization(canvasRef, audioContext = null) {
      * Visualization loop
      */
     const visualize = () => {
-        if (!isVisualizing.value || !analyser.value || !context.value) return;
+        if (!isVisualizing.value || !analyser.value || !context.value || !dataArray.value) return;
 
         analyser.value.getByteFrequencyData(dataArray.value);
 
@@ -186,7 +234,7 @@ export function useAudioVisualization(canvasRef, audioContext = null) {
         let x = 0;
 
         for (let i = 0; i < dataArray.value.length; i++) {
-            const v = dataArray.value[i] / 128.0;
+            const v = (dataArray.value[i] ?? 0) / 128.0;
             const y = (v * displayHeight) / 2;
 
             if (i === 0) {

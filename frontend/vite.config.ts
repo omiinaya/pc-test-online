@@ -1,16 +1,50 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
+import { type UserConfig } from 'vite';
+import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     // Use '/' as base for production deployments to ensure assets load correctly
     base: process.env.NODE_ENV === 'production' ? '/' : process.env.VITE_BASE_URL || '',
-    plugins: [vue(), WindiCSS()],
+    plugins: [
+        vue(),
+        WindiCSS(),
+        // Bundle analyzer for production builds
+        process.env.ANALYZE === 'true' ? visualizer({
+            open: true,
+            gzipSize: true,
+            brotliSize: true,
+        }) as PluginOption : null,
+    ].filter(Boolean) as PluginOption[],
+
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src'),
+        },
+    },
 
     server: {
         port: 5173,
         allowedHosts: true,
         host: '0.0.0.0',
+        fs: {
+            strict: false,
+        },
+    },
+
+    // Vitest configuration
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: [],
+        include: ['**/*.{test,spec}.{js,ts}'],
+        exclude: ['node_modules', 'dist'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+        },
     },
 
     build: {
@@ -21,6 +55,9 @@ export default defineConfig({
 
         // Performance budgets - increased limit for PDF libraries
         chunkSizeWarningLimit: 1000,
+
+        // CSS optimization
+        cssCodeSplit: true,
 
         rollupOptions: {
             output: {
@@ -40,19 +77,19 @@ export default defineConfig({
                         './src/components/BatteryTest.vue',
                     ],
 
-                    // Composable chunks
+                    // Composable chunks - Updated to use TypeScript files
                     composables: [
-                        './src/composables/useEnhancedDeviceTest.js',
-                        './src/composables/useDeviceTest.js',
-                        './src/composables/useDeviceEnumeration.js',
-                        './src/composables/useTestResults.js',
+                        './src/composables/extensions/useMediaDeviceTest.ts',
+                        './src/composables/base/useBaseDeviceTest.ts',
+                        './src/composables/useDeviceEnumeration.ts',
+                        './src/composables/useTestResults.ts',
                         './src/composables/useAccessibility.ts',
                         './src/composables/usePerformance.ts',
                     ],
                 },
 
                 // Optimize chunk names
-                chunkFileNames: chunkInfo => {
+                chunkFileNames: (chunkInfo) => {
                     const facadeModuleId = chunkInfo.facadeModuleId;
                     if (facadeModuleId) {
                         const fileName = facadeModuleId
@@ -65,9 +102,9 @@ export default defineConfig({
                 },
 
                 // Optimize asset names
-                assetFileNames: assetInfo => {
+                assetFileNames: (assetInfo) => {
                     const extType = assetInfo.name?.split('.').pop() || '';
-                    const assetMap = {
+                    const assetMap: Record<string, string> = {
                         png: 'images',
                         jpg: 'images',
                         jpeg: 'images',
@@ -115,11 +152,16 @@ export default defineConfig({
                 charset: false,
             },
         },
+        // Minify CSS in production
+        minify: true,
     },
+
+    // Asset optimization
+    assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg', '**/*.webp', '**/*.ico'],
 
     // Define global constants
     define: {
         __VUE_PROD_DEVTOOLS__: false,
         __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
     },
-});
+}) as UserConfig;

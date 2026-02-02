@@ -1,19 +1,9 @@
 <script>
+import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
-import WebcamTest from './components/WebcamTest.vue';
-import MicrophoneTest from './components/MicrophoneTest.vue';
-import SpeakerTest from './components/SpeakerTest.vue';
-import KeyboardTest from './components/KeyboardTest.vue';
-import MouseTest from './components/MouseTest.vue';
-import TouchTest from './components/TouchTest.vue';
-import BatteryTest from './components/BatteryTest.vue';
-import TestsCompleted from './components/TestsCompleted.vue';
-import VisualizerContainer from './components/VisualizerContainer.vue';
-import TestActionButtons from './components/TestActionButtons.vue';
-import TestHeader from './components/TestHeader.vue';
-import AppFooter from './components/AppFooter.vue';
-import { resetAllTestStates } from './composables/useTestState.js';
+import { resetAllTestStates } from './composables/useTestState';
 import { useCSSCompatibility } from './composables/useCSSCompatibility';
+import { debounce } from './utils/debounce';
 // Dynamic imports for PDF libraries to reduce initial bundle size
 
 export default {
@@ -49,18 +39,18 @@ export default {
         return { t };
     },
     components: {
-        WebcamTest,
-        MicrophoneTest,
-        SpeakerTest,
-        KeyboardTest,
-        MouseTest,
-        TouchTest,
-        BatteryTest,
-        TestsCompleted,
-        VisualizerContainer,
-        TestActionButtons,
-        TestHeader,
-        AppFooter,
+        WebcamTest: defineAsyncComponent(() => import('./components/WebcamTest.vue')),
+        MicrophoneTest: defineAsyncComponent(() => import('./components/MicrophoneTest.vue')),
+        SpeakerTest: defineAsyncComponent(() => import('./components/SpeakerTest.vue')),
+        KeyboardTest: defineAsyncComponent(() => import('./components/KeyboardTest.vue')),
+        MouseTest: defineAsyncComponent(() => import('./components/MouseTest.vue')),
+        TouchTest: defineAsyncComponent(() => import('./components/TouchTest.vue')),
+        BatteryTest: defineAsyncComponent(() => import('./components/BatteryTest.vue')),
+        TestsCompleted: defineAsyncComponent(() => import('./components/TestsCompleted.vue')),
+        VisualizerContainer: defineAsyncComponent(() => import('./components/VisualizerContainer.vue')),
+        TestActionButtons: defineAsyncComponent(() => import('./components/TestActionButtons.vue')),
+        TestHeader: defineAsyncComponent(() => import('./components/TestHeader.vue')),
+        AppFooter: defineAsyncComponent(() => import('./components/AppFooter.vue')),
     },
     data() {
         return {
@@ -269,35 +259,29 @@ export default {
         },
     },
     methods: {
-        // Debounced test switching to prevent rapid component changes and lag
-        debouncedSetActiveTest(testType) {
-            // If we're already switching, ignore new requests
-            if (this.isSwitching) {
-                console.log(
-                    `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
-                );
-                return;
-            }
-
-            // Clear any pending switch
-            if (this.switchDebounceTimer) {
-                clearTimeout(this.switchDebounceTimer);
-            }
-
-            // Mark as switching
-            this.isSwitching = true;
-            console.log(`Switching from ${this.activeTest} to ${testType}`);
-
-            // Perform the switch immediately for good UX
-            this.setActiveTest(testType);
-
-            // Reset switching flag after a short delay to prevent rapid switches
-            this.switchDebounceTimer = setTimeout(() => {
-                this.isSwitching = false;
-                this.switchDebounceTimer = null;
-                console.log(`Switch cooldown ended, ready for next switch`);
-            }, 200); // 200ms cooldown between switches
-        },
+      // Debounced test switching using the new debounce utility
+      debouncedSetActiveTest: debounce(function(this: any, testType: string) {
+        // If we're already switching, ignore new requests
+        if (this.isSwitching) {
+          console.log(
+            `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
+          );
+          return;
+        }
+  
+        // Mark as switching
+        this.isSwitching = true;
+        console.log(`Switching from ${this.activeTest} to ${testType}`);
+  
+        // Perform the switch immediately for good UX
+        this.setActiveTest(testType);
+  
+        // Reset switching flag after a short delay to prevent rapid switches
+        setTimeout(() => {
+          this.isSwitching = false;
+          console.log(`Switch cooldown ended, ready for next switch`);
+        }, 200); // 200ms cooldown between switches
+      }, 50, { leading: true, trailing: false }),
 
         setActiveTest(testType) {
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
@@ -878,28 +862,16 @@ export default {
             URL.revokeObjectURL(url);
             this.showExportMenu = false;
         },
-        // Utility function for debouncing
-        debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
-        // Handle window resize to detect mobile/desktop mode
-        handleResize() {
-            this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
-            console.log(
-                'handleResize - window.innerWidth:',
-                window.innerWidth,
-                'isMobile:',
-                this.isMobile
-            );
-        },
+        // Handle window resize to detect mobile/desktop mode with debouncing
+        handleResize: debounce(function(this: any) {
+          this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
+          console.log(
+            'Debounced resize - window.innerWidth:',
+            window.innerWidth,
+            'isMobile:',
+            this.isMobile
+          );
+        }, 250, { leading: false, trailing: true }),
     },
     mounted() {
         console.log('[DEBUG] App.mounted() - Component mounted to DOM', {

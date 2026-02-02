@@ -1,11 +1,35 @@
-// Composable for common StatePanel configurations
+import type { StatePanelState } from '@/types';
+
+/** @ignore */
+interface StatePanelConfig {
+    state: StatePanelState;
+    title: string;
+    message: string;
+    showActionButton?: boolean;
+    actionLabel?: string;
+    [key: string]: unknown;
+}
+
+/** @ignore */
+interface StatePanelConfigs {
+    [key: string]: StatePanelConfig;
+}
+
+/** @ignore */
+interface UseStatePanelConfigsReturn {
+    configs: StatePanelConfigs;
+    getConfig: (stateName: string, customProps?: Record<string, unknown>) => StatePanelConfig;
+    getConfigForDevice: (stateName: string, customDeviceType: string, customProps?: Record<string, unknown>) => StatePanelConfig;
+    getErrorConfig: (error: unknown, customProps?: Record<string, unknown>) => StatePanelConfig | null;
+}
 
 /**
  * Composable for standardized StatePanel configurations
+ * @ignore
  */
-export function useStatePanelConfigs(deviceType = 'device') {
+export function useStatePanelConfigs(deviceType = 'device'): UseStatePanelConfigsReturn {
     // Common StatePanel configurations for different states
-    const configs = {
+    const configs: StatePanelConfigs = {
         // Loading states
         detectingDevices: {
             state: 'loading',
@@ -88,11 +112,11 @@ export function useStatePanelConfigs(deviceType = 'device') {
     /**
      * Get configuration for a specific state
      */
-    const getConfig = (stateName, customProps = {}) => {
+    const getConfig = (stateName: string, customProps: Record<string, unknown> = {}): StatePanelConfig => {
         const baseConfig = configs[stateName];
         if (!baseConfig) {
             console.warn(`StatePanel config '${stateName}' not found`);
-            return {};
+            return {} as StatePanelConfig;
         }
 
         return {
@@ -104,11 +128,11 @@ export function useStatePanelConfigs(deviceType = 'device') {
     /**
      * Get configuration with custom device type
      */
-    const getConfigForDevice = (stateName, customDeviceType, customProps = {}) => {
+    const getConfigForDevice = (stateName: string, customDeviceType: string, customProps: Record<string, unknown> = {}): StatePanelConfig => {
         const baseConfig = configs[stateName];
         if (!baseConfig) {
             console.warn(`StatePanel config '${stateName}' not found`);
-            return {};
+            return {} as StatePanelConfig;
         }
 
         // Replace device type in title and message
@@ -130,7 +154,7 @@ export function useStatePanelConfigs(deviceType = 'device') {
     /**
      * Get error configuration based on error type
      */
-    const getErrorConfig = (error, customProps = {}) => {
+    const getErrorConfig = (error: unknown, customProps: Record<string, unknown> = {}): StatePanelConfig | null => {
         if (!error) return null;
 
         const errorString = error.toString().toLowerCase();
@@ -153,7 +177,7 @@ export function useStatePanelConfigs(deviceType = 'device') {
                 title: 'An Error Occurred',
                 message: error.toString(),
                 ...customProps,
-            };
+            } as StatePanelConfig;
         }
     };
 

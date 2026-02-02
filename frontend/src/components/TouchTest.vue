@@ -1,10 +1,10 @@
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
-import { useTestResults } from '../composables/useTestResults.js';
-import { useComponentLifecycle } from '../composables/useComponentLifecycle.js';
-import { useEventListeners } from '../composables/useEventListeners.js';
-import { useGlobalReset } from '../composables/useTestState.js';
+import { useTestResults } from '../composables/useTestResults';
+import { useComponentLifecycle } from '../composables/useComponentLifecycle';
+import { useEventListeners } from '../composables/useEventListeners';
+import { useGlobalReset } from '../composables/useTestState';
 import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
 import { useI18n } from 'vue-i18n';
 

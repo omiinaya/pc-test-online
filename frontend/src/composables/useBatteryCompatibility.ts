@@ -14,7 +14,7 @@ export interface MockBatteryManager extends BatteryManager {
     isMock: true;
     browserSupport: 'chrome' | 'unsupported';
     compatibilityMode: string;
-    _demoInterval?: number;
+    _demoInterval?: ReturnType<typeof setInterval>;
 }
 
 // Event types for battery events

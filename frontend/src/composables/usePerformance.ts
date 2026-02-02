@@ -48,6 +48,30 @@ export interface PerformanceBudget {
     TTFB: number; // < 800ms good, < 1800ms needs improvement
 }
 
+export interface BundleSizeMetrics {
+    initialBundleSize: number; // in bytes
+    totalBundleSize: number; // in bytes
+    lazyLoadedChunks: Array<{
+        name: string;
+        size: number;
+        loadTime: number;
+    }>;
+    chunkCount: number;
+    averageChunkSize: number;
+}
+
+export interface MemoryUsageMetrics {
+    currentUsage: number; // in MB
+    peakUsage: number; // in MB
+    totalHeapSize: number; // in MB
+    heapSizeLimit: number; // in MB
+    usagePercentage: number;
+    history: Array<{
+        timestamp: number;
+        usage: number;
+    }>;
+}
+
 /**
  * Cross-browser performance monitoring composable
  * Provides comprehensive performance metrics with browser-specific recommendations
@@ -376,6 +400,129 @@ export function usePerformance() {
         isMonitoring.value = false;
     };
 
+    /**
+     * Track bundle sizes using Performance API
+     * Measures initial bundle size and lazy-loaded chunks
+     */
+    const trackBundleSize = (): BundleSizeMetrics => {
+        const entries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+        const lazyLoadedChunks: Array<{
+            name: string;
+            size: number;
+            loadTime: number;
+        }> = [];
+
+        let initialBundleSize = 0;
+        let totalBundleSize = 0;
+
+        // Filter for JavaScript resources (bundles and chunks)
+        const jsResources = entries.filter(entry => {
+            const name = entry.name.toLowerCase();
+            return name.endsWith('.js') && !name.includes('hot-update');
+        });
+
+        // Identify initial bundle (typically loaded early)
+        const initialBundle = jsResources.find(entry => {
+            const name = entry.name.toLowerCase();
+            return (
+                name.includes('index') ||
+                name.includes('main') ||
+                name.includes('app') ||
+                name.includes('chunk-vendors')
+            );
+        });
+
+        if (initialBundle) {
+            initialBundleSize = initialBundle.transferSize || 0;
+        }
+
+        // Track all chunks
+        jsResources.forEach(entry => {
+            const chunkSize = entry.transferSize || 0;
+            totalBundleSize += chunkSize;
+
+            // Identify lazy-loaded chunks (loaded after initial bundle)
+            if (entry.startTime > (initialBundle?.startTime || 0)) {
+                lazyLoadedChunks.push({
+                    name: entry.name.split('/').pop() || entry.name,
+                    size: chunkSize,
+                    loadTime: entry.duration,
+                });
+            }
+        });
+
+        const chunkCount = jsResources.length;
+        const averageChunkSize = chunkCount > 0 ? totalBundleSize / chunkCount : 0;
+
+        return {
+            initialBundleSize,
+            totalBundleSize,
+            lazyLoadedChunks,
+            chunkCount,
+            averageChunkSize,
+        };
+    };
+
+    /**
+     * Track memory usage using Performance API
+     * Measures memory usage over time (Chrome only)
+     */
+    const trackMemoryUsage = (): MemoryUsageMetrics => {
+        const perf = performance as PerformanceWithMemory;
+        const memory = perf.memory;
+
+        if (!memory) {
+            return {
+                currentUsage: 0,
+                peakUsage: 0,
+                totalHeapSize: 0,
+                heapSizeLimit: 0,
+                usagePercentage: 0,
+                history: [],
+            };
+        }
+
+        const currentUsage = Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
+        const totalHeapSize = Math.round(memory.totalJSHeapSize / 1024 / 1024); // MB
+        const heapSizeLimit = Math.round(memory.jsHeapSizeLimit / 1024 / 1024); // MB
+        const usagePercentage = Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100);
+
+        // Track peak usage (stored in a closure variable)
+        let peakUsage = currentUsage;
+        const history: Array<{ timestamp: number; usage: number }> = [];
+
+        // Get historical memory data from performance entries if available
+        const memoryEntries = performance.getEntriesByType('measure').filter(entry =>
+            entry.name.startsWith('memory-')
+        );
+
+        memoryEntries.forEach(entry => {
+            const usage = parseFloat(entry.name.split('-')[1] || '0') || 0;
+            if (usage > peakUsage) {
+                peakUsage = usage;
+            }
+            history.push({
+                timestamp: entry.startTime,
+                usage,
+            });
+        });
+
+        // Add current reading to history
+        history.push({
+            timestamp: performance.now(),
+            usage: currentUsage,
+        });
+
+        return {
+            currentUsage,
+            peakUsage,
+            totalHeapSize,
+            heapSizeLimit,
+            usagePercentage,
+            history,
+        };
+    };
+
     // Auto-start monitoring on mount
     onMounted(() => {
         startMonitoring();
@@ -398,6 +545,8 @@ export function usePerformance() {
         stopMonitoring,
         getPerformanceSummary,
         updatePerformanceGrade,
+        trackBundleSize,
+        trackMemoryUsage,
 
         // Computed getters
         get hasPerformanceIssues() {

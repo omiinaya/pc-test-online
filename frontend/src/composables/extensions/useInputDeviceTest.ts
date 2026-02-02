@@ -1,9 +1,9 @@
 // Input device extension for keyboard, mouse, and touch testing
 import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
-import { useBaseDeviceTest, type UseBaseDeviceTestOptions } from '../base/useBaseDeviceTest.js';
-import { useEventListeners } from '../useEventListeners.js';
-import { useAnimations } from '../useAnimations.js';
-import type { DeviceKind, PermissionName } from '../../types/index.js';
+import { useBaseDeviceTest, type UseBaseDeviceTestOptions } from '../base/useBaseDeviceTest';
+import { useEventListeners } from '../useEventListeners';
+import { useAnimations } from '../useAnimations';
+import type { DeviceKind, PermissionName } from '../../types';
 
 export interface UseInputDeviceTestOptions extends UseBaseDeviceTestOptions {
     enableEventTracking?: boolean;
@@ -142,88 +142,96 @@ export function useInputDeviceTest(
         if (!eventListeners) return;
 
         // Keyboard events
-        eventListeners.addEventListener(document, 'keydown', (event: KeyboardEvent) => {
+        eventListeners.addEventListener(document, 'keydown', ((event: Event) => {
+            const keyboardEvent = event as KeyboardEvent;
             recordInputEvent('keydown', {
-                key: event.key,
-                code: event.code,
-                ctrlKey: event.ctrlKey,
-                shiftKey: event.shiftKey,
-                altKey: event.altKey,
-                metaKey: event.metaKey,
+                key: keyboardEvent.key,
+                code: keyboardEvent.code,
+                ctrlKey: keyboardEvent.ctrlKey,
+                shiftKey: keyboardEvent.shiftKey,
+                altKey: keyboardEvent.altKey,
+                metaKey: keyboardEvent.metaKey,
             });
-        });
+        }) as EventListener);
 
-        eventListeners.addEventListener(document, 'keyup', (event: KeyboardEvent) => {
+        eventListeners.addEventListener(document, 'keyup', ((event: Event) => {
+            const keyboardEvent = event as KeyboardEvent;
             recordInputEvent('keyup', {
-                key: event.key,
-                code: event.code,
-                ctrlKey: event.ctrlKey,
-                shiftKey: event.shiftKey,
-                altKey: event.altKey,
-                metaKey: event.metaKey,
+                key: keyboardEvent.key,
+                code: keyboardEvent.code,
+                ctrlKey: keyboardEvent.ctrlKey,
+                shiftKey: keyboardEvent.shiftKey,
+                altKey: keyboardEvent.altKey,
+                metaKey: keyboardEvent.metaKey,
             });
-        });
+        }) as EventListener);
 
         // Mouse events
-        eventListeners.addEventListener(document, 'mousedown', (event: MouseEvent) => {
+        eventListeners.addEventListener(document, 'mousedown', ((event: Event) => {
+            const mouseEvent = event as MouseEvent;
             recordInputEvent('mousedown', {
-                button: event.button,
-                buttons: event.buttons,
-                clientX: event.clientX,
-                clientY: event.clientY,
+                button: mouseEvent.button,
+                buttons: mouseEvent.buttons,
+                clientX: mouseEvent.clientX,
+                clientY: mouseEvent.clientY,
             });
-        });
+        }) as EventListener);
 
-        eventListeners.addEventListener(document, 'mouseup', (event: MouseEvent) => {
+        eventListeners.addEventListener(document, 'mouseup', ((event: Event) => {
+            const mouseEvent = event as MouseEvent;
             recordInputEvent('mouseup', {
-                button: event.button,
-                buttons: event.buttons,
-                clientX: event.clientX,
-                clientY: event.clientY,
+                button: mouseEvent.button,
+                buttons: mouseEvent.buttons,
+                clientX: mouseEvent.clientX,
+                clientY: mouseEvent.clientY,
             });
-        });
+        }) as EventListener);
 
-        eventListeners.addEventListener(document, 'mousemove', (event: MouseEvent) => {
+        eventListeners.addEventListener(document, 'mousemove', ((event: Event) => {
+            const mouseEvent = event as MouseEvent;
             recordInputEvent('mousemove', {
-                clientX: event.clientX,
-                clientY: event.clientY,
-                movementX: event.movementX,
-                movementY: event.movementY,
+                clientX: mouseEvent.clientX,
+                clientY: mouseEvent.clientY,
+                movementX: mouseEvent.movementX,
+                movementY: mouseEvent.movementY,
             });
-        });
+        }) as EventListener);
 
         // Touch events
         if (eventListeners) {
-            eventListeners.addEventListener(document, 'touchstart', (event: TouchEvent) => {
+            eventListeners.addEventListener(document, 'touchstart', ((event: Event) => {
+                const touchEvent = event as TouchEvent;
                 recordInputEvent('touchstart', {
-                    touches: Array.from(event.touches).map(t => ({
+                    touches: Array.from(touchEvent.touches).map(t => ({
                         identifier: t.identifier,
                         clientX: t.clientX,
                         clientY: t.clientY,
                     })),
                 });
-            });
+            }) as EventListener);
 
-            eventListeners.addEventListener(document, 'touchmove', (event: TouchEvent) => {
+            eventListeners.addEventListener(document, 'touchmove', ((event: Event) => {
+                const touchEvent = event as TouchEvent;
                 recordInputEvent('touchmove', {
-                    touches: Array.from(event.touches).map(t => ({
+                    touches: Array.from(touchEvent.touches).map(t => ({
                         identifier: t.identifier,
                         clientX: t.clientX,
                         clientY: t.clientY,
                     })),
                 });
-            });
+            }) as EventListener);
 
-            eventListeners.addEventListener(document, 'touchend', (event: TouchEvent) => {
+            eventListeners.addEventListener(document, 'touchend', ((event: Event) => {
+                const touchEvent = event as TouchEvent;
                 // Use changedTouches instead of touches for touchend events
                 recordInputEvent('touchend', {
-                    changedTouches: Array.from(event.changedTouches).map(t => ({
+                    changedTouches: Array.from(touchEvent.changedTouches).map(t => ({
                         identifier: t.identifier,
                         clientX: t.clientX,
                         clientY: t.clientY,
                     })),
                 });
-            });
+            }) as EventListener);
         }
     };
 

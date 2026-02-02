@@ -1,36 +1,25 @@
 <script>
-import WebcamTest from '../components/WebcamTest.vue';
-import MicrophoneTest from '../components/MicrophoneTest.vue';
-import SpeakerTest from '../components/SpeakerTest.vue';
-import KeyboardTest from '../components/KeyboardTest.vue';
-import MouseTest from '../components/MouseTest.vue';
-import TouchTest from '../components/TouchTest.vue';
-import BatteryTest from '../components/BatteryTest.vue';
-import TestsCompleted from '../components/TestsCompleted.vue';
-import VisualizerContainer from '../components/VisualizerContainer.vue';
-import TestActionButtons from '../components/TestActionButtons.vue';
-import AppHeader from '../components/AppHeader.vue';
-import TestHeader from '../components/TestHeader.vue';
-import { resetAllTestStates } from '../composables/useTestState.js';
+import { defineAsyncComponent } from 'vue';
+import { resetAllTestStates } from '../composables/useTestState';
 import { useCSSCompatibility } from '../composables/useCSSCompatibility';
 import { useI18n } from 'vue-i18n';
+import { debounce } from '../utils/debounce';
 // Dynamic imports for PDF libraries to reduce initial bundle size
 
 export default {
     name: 'TestsPage',
     components: {
-        WebcamTest,
-        MicrophoneTest,
-        SpeakerTest,
-        KeyboardTest,
-        MouseTest,
-        TouchTest,
-        BatteryTest,
-        TestsCompleted,
-        VisualizerContainer,
-        TestActionButtons,
-        AppHeader,
-        TestHeader,
+        WebcamTest: defineAsyncComponent(() => import('../components/WebcamTest.vue')),
+        MicrophoneTest: defineAsyncComponent(() => import('../components/MicrophoneTest.vue')),
+        SpeakerTest: defineAsyncComponent(() => import('../components/SpeakerTest.vue')),
+        KeyboardTest: defineAsyncComponent(() => import('../components/KeyboardTest.vue')),
+        MouseTest: defineAsyncComponent(() => import('../components/MouseTest.vue')),
+        TouchTest: defineAsyncComponent(() => import('../components/TouchTest.vue')),
+        BatteryTest: defineAsyncComponent(() => import('../components/BatteryTest.vue')),
+        TestsCompleted: defineAsyncComponent(() => import('../components/TestsCompleted.vue')),
+        VisualizerContainer: defineAsyncComponent(() => import('../components/VisualizerContainer.vue')),
+        TestActionButtons: defineAsyncComponent(() => import('../components/TestActionButtons.vue')),
+        TestHeader: defineAsyncComponent(() => import('../components/TestHeader.vue')),
     },
     setup() {
         const { t } = useI18n();
@@ -103,8 +92,6 @@ export default {
             timerInterval: null,
             timerTick: 0, // Reactive property to force computed updates
             showExportMenu: false,
-            switchDebounceTime: null,
-            isSwitching: false,
         };
     },
     computed: {
@@ -416,34 +403,10 @@ export default {
         },
 
         // Debounced test switching to prevent rapid component changes and lag
-        debouncedSetActiveTest(testType) {
-            // If we're already switching, ignore new requests
-            if (this.isSwitching) {
-                console.log(
-                    `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
-                );
-                return;
-            }
-
-            // Clear any pending switch
-            if (this.switchDebounceTime) {
-                clearTimeout(this.switchDebounceTime);
-            }
-
-            // Mark as switching
-            this.isSwitching = true;
+        debouncedSetActiveTest: debounce(function(testType) {
             console.log(`Switching from ${this.activeTest} to ${testType}`);
-
-            // Perform the switch immediately for good UX
             this.setActiveTest(testType);
-
-            // Reset switching flag after a short delay to prevent rapid switches
-            this.switchDebounceTime = setTimeout(() => {
-                this.isSwitching = false;
-                this.switchDebounceTime = null;
-                console.log(`Switch cooldown ended, ready for next switch`);
-            }, 200); // 200ms cooldown between switches
-        },
+        }, 200),
 
         setActiveTest(testType) {
             // Stop timer for previous active test if it was running
@@ -1295,9 +1258,8 @@ export default {
     },
     beforeUnmount() {
         // Clean up any pending debounce timers to prevent memory leaks
-        if (this.switchDebounceTime) {
-            clearTimeout(this.switchDebounceTime);
-            this.switchDebounceTime = null;
+        if (this.debouncedSetActiveTest && this.debouncedSetActiveTest.cancel) {
+            this.debouncedSetActiveTest.cancel();
         }
 
         // Clean up timer interval
@@ -1314,9 +1276,6 @@ export default {
 
 <template>
     <div class="app-layout">
-        <!-- App Header with test title only in navbar -->
-        <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />
-
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">

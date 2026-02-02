@@ -1,10 +1,10 @@
-import { createApp } from 'vue';
+import { createApp, type App } from 'vue';
 import router from './router';
 import AppLayout from './AppLayout.vue';
 import i18n, { initLocale } from './i18n';
 
 // Debug identifier for tracking execution flow
-const DEBUG_ID = `main-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
+const DEBUG_ID = `main-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
 
 console.log(`[${DEBUG_ID}] Frontend bundle loading started at ${new Date().toISOString()}`);
 console.log(
@@ -23,7 +23,7 @@ console.log(`[${DEBUG_ID}] Initializing locale at ${new Date().toISOString()}`);
 initLocale();
 
 console.log(`[${DEBUG_ID}] Creating Vue app at ${new Date().toISOString()}`);
-const app = createApp(AppLayout);
+const app: App = createApp(AppLayout);
 console.log(`[${DEBUG_ID}] Vue app created successfully`);
 
 console.log(`[${DEBUG_ID}] Installing router plugin`);
@@ -41,21 +41,26 @@ console.log(
     document.getElementById('app') ? 'Found' : 'Not found'
 );
 
-let vueApp;
+let vueApp: unknown;
 try {
     vueApp = app.mount('#app');
     console.log(`[${DEBUG_ID}] App mounted successfully at ${new Date().toISOString()}`);
     console.log(`[${DEBUG_ID}] Mounted app instance:`, vueApp ? 'Available' : 'Undefined');
-} catch (mountError) {
+} catch (mountError: unknown) {
     console.error(
         `[${DEBUG_ID}] CRITICAL: App mount failed at ${new Date().toISOString()}`,
         mountError
     );
-    console.error(`[${DEBUG_ID}] Mount error details:`, {
-        message: mountError.message,
-        stack: mountError.stack,
-        name: mountError.name,
-    });
+    
+    if (mountError instanceof Error) {
+        console.error(`[${DEBUG_ID}] Mount error details:`, {
+            message: mountError.message,
+            stack: mountError.stack,
+            name: mountError.name,
+        });
+    } else {
+        console.error(`[${DEBUG_ID}] Mount error details:`, { error: mountError });
+    }
 
     // Try to provide more context about the mounting failure
     const appElement = document.getElementById('app');
@@ -88,33 +93,56 @@ console.log(
     `[${DEBUG_ID}] Frontend initialization completed successfully at ${new Date().toISOString()}`
 );
 
+// Type definitions for window extensions
+declare global {
+    interface Window {
+        app?: {
+            setActiveTest: (testType: string) => void;
+            resetTests: () => void;
+            exportResults: () => void;
+        };
+    }
+}
+
 // Expose app methods to window for Electron menu integration
 if (typeof window !== 'undefined') {
     window.app = {
         // Expose methods that Electron menus can call
-        setActiveTest: testType => {
-            if (vueApp && vueApp.$children && vueApp.$children[0]) {
-                const appComponent = vueApp.$children[0];
-                if (appComponent.setActiveTest) {
-                    appComponent.setActiveTest(testType);
+        setActiveTest: (testType: string): void => {
+            if (vueApp && typeof vueApp === 'object' && vueApp !== null && '$children' in vueApp) {
+                const vueAppWithChildren = vueApp as { $children: unknown[] };
+                if (vueAppWithChildren.$children && vueAppWithChildren.$children[0]) {
+                    const appComponent = vueAppWithChildren.$children[0] as Record<string, unknown>;
+                    if (typeof appComponent.setActiveTest === 'function') {
+                        appComponent.setActiveTest(testType);
+                    }
                 }
             }
         },
-        resetTests: () => {
-            if (vueApp && vueApp.$children && vueApp.$children[0]) {
-                const appComponent = vueApp.$children[0];
-                if (appComponent.resetTests) {
-                    appComponent.resetTests();
+        resetTests: (): void => {
+            if (vueApp && typeof vueApp === 'object' && vueApp !== null && '$children' in vueApp) {
+                const vueAppWithChildren = vueApp as { $children: unknown[] };
+                if (vueAppWithChildren.$children && vueAppWithChildren.$children[0]) {
+                    const appComponent = vueAppWithChildren.$children[0] as Record<string, unknown>;
+                    if (typeof appComponent.resetTests === 'function') {
+                        appComponent.resetTests();
+                    }
                 }
             }
         },
-        exportResults: () => {
-            if (vueApp && vueApp.$children && vueApp.$children[0]) {
-                const appComponent = vueApp.$children[0];
-                if (appComponent.exportResults) {
-                    appComponent.exportResults();
+        exportResults: (): void => {
+            if (vueApp && typeof vueApp === 'object' && vueApp !== null && '$children' in vueApp) {
+                const vueAppWithChildren = vueApp as { $children: unknown[] };
+                if (vueAppWithChildren.$children && vueAppWithChildren.$children[0]) {
+                    const appComponent = vueAppWithChildren.$children[0] as Record<string, unknown>;
+                    if (typeof appComponent.exportResults === 'function') {
+                        appComponent.exportResults();
+                    }
                 }
             }
         },
     };
 }
+
+// Export for potential testing or module usage
+export { app, vueApp };

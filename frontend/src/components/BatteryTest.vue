@@ -1,10 +1,10 @@
 <script>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
-import { useTestResults } from '../composables/useTestResults.js';
-import { useComponentLifecycle } from '../composables/useComponentLifecycle.js';
-import { useGlobalReset } from '../composables/useTestState.js';
-import { useErrorHandling } from '../composables/useErrorHandling.js';
+import { useTestResults } from '../composables/useTestResults';
+import { useComponentLifecycle } from '../composables/useComponentLifecycle';
+import { useGlobalReset } from '../composables/useTestState';
+import { useErrorHandling } from '../composables/useErrorHandling';
 import { useBatteryCompatibility } from '../composables/useBatteryCompatibility';
 
 export default {

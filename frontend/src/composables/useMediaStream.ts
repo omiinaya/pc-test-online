@@ -1,95 +1,142 @@
-// Composable for managing media streams with cross-browser compatibility
 import { ref, type Ref } from 'vue';
 import { useWebRTCCompatibility } from './useWebRTCCompatibility';
-import type { DeviceConstraints } from '../types';
+import { useMemoryManagement } from './useMemoryManagement';
+import type { DeviceConstraints, DeviceType } from '../types';
 
-export function useMediaStream() {
-    const stream: Ref<MediaStream | null> = ref(null);
-    const loading = ref(false);
-    const error = ref<string | null>(null);
+export interface UseMediaStreamReturn {
+  stream: Ref<MediaStream | null>;
+  loading: Ref<boolean>;
+  error: Ref<string | null>;
+  createStream: (constraints: DeviceConstraints) => Promise<MediaStream>;
+  stopStream: () => void;
+  switchDevice: (newDeviceId: string, deviceType: DeviceType, baseConstraints: DeviceConstraints) => Promise<MediaStream>;
+  cleanup: () => void;
+  webrtcCompat: ReturnType<typeof useWebRTCCompatibility>;
+}
 
-    // Use WebRTC compatibility layer
-    const webrtcCompat = useWebRTCCompatibility();
+export function useMediaStream(): UseMediaStreamReturn {
+  const stream: Ref<MediaStream | null> = ref(null);
+  const loading: Ref<boolean> = ref(false);
+  const error: Ref<string | null> = ref(null);
 
-    const createStream = async (constraints: DeviceConstraints): Promise<MediaStream | null> => {
-        loading.value = true;
-        error.value = null;
+  // Use WebRTC compatibility layer
+  const webrtcCompat = useWebRTCCompatibility();
+  
+  // Use memory management for cleanup tracking
+  const memoryManager = useMemoryManagement();
+  let streamResourceId: number | null = null;
 
-        try {
-            if (stream.value) {
-                stopStream();
-            }
+  const createStream = async (constraints: DeviceConstraints): Promise<MediaStream> => {
+    loading.value = true;
+    error.value = null;
 
-            // Use compatibility layer instead of direct API access
-            const newStream = await webrtcCompat.getUserMedia(constraints);
-            stream.value = newStream;
-            return stream.value;
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            error.value = errorMessage;
-            throw err;
-        } finally {
-            loading.value = false;
-        }
-    };
-
-    const stopStream = (): void => {
-        if (stream.value) {
-            stream.value.getTracks().forEach(track => track.stop());
-            stream.value = null;
-        }
-    };
-
-    const switchDevice = async (
-        newDeviceId: string,
-        deviceType: 'video' | 'audio',
-        baseConstraints: DeviceConstraints
-    ): Promise<MediaStream | null> => {
-        if (loading.value) return null;
-
-        loading.value = true;
-        error.value = null;
-
-        try {
-            stopStream();
-
-            const constraints: DeviceConstraints = {
-                ...baseConstraints,
-                [deviceType]: {
-                    ...baseConstraints[deviceType],
-                    deviceId: { exact: newDeviceId },
-                },
-            };
-
-            return await createStream(constraints);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            error.value = `Failed to switch device: ${errorMessage}`;
-            throw err;
-        } finally {
-            loading.value = false;
-        }
-    };
-
-    const cleanup = (): void => {
+    try {
+      if (stream.value) {
         stopStream();
-        error.value = null;
-        loading.value = false;
-    };
+      }
 
-    return {
-        // State
-        stream,
-        loading,
-        error,
+      // Use compatibility layer instead of direct API access
+      stream.value = await webrtcCompat.getUserMedia(constraints);
+      
+      // Track the media stream for memory management
+      if (streamResourceId !== null) {
+        memoryManager.untrackResource(streamResourceId);
+      }
+      
+      streamResourceId = memoryManager.trackResource(
+        () => {
+          if (stream.value) {
+            stream.value.getTracks().forEach(track => {
+              track.stop();
+              track.enabled = false;
+            });
+          }
+        },
+        'stream',
+        'MediaStream with audio/video tracks'
+      );
+      
+      return stream.value;
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMessage;
+      throw new Error(errorMessage);
+    } finally {
+      loading.value = false;
+    }
+  };
 
-        // Methods
-        createStream,
-        stopStream,
-        switchDevice,
-        cleanup,
+  const stopStream = (): void => {
+    if (stream.value) {
+      stream.value.getTracks().forEach(track => track.stop());
+      stream.value = null;
+    }
+    if (streamResourceId !== null) {
+      memoryManager.untrackResource(streamResourceId);
+      streamResourceId = null;
+    }
+  };
 
-        // Compatibility info
-        webrtcCompat,
-    };
+  const switchDevice = async (
+    newDeviceId: string,
+    deviceType: DeviceType,
+    baseConstraints: DeviceConstraints
+  ): Promise<MediaStream> => {
+    if (loading.value) {
+      throw new Error('Cannot switch device while loading');
+    }
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      stopStream();
+
+      // Map DeviceType to constraint property
+      const constraintKey = deviceType === 'Camera' ? 'video' : 'audio';
+
+      const baseConstraint = baseConstraints[constraintKey] as MediaTrackConstraints | boolean | undefined;
+      const newConstraint: MediaTrackConstraints = typeof baseConstraint === 'object' && baseConstraint !== null
+        ? { ...baseConstraint, deviceId: { exact: newDeviceId } }
+        : { deviceId: { exact: newDeviceId } };
+
+      const constraints: DeviceConstraints = {
+        ...baseConstraints,
+        [constraintKey]: newConstraint,
+      };
+
+      return await createStream(constraints);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = `Failed to switch device: ${errorMessage}`;
+      throw new Error(`Failed to switch device: ${errorMessage}`);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const cleanup = (): void => {
+    stopStream();
+    error.value = null;
+    loading.value = false;
+    
+    // Cleanup any remaining audio analysis or WebRTC resources
+    memoryManager.cleanupType('connection');
+  };
+
+  return {
+    // State
+    stream,
+    loading,
+    error,
+
+    // Methods
+    createStream,
+    stopStream,
+    switchDevice,
+    cleanup,
+
+    // Compatibility info
+    webrtcCompat,
+  };
 }

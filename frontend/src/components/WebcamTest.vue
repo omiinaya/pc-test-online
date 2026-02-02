@@ -2,9 +2,10 @@
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
-import { CameraIcon, CheckIcon } from '../composables/useIcons.js';
+import { CameraIcon, CheckIcon } from '../composables/useIcons';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useMemoryManagement } from '../composables/useMemoryManagement';
 
 export default {
     name: 'WebcamTest',
@@ -33,6 +34,9 @@ export default {
             emit
         );
 
+        // Use memory management for tracking resources
+        const memoryManager = useMemoryManagement();
+
         // Extract WebRTC compatibility info from the device test
         const webrtcCompat =
             deviceTest.mediaStream?.webrtcCompat || deviceTest.deviceEnumeration?.webrtcCompat;
@@ -59,6 +63,7 @@ export default {
             compatibilityWarnings,
             recommendedBrowser,
             showCompatibilityWarnings,
+            memoryManager,
         };
     },
 
@@ -67,6 +72,8 @@ export default {
             snapshotTaken: false,
             skipTimer: null,
             skipped: false,
+            skipTimerResourceId: null,
+            videoEventResourceIds: [],
         };
     },
 
@@ -98,6 +105,14 @@ export default {
     beforeUnmount() {
         this.cleanup();
         if (this.skipTimer) clearTimeout(this.skipTimer);
+        if (this.skipTimerResourceId !== null) {
+            this.memoryManager.untrackResource(this.skipTimerResourceId);
+        }
+        // Clean up tracked video event listeners
+        this.videoEventResourceIds.forEach(resourceId => {
+            this.memoryManager.untrackResource(resourceId);
+        });
+        this.videoEventResourceIds = [];
     },
 
     watch: {
@@ -136,11 +151,24 @@ export default {
 
         startCameraDetectTimer() {
             if (this.skipTimer) clearTimeout(this.skipTimer);
+            if (this.skipTimerResourceId !== null) {
+                this.memoryManager.untrackResource(this.skipTimerResourceId);
+            }
             this.skipTimer = setTimeout(() => {
                 if (!this.hasDevices) {
                     // Timer completed and no cameras found - handled by composable
                 }
             }, 3000);
+            this.skipTimerResourceId = this.memoryManager.trackResource(
+                () => {
+                    if (this.skipTimer) {
+                        clearTimeout(this.skipTimer);
+                        this.skipTimer = null;
+                    }
+                },
+                'timeout',
+                'Camera detection timer'
+            );
         },
 
         // Webcam-specific setup method for video element
@@ -162,9 +190,20 @@ export default {
                     this.eventListeners.addEventListener(video, 'canplay', onVideoReady);
                     this.eventListeners.addEventListener(video, 'loadeddata', onVideoReady);
                 } else {
-                    video.addEventListener('loadedmetadata', onVideoReady);
-                    video.addEventListener('canplay', onVideoReady);
-                    video.addEventListener('loadeddata', onVideoReady);
+                    // Track event listeners for memory management
+                    const addTrackedListener = (element, event, handler) => {
+                        element.addEventListener(event, handler);
+                        const resourceId = this.memoryManager.trackResource(
+                            () => element.removeEventListener(event, handler),
+                            'event',
+                            `Video ${event} listener`
+                        );
+                        this.videoEventResourceIds.push(resourceId);
+                    };
+
+                    addTrackedListener(video, 'loadedmetadata', onVideoReady);
+                    addTrackedListener(video, 'canplay', onVideoReady);
+                    addTrackedListener(video, 'loadeddata', onVideoReady);
                 }
 
                 // Force play the video
@@ -179,6 +218,10 @@ export default {
             this.snapshotTaken = false;
             this.skipped = false;
             if (this.skipTimer) clearTimeout(this.skipTimer);
+            if (this.skipTimerResourceId !== null) {
+                this.memoryManager.untrackResource(this.skipTimerResourceId);
+                this.skipTimerResourceId = null;
+            }
             this.resetTest();
         },
     },

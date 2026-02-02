@@ -1,14 +1,15 @@
 // Unified base composable for all device testing functionality
 import { ref, computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
-import { useDeviceEnumeration } from '../useDeviceEnumeration.js';
-import { useMediaPermissions } from '../useMediaPermissions.js';
-import { useMediaStream } from '../useMediaStream.js';
-import { useErrorHandling } from '../useErrorHandling.js';
-import { useStatePanelConfigs } from '../useStatePanelConfigs.js';
-import { useCommonTestPatterns, useTestTimers } from '../useCommonTestPatterns.js';
+import { useDeviceEnumeration } from '../useDeviceEnumeration';
+import { useMediaPermissions } from '../useMediaPermissions';
+import { useMediaStream } from '../useMediaStream';
+import { useErrorHandling } from '../useErrorHandling';
+import { useStatePanelConfigs } from '../useStatePanelConfigs';
+import { useCommonTestPatterns, useTestTimers } from '../useCommonTestPatterns';
 import type {
     DeviceKind,
     DeviceType,
+    TestType,
     PermissionName,
     ComponentState,
     DeviceInfo,
@@ -17,9 +18,9 @@ import type {
 
 export interface UseBaseDeviceTestOptions {
     deviceKind?: DeviceKind;
-    deviceType?: DeviceType;
+    deviceType?: DeviceType | string;
     permissionType?: PermissionName;
-    testName?: string;
+    testName?: TestType | string;
     autoInitialize?: boolean;
     enableEventListeners?: boolean;
     enableAnimations?: boolean;
@@ -76,16 +77,16 @@ export function useBaseDeviceTest(
 ): DeviceTestState & DeviceTestMethods & BaseDeviceTestComposables {
     const {
         deviceKind,
-        deviceType = 'device',
+        deviceType = 'device' as DeviceType | string,
         permissionType,
-        testName = 'device',
+        testName = 'device' as TestType | string,
         autoInitialize = true,
     } = options;
 
     // Initialize core composables
-    const deviceEnumeration = deviceKind ? useDeviceEnumeration(deviceKind, deviceType) : null;
+    const deviceEnumeration = deviceKind ? useDeviceEnumeration(deviceKind, deviceType as DeviceType) : null;
     const mediaPermissions = permissionType
-        ? useMediaPermissions(deviceType, permissionType)
+        ? useMediaPermissions(deviceType as DeviceType, permissionType)
         : null;
     const mediaStream = useMediaStream();
     const errorHandling = useErrorHandling(testName);
@@ -362,7 +363,7 @@ export function useBaseDeviceTest(
      * Complete test with enhanced result tracking
      */
     const completeTest = (additionalData: Record<string, unknown> = {}): void => {
-        commonPatterns.handleTestPass(testName, () => {
+        commonPatterns.handleTestPass(testName as TestType, () => {
             if (emit) {
                 emit('test-completed', testName, { status: 'completed', ...additionalData });
             }
@@ -375,7 +376,7 @@ export function useBaseDeviceTest(
      * Fail test with enhanced result tracking
      */
     const failTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
-        commonPatterns.handleTestFail(testName, reason, () => {
+        commonPatterns.handleTestFail(testName as TestType, reason, () => {
             if (emit) {
                 emit('test-failed', testName, {
                     status: 'failed',
@@ -392,7 +393,7 @@ export function useBaseDeviceTest(
      * Skip test with enhanced result tracking
      */
     const skipTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
-        commonPatterns.handleTestSkip(testName, () => {
+        commonPatterns.handleTestSkip(testName as TestType, () => {
             if (emit) {
                 emit('test-skipped', testName, { status: 'skipped', reason, ...additionalData });
             }

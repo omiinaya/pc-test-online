@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useBaseDeviceTest } from '../composables/base/useBaseDeviceTest.ts';
+import { useMemoryManagement } from '../composables/useMemoryManagement';
 
 export default {
     name: 'SpeakerTest',
@@ -29,6 +30,9 @@ export default {
             emit
         );
 
+        // Use memory management for tracking resources
+        const memoryManager = useMemoryManagement();
+
         // Speaker test specific state
         const isPlaying = ref(false);
         const currentTestStep = ref('');
@@ -37,6 +41,9 @@ export default {
         const testTimeout = ref(null);
         const audioContextReady = ref(false);
         const audioContextInitialized = ref(false);
+        const audioContextResourceId = ref(null);
+        const oscillatorResourceIds = ref([]);
+        const timeoutResourceId = ref(null);
 
         /**
          * Initialize audio context with selected speaker
@@ -48,6 +55,17 @@ export default {
                 if (!audioContext.value) {
                     audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
                     audioContextInitialized.value = true;
+
+                    // Track audio context for memory management
+                    audioContextResourceId.value = memoryManager.trackResource(
+                        () => {
+                            if (audioContext.value && audioContext.value.state !== 'closed') {
+                                audioContext.value.close();
+                            }
+                        },
+                        'connection',
+                        'AudioContext for speaker test'
+                    );
                 }
 
                 // Handle suspended state (browser autoplay policy)
@@ -236,7 +254,7 @@ export default {
                             noteOscillator.start();
 
                             // Stop the note
-                            setTimeout(() => {
+                            const noteTimeoutId = setTimeout(() => {
                                 try {
                                     noteOscillator.stop();
                                     noteOscillator.disconnect();
@@ -245,20 +263,47 @@ export default {
                                 }
                             }, noteDuration);
 
+                            // Track the timeout for memory management
+                            const timeoutResourceId = memoryManager.trackResource(
+                                () => clearTimeout(noteTimeoutId),
+                                'timeout',
+                                'Note playback timeout'
+                            );
+                            oscillatorResourceIds.value.push(timeoutResourceId);
+
                             currentNoteIndex++;
 
                             // Schedule next note
                             testTimeout.value = setTimeout(playNextNote, noteDuration);
+                            if (timeoutResourceId.value !== null) {
+                                memoryManager.untrackResource(timeoutResourceId.value);
+                            }
+                            timeoutResourceId.value = memoryManager.trackResource(
+                                () => {
+                                    if (testTimeout.value) {
+                                        clearTimeout(testTimeout.value);
+                                        testTimeout.value = null;
+                                    }
+                                },
+                                'timeout',
+                                'Next note scheduling timeout'
+                            );
                         };
 
                         // Start playing the scale
                         playNextNote();
 
                         // Fallback timeout for safety
-                        testTimeout.value = setTimeout(() => {
+                        const fallbackTimeoutId = setTimeout(() => {
                             stopSound(false);
                             resolve();
                         }, totalDuration + 500);
+                        const fallbackResourceId = memoryManager.trackResource(
+                            () => clearTimeout(fallbackTimeoutId),
+                            'timeout',
+                            'Fallback safety timeout'
+                        );
+                        oscillatorResourceIds.value.push(fallbackResourceId);
                     } catch (error) {
                         console.error('Error in playChannel:', error);
                         reject(error);
@@ -278,6 +323,18 @@ export default {
                 clearTimeout(testTimeout.value);
                 testTimeout.value = null;
             }
+
+            // Clean up tracked timeout resource
+            if (timeoutResourceId.value !== null) {
+                memoryManager.untrackResource(timeoutResourceId.value);
+                timeoutResourceId.value = null;
+            }
+
+            // Clean up all tracked oscillator resources
+            oscillatorResourceIds.value.forEach(resourceId => {
+                memoryManager.untrackResource(resourceId);
+            });
+            oscillatorResourceIds.value = [];
 
             if (oscillator.value) {
                 try {
@@ -336,6 +393,13 @@ export default {
          */
         const cleanup = () => {
             stopSound();
+
+            // Untrack and clean up audio context
+            if (audioContextResourceId.value !== null) {
+                memoryManager.untrackResource(audioContextResourceId.value);
+                audioContextResourceId.value = null;
+            }
+
             if (audioContext.value && audioContext.value.state !== 'closed') {
                 try {
                     audioContext.value.close();

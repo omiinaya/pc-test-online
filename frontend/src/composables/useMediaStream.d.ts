@@ -1,4 +1,7 @@
-// Type declarations for useMediaStream composable
+/**
+ * @ignore
+ * Type declarations for useMediaStream composable
+ */
 import type { Ref } from 'vue';
 import type { DeviceConstraints } from '../types';
 import type { WebRTCCompatibilityReturn } from './useWebRTCCompatibility';
