@@ -78,6 +78,9 @@ export default {
     },
 
     mounted() {
+        console.log('[WebcamTest] mounted() called');
+        console.log('[WebcamTest] isInitialized:', this.isInitialized);
+        console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
         if (!this.isInitialized) {
             this.initializeTest();
         }
@@ -85,24 +88,34 @@ export default {
     },
 
     activated() {
+        console.log('[WebcamTest] activated() called');
+        console.log('[WebcamTest] isInitialized:', this.isInitialized);
+        console.log('[WebcamTest] hasError:', this.hasError);
+        console.log('[WebcamTest] hasActiveStream:', this.hasActiveStream);
+        console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
         // Vue keep-alive hook - reinitialize if needed
         if (!this.isInitialized || this.hasError) {
+            console.log('[WebcamTest] Reinitializing test in activated()');
             this.initializeTest();
             this.startCameraDetectTimer();
         } else if (this.hasActiveStream && this.$refs.videoElement) {
             // Reconnect existing stream to video element if available
+            console.log('[WebcamTest] Reconnecting existing stream to video element');
             this.$refs.videoElement.srcObject = this.stream;
         }
     },
 
     deactivated() {
+        console.log('[WebcamTest] deactivated() called');
         // Pause video stream but don't destroy everything
         if (this.$refs.videoElement) {
+            console.log('[WebcamTest] Pausing video in deactivated()');
             this.$refs.videoElement.pause();
         }
     },
 
     beforeUnmount() {
+        console.log('[WebcamTest] beforeUnmount() called');
         this.cleanup();
         if (this.skipTimer) clearTimeout(this.skipTimer);
         if (this.skipTimerResourceId !== null) {
@@ -122,8 +135,18 @@ export default {
         // Watch for when stream becomes available to setup camera
         stream: {
             handler(newStream) {
+                console.log('[WebcamTest] stream watcher triggered');
+                console.log('[WebcamTest] stream value:', newStream);
+                console.log('[WebcamTest] hasPermission:', this.hasPermission);
+                console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
                 if (newStream && this.hasPermission && this.$refs.videoElement) {
+                    console.log('[WebcamTest] Calling setupCamera() from stream watcher');
                     this.setupCamera();
+                } else {
+                    console.log('[WebcamTest] setupCamera() NOT called - conditions not met');
+                    console.log('[WebcamTest] - stream exists:', !!newStream);
+                    console.log('[WebcamTest] - hasPermission:', this.hasPermission);
+                    console.log('[WebcamTest] - videoElement exists:', !!this.$refs.videoElement);
                 }
             },
             immediate: true,
@@ -183,19 +206,33 @@ export default {
 
         // Webcam-specific setup method for video element
         setupCamera() {
+            console.log('[WebcamTest] setupCamera() called');
+            console.log('[WebcamTest] stream:', this.stream);
+            console.log('[WebcamTest] videoElement:', this.$refs.videoElement);
+            
             if (!this.stream || !this.$refs.videoElement) {
                 console.warn('[WebcamTest] setupCamera skipped - stream or videoElement missing');
                 return;
             }
 
             const video = this.$refs.videoElement;
+            console.log('[WebcamTest] Current video.srcObject:', video.srcObject);
+            console.log('[WebcamTest] New stream to assign:', this.stream);
             
             // Only set srcObject if it's not already set to this stream
             if (video.srcObject !== this.stream) {
+                console.log('[WebcamTest] Assigning stream to video.srcObject');
                 video.srcObject = this.stream;
+                console.log('[WebcamTest] video.srcObject after assignment:', video.srcObject);
+            } else {
+                console.log('[WebcamTest] Stream already assigned to video.srcObject, skipping assignment');
             }
 
-            const onVideoReady = () => {
+            const onVideoReady = (eventType) => {
+                console.log(`[WebcamTest] Video ${eventType} event fired`);
+                console.log('[WebcamTest] video.readyState:', video.readyState);
+                console.log('[WebcamTest] video.videoWidth:', video.videoWidth);
+                console.log('[WebcamTest] video.videoHeight:', video.videoHeight);
                 video.play().catch(err => {
                     console.error('[WebcamTest] Error auto-playing video:', err);
                 });
@@ -203,12 +240,15 @@ export default {
 
             // Use event listeners from composable if available
             if (this.eventListeners) {
-                this.eventListeners.addEventListener(video, 'loadedmetadata', onVideoReady);
-                this.eventListeners.addEventListener(video, 'canplay', onVideoReady);
-                this.eventListeners.addEventListener(video, 'loadeddata', onVideoReady);
+                console.log('[WebcamTest] Using composable eventListeners');
+                this.eventListeners.addEventListener(video, 'loadedmetadata', () => onVideoReady('loadedmetadata'));
+                this.eventListeners.addEventListener(video, 'canplay', () => onVideoReady('canplay'));
+                this.eventListeners.addEventListener(video, 'loadeddata', () => onVideoReady('loadeddata'));
             } else {
+                console.log('[WebcamTest] Using manual event listeners');
                 // Track event listeners for memory management with robust error handling
                 const addTrackedListener = (element, event, handler) => {
+                    console.log(`[WebcamTest] Adding ${event} listener`);
                     element.addEventListener(event, handler);
                     
                     // Track the resource with memory management
@@ -226,13 +266,16 @@ export default {
                     }
                 };
 
-                addTrackedListener(video, 'loadedmetadata', onVideoReady);
-                addTrackedListener(video, 'canplay', onVideoReady);
-                addTrackedListener(video, 'loadeddata', onVideoReady);
+                addTrackedListener(video, 'loadedmetadata', () => onVideoReady('loadedmetadata'));
+                addTrackedListener(video, 'canplay', () => onVideoReady('canplay'));
+                addTrackedListener(video, 'loadeddata', () => onVideoReady('loadeddata'));
             }
 
             // Force play the video
-            video.play().catch(err => {
+            console.log('[WebcamTest] Calling video.play()');
+            video.play().then(() => {
+                console.log('[WebcamTest] video.play() succeeded');
+            }).catch(err => {
                 console.error('[WebcamTest] Error playing video:', err);
             });
         },
@@ -254,6 +297,17 @@ export default {
 
 <template>
     <div class="webcam-test-container">
+        <!-- Debug state info (hidden but can be enabled for debugging) -->
+        <div class="debug-info" style="display:none;">
+            <p>isLoading: {{ isLoading }}</p>
+            <p>hasError: {{ hasError }}</p>
+            <p>needsPermission: {{ needsPermission }}</p>
+            <p>showNoDevicesState: {{ showNoDevicesState }}</p>
+            <p>hasPermission: {{ hasPermission }}</p>
+            <p>hasActiveStream: {{ hasActiveStream }}</p>
+            <p>stream: {{ !!stream }}</p>
+        </div>
+        
         <!-- Always show video wrapper with overlay states -->
         <div class="video-wrapper">
             <video
@@ -265,6 +319,11 @@ export default {
                 :class="{ blurred: isLoading || hasError || needsPermission || showNoDevicesState }"
                 :aria-label="$t('device_testing.webcam.camera_preview')"
                 :title="$t('device_testing.webcam.live_feed')"
+                @loadedmetadata="console.log('[WebcamTest] Video loadedmetadata event fired')"
+                @canplay="console.log('[WebcamTest] Video canplay event fired')"
+                @loadeddata="console.log('[WebcamTest] Video loadeddata event fired')"
+                @play="console.log('[WebcamTest] Video play event fired')"
+                @error="console.log('[WebcamTest] Video error event fired', $event)"
             ></video>
 
             <!-- State Panel Overlays inside video -->

@@ -27,16 +27,22 @@ export function useMediaStream(): UseMediaStreamReturn {
   let streamResourceId: number | null = null;
 
   const createStream = async (constraints: DeviceConstraints): Promise<MediaStream> => {
+    console.log('[useMediaStream] createStream() called with constraints:', constraints);
     loading.value = true;
     error.value = null;
 
     try {
       if (stream.value) {
+        console.log('[useMediaStream] Stopping existing stream before creating new one');
         stopStream();
       }
 
+      console.log('[useMediaStream] Calling webrtcCompat.getUserMedia()');
       // Use compatibility layer instead of direct API access
       stream.value = await webrtcCompat.getUserMedia(constraints);
+      console.log('[useMediaStream] Stream created successfully:', stream.value);
+      console.log('[useMediaStream] Stream video tracks:', stream.value.getVideoTracks().length);
+      console.log('[useMediaStream] Stream audio tracks:', stream.value.getAudioTracks().length);
       
       // Track the media stream for memory management
       if (streamResourceId !== null) {
@@ -45,8 +51,10 @@ export function useMediaStream(): UseMediaStreamReturn {
       
       streamResourceId = memoryManager.trackResource(
         () => {
+          console.log('[useMediaStream] Cleanup callback triggered for stream resource');
           if (stream.value) {
             stream.value.getTracks().forEach(track => {
+              console.log('[useMediaStream] Stopping track:', track.label, 'enabled:', track.enabled);
               track.stop();
               track.enabled = false;
             });
@@ -56,24 +64,36 @@ export function useMediaStream(): UseMediaStreamReturn {
         'MediaStream with audio/video tracks'
       );
       
+      console.log('[useMediaStream] Stream resource tracked, ID:', streamResourceId);
       return stream.value;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error('[useMediaStream] Error creating stream:', err);
       error.value = errorMessage;
       throw new Error(errorMessage);
     } finally {
       loading.value = false;
+      console.log('[useMediaStream] loading.value set to false');
     }
   };
 
   const stopStream = (): void => {
+    console.log('[useMediaStream] stopStream() called');
     if (stream.value) {
-      stream.value.getTracks().forEach(track => track.stop());
+      console.log('[useMediaStream] Stopping all tracks in current stream');
+      stream.value.getTracks().forEach(track => {
+        console.log('[useMediaStream] Stopping track:', track.label, 'enabled:', track.enabled);
+        track.stop();
+      });
       stream.value = null;
+      console.log('[useMediaStream] stream.value set to null');
+    } else {
+      console.log('[useMediaStream] No stream to stop');
     }
     if (streamResourceId !== null) {
       memoryManager.untrackResource(streamResourceId);
       streamResourceId = null;
+      console.log('[useMediaStream] Stream resource untracked');
     }
   };
 
