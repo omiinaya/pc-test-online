@@ -81,8 +81,14 @@ export function useMediaStream(): UseMediaStreamReturn {
     console.log('[useMediaStream] stopStream() called');
     if (stream.value) {
       console.log('[useMediaStream] Stopping all tracks in current stream');
+      // First disable tracks, then stop them to ensure clean release
       stream.value.getTracks().forEach(track => {
-        console.log('[useMediaStream] Stopping track:', track.label, 'enabled:', track.enabled);
+        console.log('[useMediaStream] Disabling track:', track.label, 'enabled:', track.enabled);
+        track.enabled = false;
+      });
+      // Small delay to ensure tracks are disabled before stopping
+      stream.value.getTracks().forEach(track => {
+        console.log('[useMediaStream] Stopping track:', track.label);
         track.stop();
       });
       stream.value = null;

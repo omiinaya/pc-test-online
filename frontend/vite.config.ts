@@ -122,8 +122,8 @@ export default defineConfig({
             },
         },
 
-        // Terser optimization
-        terserOptions: {
+        // Terser optimization - only strip logs in production
+        terserOptions: process.env.NODE_ENV === 'production' ? {
             compress: {
                 drop_console: true,
                 drop_debugger: true,
@@ -135,7 +135,7 @@ export default defineConfig({
             format: {
                 safari10: true,
             },
-        },
+        } : undefined,
     },
 
     // Optimization

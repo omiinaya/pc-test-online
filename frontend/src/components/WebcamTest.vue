@@ -80,9 +80,21 @@ export default {
     mounted() {
         console.log('[WebcamTest] mounted() called');
         console.log('[WebcamTest] isInitialized:', this.isInitialized);
+        console.log('[WebcamTest] hasActiveStream:', this.hasActiveStream);
+        console.log('[WebcamTest] stream:', this.stream);
         console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
+        
         if (!this.isInitialized) {
+            console.log('[WebcamTest] Initializing test in mounted()');
             this.initializeTest();
+        } else if (this.hasActiveStream && this.stream) {
+            // Stream exists from previous session, need to recreate it
+            console.log('[WebcamTest] Stream exists from previous session, recreating...');
+            this.getDeviceStream(null, true).then(() => {
+                console.log('[WebcamTest] Stream recreated after mount');
+            }).catch(err => {
+                console.error('[WebcamTest] Error recreating stream:', err);
+            });
         }
         this.startCameraDetectTimer();
     },
@@ -92,16 +104,33 @@ export default {
         console.log('[WebcamTest] isInitialized:', this.isInitialized);
         console.log('[WebcamTest] hasError:', this.hasError);
         console.log('[WebcamTest] hasActiveStream:', this.hasActiveStream);
+        console.log('[WebcamTest] stream:', this.stream);
         console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
+        
         // Vue keep-alive hook - reinitialize if needed
         if (!this.isInitialized || this.hasError) {
             console.log('[WebcamTest] Reinitializing test in activated()');
             this.initializeTest();
             this.startCameraDetectTimer();
+        } else if (this.hasActiveStream && this.stream) {
+            // Stream exists from previous session, need to recreate it
+            console.log('[WebcamTest] Stream exists from previous session, recreating...');
+            this.getDeviceStream(null, true).then(() => {
+                console.log('[WebcamTest] Stream recreated in activated()');
+            }).catch(err => {
+                console.error('[WebcamTest] Error recreating stream in activated():', err);
+            });
         } else if (this.hasActiveStream && this.$refs.videoElement) {
             // Reconnect existing stream to video element if available
             console.log('[WebcamTest] Reconnecting existing stream to video element');
             this.$refs.videoElement.srcObject = this.stream;
+            // Ensure video is playing
+            this.$refs.videoElement.play().catch(err => {
+                console.log('[WebcamTest] Error resuming video in activated():', err);
+            });
+        } else if (this.hasActiveStream && !this.$refs.videoElement) {
+            // Stream exists but video element not ready - wait for it
+            console.log('[WebcamTest] Stream exists but video element not ready, will retry via watcher');
         }
     },
 
@@ -139,14 +168,36 @@ export default {
                 console.log('[WebcamTest] stream value:', newStream);
                 console.log('[WebcamTest] hasPermission:', this.hasPermission);
                 console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
-                if (newStream && this.hasPermission && this.$refs.videoElement) {
-                    console.log('[WebcamTest] Calling setupCamera() from stream watcher');
-                    this.setupCamera();
+                
+                if (newStream && this.hasPermission) {
+                    if (this.$refs.videoElement) {
+                        console.log('[WebcamTest] Calling setupCamera() from stream watcher');
+                        this.setupCamera();
+                    } else {
+                        console.log('[WebcamTest] Video element not ready, scheduling retry');
+                        // Retry after a short delay to allow DOM to update
+                        this.$nextTick(() => {
+                            console.log('[WebcamTest] Retry: videoElement ref:', this.$refs.videoElement);
+                            if (this.$refs.videoElement) {
+                                console.log('[WebcamTest] Calling setupCamera() from retry');
+                                this.setupCamera();
+                            } else {
+                                console.log('[WebcamTest] Retry failed - video element still not available');
+                                // One more retry with longer delay
+                                setTimeout(() => {
+                                    console.log('[WebcamTest] Final retry: videoElement ref:', this.$refs.videoElement);
+                                    if (this.$refs.videoElement) {
+                                        console.log('[WebcamTest] Calling setupCamera() from final retry');
+                                        this.setupCamera();
+                                    }
+                                }, 100);
+                            }
+                        });
+                    }
                 } else {
                     console.log('[WebcamTest] setupCamera() NOT called - conditions not met');
                     console.log('[WebcamTest] - stream exists:', !!newStream);
                     console.log('[WebcamTest] - hasPermission:', this.hasPermission);
-                    console.log('[WebcamTest] - videoElement exists:', !!this.$refs.videoElement);
                 }
             },
             immediate: true,

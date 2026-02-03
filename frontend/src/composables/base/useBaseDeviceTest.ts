@@ -285,8 +285,11 @@ export function useBaseDeviceTest(
      * Get device stream with enhanced error handling
      */
     const getDeviceStream = async (
-        constraints: MediaStreamConstraints | null = null
+        constraints: MediaStreamConstraints | null = null,
+        forceRecreate: boolean = false
     ): Promise<MediaStream | null> => {
+        console.log('[useBaseDeviceTest] getDeviceStream() called, forceRecreate:', forceRecreate);
+        
         // Create default constraints if none provided
         if (!constraints) {
             if (deviceKind === 'videoinput') {
@@ -302,16 +305,38 @@ export function useBaseDeviceTest(
             }
         }
 
+        // If force recreate, stop existing stream first
+        if (forceRecreate && mediaStream.stream.value) {
+            console.log('[useBaseDeviceTest] Force recreating stream - stopping existing stream');
+            mediaStream.stopStream();
+        }
+
         try {
+            // Check if we already have a valid stream with same constraints
+            if (!forceRecreate && mediaStream.stream.value) {
+                const existingTracks = mediaStream.stream.value.getTracks();
+                const hasVideo = deviceKind === 'videoinput' ? existingTracks.some(t => t.kind === 'video') : true;
+                const hasAudio = deviceKind === 'audioinput' ? existingTracks.some(t => t.kind === 'audio') : true;
+                
+                if (hasVideo && hasAudio) {
+                    console.log('[useBaseDeviceTest] Reusing existing stream');
+                    currentState.value = 'streaming';
+                    return mediaStream.stream.value;
+                }
+            }
+            
+            console.log('[useBaseDeviceTest] Creating new stream');
             const stream = await mediaStream.createStream(constraints);
 
             if (stream) {
                 currentState.value = 'streaming';
+                console.log('[useBaseDeviceTest] Stream created, state set to streaming');
             }
 
             return stream;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown stream error';
+            console.error('[useBaseDeviceTest] Error getting stream:', errorMessage);
             errorHandling.setError(`Failed to get device stream: ${errorMessage}`);
 
             if (emit) {
@@ -406,6 +431,8 @@ export function useBaseDeviceTest(
      * Reset test to initial state
      */
     const resetTest = (): void => {
+        console.log('[useBaseDeviceTest] resetTest() called');
+        // Stop the stream first
         mediaStream.stopStream();
         if (mediaPermissions) {
             mediaPermissions.resetPermissions();
@@ -415,15 +442,18 @@ export function useBaseDeviceTest(
 
         currentState.value = 'initializing';
         isInitialized.value = false;
+        console.log('[useBaseDeviceTest] Test reset complete');
     };
 
     /**
      * Enhanced cleanup with all patterns
      */
     const cleanup = (): void => {
+        console.log('[useBaseDeviceTest] cleanup() called');
         mediaStream.stopStream();
         timers.clearAllTimers();
         errorHandling.clearError();
+        console.log('[useBaseDeviceTest] Cleanup complete');
     };
 
     // Auto-initialize if requested
