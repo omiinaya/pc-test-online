@@ -107,10 +107,13 @@ export default {
         if (this.skipTimer) clearTimeout(this.skipTimer);
         if (this.skipTimerResourceId !== null) {
             this.memoryManager.untrackResource(this.skipTimerResourceId);
+            this.skipTimerResourceId = null;
         }
         // Clean up tracked video event listeners
         this.videoEventResourceIds.forEach(resourceId => {
-            this.memoryManager.untrackResource(resourceId);
+            if (resourceId !== -1) {
+                this.memoryManager.untrackResource(resourceId);
+            }
         });
         this.videoEventResourceIds = [];
     },
@@ -153,64 +156,85 @@ export default {
             if (this.skipTimer) clearTimeout(this.skipTimer);
             if (this.skipTimerResourceId !== null) {
                 this.memoryManager.untrackResource(this.skipTimerResourceId);
+                this.skipTimerResourceId = null;
             }
             this.skipTimer = setTimeout(() => {
                 if (!this.hasDevices) {
                     // Timer completed and no cameras found - handled by composable
                 }
             }, 3000);
-            this.skipTimerResourceId = this.memoryManager.trackResource(
-                () => {
-                    if (this.skipTimer) {
-                        clearTimeout(this.skipTimer);
-                        this.skipTimer = null;
-                    }
-                },
-                'timeout',
-                'Camera detection timer'
-            );
+            
+            // Track the timer with memory management
+            try {
+                this.skipTimerResourceId = this.memoryManager.trackResource(
+                    () => {
+                        if (this.skipTimer) {
+                            clearTimeout(this.skipTimer);
+                            this.skipTimer = null;
+                        }
+                    },
+                    'timeout',
+                    'Camera detection timer'
+                );
+            } catch (error) {
+                console.warn('[WebcamTest] Memory tracking failed for timer - using manual cleanup');
+            }
         },
 
         // Webcam-specific setup method for video element
         setupCamera() {
-            if (this.stream && this.$refs.videoElement) {
-                const video = this.$refs.videoElement;
+            if (!this.stream || !this.$refs.videoElement) {
+                console.warn('[WebcamTest] setupCamera skipped - stream or videoElement missing');
+                return;
+            }
+
+            const video = this.$refs.videoElement;
+            
+            // Only set srcObject if it's not already set to this stream
+            if (video.srcObject !== this.stream) {
                 video.srcObject = this.stream;
+            }
 
-                const onVideoReady = () => {
-                    // Video is now ready for testing - just ensure it's playing
-                    video.play().catch(err => {
-                        console.error('[WebcamTest] Error auto-playing video:', err);
-                    });
-                };
+            const onVideoReady = () => {
+                video.play().catch(err => {
+                    console.error('[WebcamTest] Error auto-playing video:', err);
+                });
+            };
 
-                // Use event listeners from composable if available
-                if (this.eventListeners) {
-                    this.eventListeners.addEventListener(video, 'loadedmetadata', onVideoReady);
-                    this.eventListeners.addEventListener(video, 'canplay', onVideoReady);
-                    this.eventListeners.addEventListener(video, 'loadeddata', onVideoReady);
-                } else {
-                    // Track event listeners for memory management
-                    const addTrackedListener = (element, event, handler) => {
-                        element.addEventListener(event, handler);
+            // Use event listeners from composable if available
+            if (this.eventListeners) {
+                this.eventListeners.addEventListener(video, 'loadedmetadata', onVideoReady);
+                this.eventListeners.addEventListener(video, 'canplay', onVideoReady);
+                this.eventListeners.addEventListener(video, 'loadeddata', onVideoReady);
+            } else {
+                // Track event listeners for memory management with robust error handling
+                const addTrackedListener = (element, event, handler) => {
+                    element.addEventListener(event, handler);
+                    
+                    // Track the resource with memory management
+                    try {
                         const resourceId = this.memoryManager.trackResource(
                             () => element.removeEventListener(event, handler),
                             'event',
                             `Video ${event} listener`
                         );
                         this.videoEventResourceIds.push(resourceId);
-                    };
+                    } catch (trackError) {
+                        console.warn('[WebcamTest] Memory tracking failed for', event, '- using manual cleanup');
+                        // Fallback: still add the listener but track manually
+                        this.videoEventResourceIds.push(-1);
+                    }
+                };
 
-                    addTrackedListener(video, 'loadedmetadata', onVideoReady);
-                    addTrackedListener(video, 'canplay', onVideoReady);
-                    addTrackedListener(video, 'loadeddata', onVideoReady);
-                }
-
-                // Force play the video
-                video.play().catch(err => {
-                    console.error('[WebcamTest] Error playing video:', err);
-                });
+                addTrackedListener(video, 'loadedmetadata', onVideoReady);
+                addTrackedListener(video, 'canplay', onVideoReady);
+                addTrackedListener(video, 'loadeddata', onVideoReady);
             }
+
+            // Force play the video
+            video.play().catch(err => {
+                console.error('[WebcamTest] Error playing video:', err);
+            });
         },
 
         // Test completion methods
