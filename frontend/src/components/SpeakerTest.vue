@@ -264,12 +264,12 @@ export default {
                             }, noteDuration);
 
                             // Track the timeout for memory management
-                            const timeoutResourceId = memoryManager.trackResource(
+                            const noteTimeoutResourceId = memoryManager.trackResource(
                                 () => clearTimeout(noteTimeoutId),
                                 'timeout',
                                 'Note playback timeout'
                             );
-                            oscillatorResourceIds.value.push(timeoutResourceId);
+                            oscillatorResourceIds.value.push(noteTimeoutResourceId);
 
                             currentNoteIndex++;
 
