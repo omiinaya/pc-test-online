@@ -396,7 +396,7 @@ export default {
                 muted
                 playsinline
                 class="camera-preview"
-                :class="{ blurred: isLoading || hasError || needsPermission || showNoDevicesState }"
+                :class="{ blurred: (isLoading || hasError || needsPermission || showNoDevicesState) && !hasActiveStream }"
                 :aria-label="$t('device_testing.webcam.camera_preview')"
                 :title="$t('device_testing.webcam.live_feed')"
                 @loadedmetadata="console.log('[WebcamTest] Video loadedmetadata event fired')"
