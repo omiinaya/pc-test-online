@@ -261,6 +261,16 @@ export default {
             console.log('[WebcamTest] stream:', this.stream);
             console.log('[WebcamTest] videoElement:', this.$refs.videoElement);
             
+            // Log current state values that affect the blurred class
+            console.log('[WebcamTest] Current state values:');
+            console.log('[WebcamTest] - isLoading:', this.isLoading);
+            console.log('[WebcamTest] - hasError:', this.hasError);
+            console.log('[WebcamTest] - needsPermission:', this.needsPermission);
+            console.log('[WebcamTest] - showNoDevicesState:', this.showNoDevicesState);
+            console.log('[WebcamTest] - hasActiveStream:', this.hasActiveStream);
+            console.log('[WebcamTest] - hasPermission:', this.hasPermission);
+            console.log('[WebcamTest] - hasDevices:', this.hasDevices);
+            
             if (!this.stream || !this.$refs.videoElement) {
                 console.warn('[WebcamTest] setupCamera skipped - stream or videoElement missing');
                 return;
@@ -269,12 +279,27 @@ export default {
             const video = this.$refs.videoElement;
             console.log('[WebcamTest] Current video.srcObject:', video.srcObject);
             console.log('[WebcamTest] New stream to assign:', this.stream);
+            console.log('[WebcamTest] Video element properties before assignment:');
+            console.log('[WebcamTest] - video.width:', video.width);
+            console.log('[WebcamTest] - video.height:', video.height);
+            console.log('[WebcamTest] - video.videoWidth:', video.videoWidth);
+            console.log('[WebcamTest] - video.videoHeight:', video.videoHeight);
+            console.log('[WebcamTest] - video.readyState:', video.readyState);
+            console.log('[WebcamTest] - video.paused:', video.paused);
+            console.log('[WebcamTest] - video.muted:', video.muted);
+            console.log('[WebcamTest] - video.autoplay:', video.autoplay);
+            console.log('[WebcamTest] - video.playsInline:', video.playsInline);
+            console.log('[WebcamTest] - video.classList:', video.classList.toString());
             
             // Only set srcObject if it's not already set to this stream
             if (video.srcObject !== this.stream) {
                 console.log('[WebcamTest] Assigning stream to video.srcObject');
                 video.srcObject = this.stream;
                 console.log('[WebcamTest] video.srcObject after assignment:', video.srcObject);
+                console.log('[WebcamTest] Video element properties after assignment:');
+                console.log('[WebcamTest] - video.videoWidth:', video.videoWidth);
+                console.log('[WebcamTest] - video.videoHeight:', video.videoHeight);
+                console.log('[WebcamTest] - video.readyState:', video.readyState);
             } else {
                 console.log('[WebcamTest] Stream already assigned to video.srcObject, skipping assignment');
             }
@@ -284,6 +309,8 @@ export default {
                 console.log('[WebcamTest] video.readyState:', video.readyState);
                 console.log('[WebcamTest] video.videoWidth:', video.videoWidth);
                 console.log('[WebcamTest] video.videoHeight:', video.videoHeight);
+                console.log('[WebcamTest] video.paused:', video.paused);
+                console.log('[WebcamTest] video.currentTime:', video.currentTime);
                 video.play().catch(err => {
                     console.error('[WebcamTest] Error auto-playing video:', err);
                 });
@@ -326,6 +353,8 @@ export default {
             console.log('[WebcamTest] Calling video.play()');
             video.play().then(() => {
                 console.log('[WebcamTest] video.play() succeeded');
+                console.log('[WebcamTest] video.paused after play():', video.paused);
+                console.log('[WebcamTest] video.readyState after play():', video.readyState);
             }).catch(err => {
                 console.error('[WebcamTest] Error playing video:', err);
             });
