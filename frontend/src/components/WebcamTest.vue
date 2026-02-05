@@ -768,6 +768,28 @@ export default {
             @device-changed="switchDevice"
         />
 
+        <!-- Debug: Force recreate stream button -->
+        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px">
+            <button
+                @click="forceRecreateStream"
+                style="
+                    padding: 8px 16px;
+                    background: #ff5722;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                "
+            >
+                Debug: Force Recreate Stream
+            </button>
+            <p style="margin-top: 8px; font-size: 12px; color: #666">
+                videoWidth: <strong>{{ currentVideoWidth }}</strong
+                >px
+                <span v-if="currentVideoWidth < 100" style="color: red"> (TOO SMALL!)</span>
+            </p>
+        </div>
+
         <!-- Browser Compatibility Warnings -->
         <div v-if="showCompatibilityWarnings" class="compatibility-warnings">
             <div class="warning-header">

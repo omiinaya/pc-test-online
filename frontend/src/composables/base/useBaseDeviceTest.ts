@@ -278,6 +278,9 @@ export function useBaseDeviceTest(
 
                 // Verify the stream has proper resolution
                 if (stream) {
+                    // Wait a moment for track settings to be populated
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
                     const videoTracks = stream.getVideoTracks();
                     let hasProperResolution = true;
                     videoTracks.forEach((track, i) => {
@@ -297,6 +300,8 @@ export function useBaseDeviceTest(
                         console.log(
                             '[useBaseDeviceTest] Recreating stream with force flag to get proper resolution'
                         );
+                        // Clear the stream first so the watcher triggers properly
+                        mediaStream.stream.value = null;
                         await getDeviceStream(null, true);
                     }
                 }
@@ -446,8 +451,16 @@ export function useBaseDeviceTest(
 
         // If force recreate, stop existing stream first
         if (forceRecreate && mediaStream.stream.value) {
-            console.log('[useBaseDeviceTest] Force recreating stream - stopping existing stream');
-            mediaStream.stopStream();
+            console.log(
+                '[useBaseDeviceTest] Force recreating stream - stopping existing stream completely'
+            );
+            // Stop all tracks explicitly
+            mediaStream.stream.value.getTracks().forEach(track => {
+                console.log('[useBaseDeviceTest] Stopping track:', track.label);
+                track.stop();
+            });
+            mediaStream.stream.value = null;
+            console.log('[useBaseDeviceTest] Stream set to null, will create fresh stream');
         }
 
         try {
