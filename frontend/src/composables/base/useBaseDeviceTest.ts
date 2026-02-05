@@ -126,7 +126,16 @@ export function useBaseDeviceTest(
         if (!mediaPermissions) return false;
         return mediaPermissions.permissionDenied.value || false;
     });
-    const hasActiveStream = computed(() => !!mediaStream.stream.value);
+    const hasActiveStream = computed(() => {
+        const hasStream = !!mediaStream.stream.value;
+        console.log(
+            '[useBaseDeviceTest] hasActiveStream computed:',
+            hasStream,
+            'stream:',
+            mediaStream.stream.value
+        );
+        return hasStream;
+    });
     const hasError = computed(() => {
         const hasErrorHandlingError = !!errorHandling.error.value;
         const hasEnumerationError = deviceEnumeration
@@ -159,30 +168,56 @@ export function useBaseDeviceTest(
         }
         return null;
     });
-    const showTestContent = computed(
-        () =>
+    const showTestContent = computed(() => {
+        const shouldShow =
             !hasError.value &&
             !isLoading.value &&
             hasPermission.value &&
-            (!deviceEnumeration || hasDevices.value)
-    );
+            (!deviceEnumeration || hasDevices.value);
+        console.log('[useBaseDeviceTest] showTestContent computed:', shouldShow, {
+            hasError: hasError.value,
+            isLoading: isLoading.value,
+            hasPermission: hasPermission.value,
+            hasDevices: hasDevices.value,
+        });
+        return shouldShow;
+    });
 
     /**
      * Initialize the complete test setup
      */
     const initializeTest = async (): Promise<void> => {
-        if (isInitialized.value) return;
+        console.log('[useBaseDeviceTest] initializeTest() called');
+        console.log('[useBaseDeviceTest] isInitialized:', isInitialized.value);
+
+        if (isInitialized.value) {
+            console.log('[useBaseDeviceTest] Already initialized, returning');
+            return;
+        }
 
         currentState.value = 'initializing';
         errorHandling.clearError();
 
         try {
             // First, check if devices exist at all (without permissions)
+            console.log('[useBaseDeviceTest] Checking if devices exist...');
             if (deviceEnumeration) {
+                console.log('[useBaseDeviceTest] Enumerating devices...');
                 await deviceEnumeration.enumerateDevices();
+                console.log(
+                    '[useBaseDeviceTest] Enumeration complete. hasDevices:',
+                    hasDevices.value
+                );
+                console.log(
+                    '[useBaseDeviceTest] Available devices:',
+                    availableDevices.value.length
+                );
 
                 if (!hasDevices.value) {
                     // No devices found - skip permission request and show "no devices" state
+                    console.log(
+                        '[useBaseDeviceTest] No devices found, setting state to no-devices'
+                    );
                     currentState.value = 'no-devices';
                     isInitialized.value = true;
                     return;
@@ -190,31 +225,63 @@ export function useBaseDeviceTest(
             }
 
             // Devices exist, now check permissions
+            console.log('[useBaseDeviceTest] Devices exist, checking permissions...');
             if (mediaPermissions) {
+                console.log('[useBaseDeviceTest] Initializing permissions...');
                 await mediaPermissions.initializePermissions();
+                console.log(
+                    '[useBaseDeviceTest] Permission check complete. hasPermission:',
+                    hasPermission.value
+                );
+                console.log('[useBaseDeviceTest] needsPermission:', needsPermission.value);
+                console.log('[useBaseDeviceTest] permissionBlocked:', permissionBlocked.value);
 
                 if (!hasPermission.value) {
+                    console.log(
+                        '[useBaseDeviceTest] Permission not granted, setting state to permission-required'
+                    );
                     currentState.value = 'permission-required';
                     isInitialized.value = true;
                     return;
                 }
 
-                // Permission granted, re-enumerate to get device labels
+                // Permission granted, re-enumerate to get proper labels
+                console.log(
+                    '[useBaseDeviceTest] Permission granted, re-enumerating devices for labels...'
+                );
                 if (deviceEnumeration) {
                     await deviceEnumeration.enumerateDevices();
+                    console.log(
+                        '[useBaseDeviceTest] Re-enumeration complete. Available devices with labels:',
+                        availableDevices.value.length
+                    );
                 }
             }
 
+            console.log('[useBaseDeviceTest] Setting state to ready');
             currentState.value = 'ready';
             isInitialized.value = true;
 
             // Automatically get device stream after successful initialization
+            console.log('[useBaseDeviceTest] Auto-starting device stream check...');
+            console.log('[useBaseDeviceTest] - deviceKind:', deviceKind);
+            console.log('[useBaseDeviceTest] - hasPermission:', hasPermission.value);
+            console.log('[useBaseDeviceTest] - hasDevices:', hasDevices.value);
+
             if (deviceKind && hasPermission.value && hasDevices.value) {
+                console.log('[useBaseDeviceTest] Auto-starting stream...');
                 await getDeviceStream();
+                console.log(
+                    '[useBaseDeviceTest] Auto-start complete. hasActiveStream:',
+                    hasActiveStream.value
+                );
+            } else {
+                console.log('[useBaseDeviceTest] Not auto-starting - conditions not met');
             }
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : 'Unknown initialization error';
+            console.error('[useBaseDeviceTest] Initialization error:', errorMessage);
             errorHandling.setError(`Failed to initialize ${testName}: ${errorMessage}`);
             currentState.value = 'error';
 
@@ -228,8 +295,10 @@ export function useBaseDeviceTest(
      * Request permission for the device
      */
     const requestPermission = async (): Promise<boolean> => {
+        console.log('[useBaseDeviceTest] requestPermission() called');
         // If no permissions are required, return success
         if (!mediaPermissions) {
+            console.log('[useBaseDeviceTest] No mediaPermissions required, returning true');
             return true;
         }
 
@@ -241,19 +310,30 @@ export function useBaseDeviceTest(
                     : deviceKind === 'audioinput'
                       ? { audio: true }
                       : {};
+            console.log('[useBaseDeviceTest] Requesting permission with constraints:', constraints);
 
             const streamResult = await mediaPermissions.requestPermission(constraints);
+            console.log('[useBaseDeviceTest] Permission request result:', !!streamResult);
 
             if (streamResult) {
                 // Store the stream in mediaStream composable
+                console.log('[useBaseDeviceTest] Storing stream in mediaStream');
                 mediaStream.stream.value = streamResult as MediaStream;
 
                 // Re-enumerate devices to get proper labels after permission
                 if (deviceEnumeration) {
+                    console.log(
+                        '[useBaseDeviceTest] Re-enumerating devices after permission grant...'
+                    );
                     await deviceEnumeration.enumerateDevices();
+                    console.log(
+                        '[useBaseDeviceTest] Re-enumeration complete. hasDevices:',
+                        hasDevices.value
+                    );
 
                     // Check if devices still exist after permission grant
                     if (!hasDevices.value) {
+                        console.log('[useBaseDeviceTest] No devices found after permission grant');
                         errorHandling.setError(
                             `No ${deviceType.toLowerCase()} devices found after permission grant`
                         );
@@ -261,14 +341,17 @@ export function useBaseDeviceTest(
                     }
                 }
 
+                console.log('[useBaseDeviceTest] Permission granted successfully');
                 return true;
             }
 
+            console.log('[useBaseDeviceTest] Permission request returned no stream');
             return false;
         } catch (error) {
             // Handle specific device not found error
             const errorMessage =
                 error instanceof Error ? error.message : 'Unknown permission error';
+            console.error('[useBaseDeviceTest] Permission request error:', errorMessage);
 
             if (
                 errorMessage.includes('device not found') ||

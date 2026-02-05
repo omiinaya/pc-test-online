@@ -1,13 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { PropType } from 'vue';
-import type {
-    DeviceType,
-    TestType,
-    TestStatus,
-    DeviceInfo,
-    TestResult,
-    TestConfig
-} from '@/types';
+import type { DeviceType, TestType, TestStatus, DeviceInfo, TestResult, TestConfig } from '@/types';
 
 /**
  * Vue Component Prop Type Validation Tests
@@ -22,13 +15,13 @@ describe('Vue Component Prop Types', () => {
                     deviceId: 'cam-123',
                     label: 'Webcam',
                     kind: 'videoinput',
-                    groupId: 'group-1'
+                    groupId: 'group-1',
                 } as DeviceInfo,
                 isActive: true,
                 testConfig: {
                     timeout: 30000,
-                    autoStart: true
-                } as TestConfig
+                    autoStart: true,
+                } as TestConfig,
             };
 
             expect(mockProps.testType).toBe('webcam');
@@ -46,7 +39,7 @@ describe('Vue Component Prop Types', () => {
                 testDescription: 'Test your microphone functionality',
                 icon: 'mic',
                 isActive: true,
-                showDeviceSelector: true
+                showDeviceSelector: true,
             };
 
             expect(mockProps.deviceType).toBe('microphone');
@@ -66,7 +59,7 @@ describe('Vue Component Prop Types', () => {
                 message: 'Please wait',
                 showActionButton: true,
                 actionLabel: 'Retry',
-                actionHandler: () => {}
+                actionHandler: () => {},
             };
 
             expect(mockProps.state).toBe('loading');
@@ -87,7 +80,7 @@ describe('Vue Component Prop Types', () => {
                 canReset: true,
                 onStart: () => {},
                 onStop: () => {},
-                onReset: () => {}
+                onReset: () => {},
             };
 
             expect(mockProps.testStatus).toBe('running');
@@ -107,7 +100,7 @@ describe('Vue Component Prop Types', () => {
                 description: 'Test your keyboard functionality',
                 icon: 'keyboard',
                 status: 'completed' as TestStatus,
-                showStatus: true
+                showStatus: true,
             };
 
             expect(mockProps.title).toBe('Keyboard Test');
@@ -123,25 +116,25 @@ describe('Vue Component Prop Types', () => {
             // Test that PropType is properly used for complex types
             const testTypeProp = {
                 type: String as PropType<TestType>,
-                required: true
+                required: true,
             };
 
             const deviceInfoProp = {
                 type: Object as PropType<DeviceInfo>,
-                required: false
+                required: false,
             };
 
             const testConfigProp = {
                 type: Object as PropType<TestConfig>,
-                default: () => ({})
+                default: () => ({}),
             };
 
             expect(testTypeProp.type).toBe(String);
             expect(testTypeProp.required).toBe(true);
-            
+
             expect(deviceInfoProp.type).toBe(Object);
             expect(deviceInfoProp.required).toBe(false);
-            
+
             expect(testConfigProp.type).toBe(Object);
             expect(typeof testConfigProp.default).toBe('function');
         });
@@ -149,17 +142,17 @@ describe('Vue Component Prop Types', () => {
         it('should validate enum prop types', () => {
             const statusProp = {
                 type: String as PropType<TestStatus>,
-                default: 'pending'
+                default: 'pending',
             };
 
             const stateProp = {
                 type: String as PropType<'loading' | 'success' | 'error' | 'info'>,
-                default: 'info'
+                default: 'info',
             };
 
             expect(statusProp.type).toBe(String);
             expect(statusProp.default).toBe('pending');
-            
+
             expect(stateProp.type).toBe(String);
             expect(stateProp.default).toBe('info');
         });
@@ -176,7 +169,7 @@ describe('Component Event Types', () => {
             'stop-test': () => {},
             'test-completed': (result: TestResult) => {},
             'test-failed': (error: Error) => {},
-            'device-selected': (device: DeviceInfo) => {}
+            'device-selected': (device: DeviceInfo) => {},
         };
 
         expect(typeof mockEvents['start-test']).toBe('function');
@@ -193,14 +186,14 @@ describe('Component Event Types', () => {
             timestamp: Date.now(),
             success: true,
             data: { clicks: 5 },
-            error: null
+            error: null,
         };
 
         const deviceInfo: DeviceInfo = {
             deviceId: 'mouse-1',
             label: 'USB Mouse',
             kind: 'mouse',
-            groupId: 'input-group'
+            groupId: 'input-group',
         };
 
         const error = new Error('Test failed');

@@ -439,9 +439,16 @@ export function isTestStatus(value: string): value is TestStatus {
 }
 
 export function isTestType(value: string): value is TestType {
-    return ['webcam', 'microphone', 'speakers', 'keyboard', 'mouse', 'touch', 'battery', 'testsCompleted'].includes(
-        value
-    );
+    return [
+        'webcam',
+        'microphone',
+        'speakers',
+        'keyboard',
+        'mouse',
+        'touch',
+        'battery',
+        'testsCompleted',
+    ].includes(value);
 }
 
 export function isNullable<T>(value: T | null): value is null {

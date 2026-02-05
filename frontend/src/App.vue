@@ -268,14 +268,14 @@ export default {
           );
           return;
         }
-  
+
         // Mark as switching
         this.isSwitching = true;
         console.log(`Switching from ${this.activeTest} to ${testType}`);
-  
+
         // Perform the switch immediately for good UX
         this.setActiveTest(testType);
-  
+
         // Reset switching flag after a short delay to prevent rapid switches
         setTimeout(() => {
           this.isSwitching = false;
@@ -557,7 +557,7 @@ export default {
             <h1>${this.t('app.name')} ${this.t('results.summary')}</h1>
             <div class="accent-bar"></div>
           </div>
-          
+
           <div class="summary-card">
             <div class="summary-item">
               <span class="label">Completed:</span>
@@ -590,7 +590,7 @@ export default {
                     : ''
             }
           </div>
-          
+
           <div class="table-container">
             <table class="results-table">
               <thead>
@@ -612,28 +612,28 @@ export default {
             <span class="value">${totalTime}</span>
           </div>
         </div>
-        
+
         <style>
           .pdf-content {
             background: #0d0d0d;
             color: #fff;
             padding: 0;
           }
-          
+
           .header h1 {
             font-size: 36px;
             font-weight: bold;
             margin: 0 0 8px 0;
             color: #fff;
           }
-          
+
           .accent-bar {
             height: 6px;
             background: linear-gradient(90deg, #ff6b00 0%, #ff8800 50%, #ff6b00 100%);
             border-radius: 3px;
             margin-bottom: 40px;
           }
-          
+
           .summary-card {
             background: #232326;
             border: 1px solid #404040;
@@ -644,28 +644,28 @@ export default {
             grid-template-columns: 1fr 1fr;
             gap: 16px;
           }
-          
+
           .summary-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
           }
-          
+
           .summary-item .label {
             color: #e0e0e0;
             font-size: 16px;
           }
-          
+
           .summary-item .value {
             color: #e0e0e0;
             font-size: 16px;
             font-weight: 500;
           }
-          
+
           .summary-item.passed .value {
             color: #28a745;
           }
-          
+
           .summary-item.failed .value {
             color: #dc3545;
           }
@@ -708,19 +708,19 @@ export default {
             border-radius: 6px;
             border: 1px solid rgba(241, 245, 249, 0.2);
           }
-          
+
           .table-container {
             background: #141416;
             border: 1px solid #333;
             border-radius: 8px;
             overflow: hidden;
           }
-          
+
           .results-table {
             width: 100%;
             border-collapse: collapse;
           }
-          
+
           .results-table th {
             background: #252526;
             color: #fff;
@@ -730,49 +730,49 @@ export default {
             font-size: 14px;
             border-bottom: 1px solid #444;
           }
-          
+
           .results-table td {
             padding: 12px 16px;
             border-bottom: 1px solid #333;
             font-size: 13px;
           }
-          
+
           .results-table tr:nth-child(even) {
             background: #1c1c1e;
           }
-          
+
           .test-name {
             color: #f0f0f0;
             font-weight: 500;
           }
-          
+
           .status {
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 600;
           }
-          
+
           .status-icon {
             font-size: 14px;
           }
-          
+
           .status-passed {
             color: #28a745;
           }
-          
+
           .status-failed {
             color: #dc3545;
           }
-          
+
           .status-skipped {
             color: #ffc107;
           }
-          
+
           .status-pending {
             color: #ff6b00;
           }
-          
+
           .run-count, .duration {
             color: #a0a0a0;
           }

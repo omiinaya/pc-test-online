@@ -17,8 +17,12 @@ export default {
         TouchTest: defineAsyncComponent(() => import('../components/TouchTest.vue')),
         BatteryTest: defineAsyncComponent(() => import('../components/BatteryTest.vue')),
         TestsCompleted: defineAsyncComponent(() => import('../components/TestsCompleted.vue')),
-        VisualizerContainer: defineAsyncComponent(() => import('../components/VisualizerContainer.vue')),
-        TestActionButtons: defineAsyncComponent(() => import('../components/TestActionButtons.vue')),
+        VisualizerContainer: defineAsyncComponent(
+            () => import('../components/VisualizerContainer.vue')
+        ),
+        TestActionButtons: defineAsyncComponent(
+            () => import('../components/TestActionButtons.vue')
+        ),
         TestHeader: defineAsyncComponent(() => import('../components/TestHeader.vue')),
     },
     setup() {
@@ -403,7 +407,7 @@ export default {
         },
 
         // Debounced test switching to prevent rapid component changes and lag
-        debouncedSetActiveTest: debounce(function(testType) {
+        debouncedSetActiveTest: debounce(function (testType) {
             console.log(`Switching from ${this.activeTest} to ${testType}`);
             this.setActiveTest(testType);
         }, 200),

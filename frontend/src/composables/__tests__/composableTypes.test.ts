@@ -8,7 +8,7 @@ import type {
     TestResult,
     TestConfig,
     VueRef,
-    VueComputed
+    VueComputed,
 } from '@/types';
 
 /**
@@ -27,12 +27,12 @@ describe('Composable Function Types', () => {
                 availableDevices: { value: [] as DeviceInfo[] } as VueRef<DeviceInfo[]>,
                 isLoading: { value: false } as VueRef<boolean>,
                 error: { value: null as Error | null } as VueRef<Error | null>,
-                
+
                 startTest: async () => {},
                 stopTest: () => {},
                 resetTest: () => {},
                 selectDevice: (device: DeviceInfo) => {},
-                refreshDevices: async () => {}
+                refreshDevices: async () => {},
             };
 
             expect(mockReturn.deviceType).toBe('webcam');
@@ -42,7 +42,7 @@ describe('Composable Function Types', () => {
             expect(mockReturn.availableDevices.value).toEqual([]);
             expect(mockReturn.isLoading.value).toBe(false);
             expect(mockReturn.error.value).toBeNull();
-            
+
             expect(typeof mockReturn.startTest).toBe('function');
             expect(typeof mockReturn.stopTest).toBe('function');
             expect(typeof mockReturn.resetTest).toBe('function');
@@ -57,16 +57,16 @@ describe('Composable Function Types', () => {
                 // Inherits from useBaseDeviceTest
                 deviceType: 'microphone' as DeviceType,
                 testStatus: { value: 'running' as TestStatus } as VueRef<TestStatus>,
-                
+
                 // Media-specific properties
                 mediaStream: { value: null as MediaStream | null } as VueRef<MediaStream | null>,
                 isStreamActive: { value: false } as VueRef<boolean>,
                 streamError: { value: null as Error | null } as VueRef<Error | null>,
-                
+
                 // Media-specific methods
                 startMediaStream: async () => {},
                 stopMediaStream: () => {},
-                toggleStream: async () => {}
+                toggleStream: async () => {},
             };
 
             expect(mockReturn.deviceType).toBe('microphone');
@@ -74,7 +74,7 @@ describe('Composable Function Types', () => {
             expect(mockReturn.mediaStream.value).toBeNull();
             expect(mockReturn.isStreamActive.value).toBe(false);
             expect(mockReturn.streamError.value).toBeNull();
-            
+
             expect(typeof mockReturn.startMediaStream).toBe('function');
             expect(typeof mockReturn.stopMediaStream).toBe('function');
             expect(typeof mockReturn.toggleStream).toBe('function');
@@ -87,17 +87,17 @@ describe('Composable Function Types', () => {
                 // Inherits from useBaseDeviceTest
                 deviceType: 'keyboard' as DeviceType,
                 testStatus: { value: 'completed' as TestStatus } as VueRef<TestStatus>,
-                
+
                 // Input-specific properties
                 inputEvents: { value: [] as any[] } as VueRef<any[]>,
                 isRecording: { value: false } as VueRef<boolean>,
                 recordedData: { value: {} as Record<string, any> } as VueRef<Record<string, any>>,
-                
+
                 // Input-specific methods
                 startRecording: () => {},
                 stopRecording: () => {},
                 clearRecordedData: () => {},
-                simulateInput: (event: any) => {}
+                simulateInput: (event: any) => {},
             };
 
             expect(mockReturn.deviceType).toBe('keyboard');
@@ -105,7 +105,7 @@ describe('Composable Function Types', () => {
             expect(mockReturn.inputEvents.value).toEqual([]);
             expect(mockReturn.isRecording.value).toBe(false);
             expect(mockReturn.recordedData.value).toEqual({});
-            
+
             expect(typeof mockReturn.startRecording).toBe('function');
             expect(typeof mockReturn.stopRecording).toBe('function');
             expect(typeof mockReturn.clearRecordedData).toBe('function');
@@ -120,17 +120,17 @@ describe('Composable Function Types', () => {
                 loadingDevices: { value: false } as VueRef<boolean>,
                 hasDevices: { value: false } as VueComputed<boolean>,
                 error: { value: null as Error | null } as VueRef<Error | null>,
-                
+
                 refreshDevices: async () => {},
                 getDevicesByKind: (kind: string) => [] as DeviceInfo[],
-                getDeviceById: (deviceId: string) => null as DeviceInfo | null
+                getDeviceById: (deviceId: string) => null as DeviceInfo | null,
             };
 
             expect(mockReturn.availableDevices.value).toEqual([]);
             expect(mockReturn.loadingDevices.value).toBe(false);
             expect(mockReturn.hasDevices.value).toBe(false);
             expect(mockReturn.error.value).toBeNull();
-            
+
             expect(typeof mockReturn.refreshDevices).toBe('function');
             expect(typeof mockReturn.getDevicesByKind).toBe('function');
             expect(typeof mockReturn.getDeviceById).toBe('function');
@@ -142,18 +142,18 @@ describe('Composable Function Types', () => {
                 completedTests: { value: 0 } as VueComputed<number>,
                 passedTests: { value: 0 } as VueComputed<number>,
                 failedTests: { value: 0 } as VueComputed<number>,
-                
+
                 addTestResult: (result: TestResult) => {},
                 clearResults: () => {},
                 getResultsByType: (testType: TestType) => [] as TestResult[],
-                exportResults: () => '{}'
+                exportResults: () => '{}',
             };
 
             expect(mockReturn.testResults.value).toEqual([]);
             expect(mockReturn.completedTests.value).toBe(0);
             expect(mockReturn.passedTests.value).toBe(0);
             expect(mockReturn.failedTests.value).toBe(0);
-            
+
             expect(typeof mockReturn.addTestResult).toBe('function');
             expect(typeof mockReturn.clearResults).toBe('function');
             expect(typeof mockReturn.getResultsByType).toBe('function');
@@ -166,18 +166,18 @@ describe('Composable Function Types', () => {
                 testProgress: { value: 0 } as VueRef<number>,
                 isTestRunning: { value: false } as VueRef<boolean>,
                 testTimeout: { value: 30000 } as VueRef<number>,
-                
+
                 startTest: (testType: TestType) => {},
                 completeTest: (success: boolean, data?: any) => {},
                 failTest: (error: Error) => {},
-                resetTestState: () => {}
+                resetTestState: () => {},
             };
 
             expect(mockReturn.currentTest.value).toBeNull();
             expect(mockReturn.testProgress.value).toBe(0);
             expect(mockReturn.isTestRunning.value).toBe(false);
             expect(mockReturn.testTimeout.value).toBe(30000);
-            
+
             expect(typeof mockReturn.startTest).toBe('function');
             expect(typeof mockReturn.completeTest).toBe('function');
             expect(typeof mockReturn.failTest).toBe('function');
@@ -192,12 +192,12 @@ describe('Composable Function Types', () => {
                 testStatus: { value: 'pending' as TestStatus },
                 testResults: { value: [] as TestResult[] },
                 isLoading: { value: false },
-                error: { value: null as Error | null }
+                error: { value: null as Error | null },
             };
 
             const expectedMediaTestProps = {
                 mediaStream: { value: null as MediaStream | null },
-                isStreamActive: { value: false }
+                isStreamActive: { value: false },
             };
 
             expect(expectedBaseTestProps.testStatus.value).toBe('pending');
@@ -213,7 +213,7 @@ describe('Composable Function Types', () => {
                     timestamp: Date.now(),
                     success: true,
                     data: { resolution: '1920x1080' },
-                    error: null
+                    error: null,
                 };
             };
 

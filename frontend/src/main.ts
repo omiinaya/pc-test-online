@@ -51,7 +51,7 @@ try {
         `[${DEBUG_ID}] CRITICAL: App mount failed at ${new Date().toISOString()}`,
         mountError
     );
-    
+
     if (mountError instanceof Error) {
         console.error(`[${DEBUG_ID}] Mount error details:`, {
             message: mountError.message,

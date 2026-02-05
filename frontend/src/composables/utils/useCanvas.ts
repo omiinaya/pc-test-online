@@ -32,7 +32,12 @@ interface CanvasContext {
 export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null> = ref(null)): CanvasContext {
     const { addEventListener } = useEventListeners();
     const context: Ref<CanvasRenderingContext2D | null> = ref(null);
-    const canvasSize: Ref<CanvasSize> = ref({ width: 0, height: 0, displayWidth: 0, displayHeight: 0 });
+    const canvasSize: Ref<CanvasSize> = ref({
+        width: 0,
+        height: 0,
+        displayWidth: 0,
+        displayHeight: 0,
+    });
 
     /**
      * Initialize canvas context and size

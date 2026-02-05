@@ -492,9 +492,9 @@ export function usePerformance() {
         const history: Array<{ timestamp: number; usage: number }> = [];
 
         // Get historical memory data from performance entries if available
-        const memoryEntries = performance.getEntriesByType('measure').filter(entry =>
-            entry.name.startsWith('memory-')
-        );
+        const memoryEntries = performance
+            .getEntriesByType('measure')
+            .filter(entry => entry.name.startsWith('memory-'));
 
         memoryEntries.forEach(entry => {
             const usage = parseFloat(entry.name.split('-')[1] || '0') || 0;

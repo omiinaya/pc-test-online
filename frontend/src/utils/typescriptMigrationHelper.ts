@@ -30,7 +30,6 @@ export interface JavaScriptFunction {
 }
 
 export class TypeScriptMigrationHelper {
-
     /**
      * Migrates a JavaScript file to TypeScript
      */
@@ -42,7 +41,7 @@ export class TypeScriptMigrationHelper {
             errors: [],
             originalLineCount: 0,
             newLineCount: 0,
-            typeCoverage: 0
+            typeCoverage: 0,
         };
 
         try {
@@ -55,7 +54,7 @@ export class TypeScriptMigrationHelper {
             result.originalLineCount = content.split('\n').length;
 
             let migratedContent = content;
-            
+
             // Convert .js extension to .ts in imports
             if (options.fixImports) {
                 migratedContent = this.fixImportExtensions(migratedContent);
@@ -69,9 +68,8 @@ export class TypeScriptMigrationHelper {
             // Convert to TypeScript
             migratedContent = this.convertToTypeScript(migratedContent);
 
-            const outputPath = options.outputFile || 
-                options.targetFile.replace(/\.js$/, '.ts');
-            
+            const outputPath = options.outputFile || options.targetFile.replace(/\.js$/, '.ts');
+
             // Ensure directory exists
             const outputDir = dirname(outputPath);
             if (!existsSync(outputDir)) {
@@ -81,18 +79,20 @@ export class TypeScriptMigrationHelper {
 
             writeFileSync(outputPath, migratedContent, 'utf-8');
             result.newLineCount = migratedContent.split('\n').length;
-            
+
             // Calculate type coverage (simplified)
             const totalFunctions = this.countFunctions(migratedContent);
             const typedFunctions = this.countTypedFunctions(migratedContent);
-            result.typeCoverage = totalFunctions > 0 ? (typedFunctions / totalFunctions) * 100 : 100;
-            
+            result.typeCoverage =
+                totalFunctions > 0 ? (typedFunctions / totalFunctions) * 100 : 100;
+
             result.success = true;
             result.changes.push(`Migrated ${options.targetFile} to ${outputPath}`);
             result.changes.push(`Type coverage: ${result.typeCoverage.toFixed(1)}%`);
-
         } catch (error) {
-            result.errors.push(`Migration failed: ${error instanceof Error ? error.message : String(error)}`);
+            result.errors.push(
+                `Migration failed: ${error instanceof Error ? error.message : String(error)}`
+            );
         }
 
         return result;
@@ -102,10 +102,7 @@ export class TypeScriptMigrationHelper {
      * Fixes import extensions from .js to .ts
      */
     private static fixImportExtensions(content: string): string {
-        return content.replace(
-            /from\s+['"](\.\.?\/.*?)\.js(['"])/g,
-            'from \'$1.ts$2'
-        );
+        return content.replace(/from\s+['"](\.\.?\/.*?)\.js(['"])/g, "from '$1.ts$2");
     }
 
     /**
@@ -135,13 +132,10 @@ export class TypeScriptMigrationHelper {
         );
 
         // Add types to refs
-        result = result.replace(
-            /const\s+(\w+)\s*=\s*ref\(([^)]*)\)/g,
-            (_match, varName, value) => {
-                const inferredType = this.inferTypeFromValue(value);
-                return `const ${varName} = ref<${inferredType}>(${value})`;
-            }
-        );
+        result = result.replace(/const\s+(\w+)\s*=\s*ref\(([^)]*)\)/g, (_match, varName, value) => {
+            const inferredType = this.inferTypeFromValue(value);
+            return `const ${varName} = ref<${inferredType}>(${value})`;
+        });
 
         return result;
     }
@@ -150,7 +144,8 @@ export class TypeScriptMigrationHelper {
      * Adds types to function parameters
      */
     private static addParameterTypes(params: string): string {
-        return params.split(',')
+        return params
+            .split(',')
             .map(param => param.trim())
             .map(param => {
                 if (!param || param.includes(':')) return param;
@@ -173,7 +168,7 @@ export class TypeScriptMigrationHelper {
      */
     private static inferTypeFromValue(value: string): string {
         value = value.trim();
-        
+
         if (value === 'null') return 'null';
         if (value === 'undefined') return 'undefined';
         if (value === 'true' || value === 'false') return 'boolean';
@@ -182,7 +177,7 @@ export class TypeScriptMigrationHelper {
         if (value.startsWith('[')) return 'any[]';
         if (value.startsWith('{')) return 'Record<string, unknown>';
         if (value.startsWith('new')) return this.inferTypeFromConstructor(value);
-        
+
         return 'unknown';
     }
 
@@ -194,7 +189,7 @@ export class TypeScriptMigrationHelper {
         if (value.includes('new Map')) return 'Map<unknown, unknown>';
         if (value.includes('new Set')) return 'Set<unknown>';
         if (value.includes('new Error')) return 'Error';
-        
+
         return 'unknown';
     }
 
@@ -203,7 +198,11 @@ export class TypeScriptMigrationHelper {
      */
     private static inferParameterType(paramName: string, defaultValue: string | undefined): string {
         // Infer from parameter name patterns
-        if (paramName.includes('Handler') || paramName.includes('Callback') || paramName.includes('Fn')) {
+        if (
+            paramName.includes('Handler') ||
+            paramName.includes('Callback') ||
+            paramName.includes('Fn')
+        ) {
             return 'Function';
         }
         if (paramName.includes('Event')) {
@@ -215,13 +214,25 @@ export class TypeScriptMigrationHelper {
         if (paramName.includes('Array') || paramName.endsWith('s')) {
             return 'any[]';
         }
-        if (paramName.includes('Number') || paramName.includes('Count') || paramName.includes('Index')) {
+        if (
+            paramName.includes('Number') ||
+            paramName.includes('Count') ||
+            paramName.includes('Index')
+        ) {
             return 'number';
         }
-        if (paramName.includes('String') || paramName.includes('Text') || paramName.includes('Message')) {
+        if (
+            paramName.includes('String') ||
+            paramName.includes('Text') ||
+            paramName.includes('Message')
+        ) {
             return 'string';
         }
-        if (paramName.includes('Boolean') || paramName.includes('Is') || paramName.includes('Has')) {
+        if (
+            paramName.includes('Boolean') ||
+            paramName.includes('Is') ||
+            paramName.includes('Has')
+        ) {
             return 'boolean';
         }
 
@@ -256,7 +267,8 @@ export class TypeScriptMigrationHelper {
      * Counts total functions in content
      */
     private static countFunctions(content: string): number {
-        const functionRegex = /(function\s+\w+|const\s+\w+\s*=\s*\([^)]*\)\s*=>|const\s+\w+\s*=\s*function)/g;
+        const functionRegex =
+            /(function\s+\w+|const\s+\w+\s*=\s*\([^)]*\)\s*=>|const\s+\w+\s*=\s*function)/g;
         return (content.match(functionRegex) || []).length;
     }
 
@@ -264,20 +276,26 @@ export class TypeScriptMigrationHelper {
      * Counts typed functions in content
      */
     private static countTypedFunctions(content: string): number {
-        const typedFunctionRegex = /(function\s+\w+\([^)]*\)\s*:\s*\w+|const\s+\w+\s*=\s*\([^)]*\)\s*:\s*\w+\s*=>)/g;
+        const typedFunctionRegex =
+            /(function\s+\w+\([^)]*\)\s*:\s*\w+|const\s+\w+\s*=\s*\([^)]*\)\s*:\s*\w+\s*=>)/g;
         return (content.match(typedFunctionRegex) || []).length;
     }
 
     /**
      * Batch migrates multiple files
      */
-    static batchMigrate(files: string[], options: Partial<TypeScriptMigrationOptions> = {}): MigrationResult[] {
-        return files.map(file => this.migrateFile({
-            targetFile: file,
-            addTypes: true,
-            fixImports: true,
-            ...options
-        }));
+    static batchMigrate(
+        files: string[],
+        options: Partial<TypeScriptMigrationOptions> = {}
+    ): MigrationResult[] {
+        return files.map(file =>
+            this.migrateFile({
+                targetFile: file,
+                addTypes: true,
+                fixImports: true,
+                ...options,
+            })
+        );
     }
 
     /**

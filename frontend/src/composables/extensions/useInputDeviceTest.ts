@@ -79,7 +79,11 @@ export function useInputDeviceTest(
     /**
      * Record an input event
      */
-    const recordInputEvent = (type: string, data: Record<string, unknown>, deviceId?: string): void => {
+    const recordInputEvent = (
+        type: string,
+        data: Record<string, unknown>,
+        deviceId?: string
+    ): void => {
         const event: InputEvent = {
             type,
             timestamp: Date.now(),
@@ -250,7 +254,10 @@ export function useInputDeviceTest(
     /**
      * Enhanced fail test for input devices
      */
-    const failInputTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
+    const failInputTest = (
+        reason: string = '',
+        additionalData: Record<string, unknown> = {}
+    ): void => {
         stopInputTest();
         baseTest.failTest(reason, {
             eventCount: eventCount.value,
@@ -262,7 +269,10 @@ export function useInputDeviceTest(
     /**
      * Enhanced skip test for input devices
      */
-    const skipInputTest = (reason: string = '', additionalData: Record<string, unknown> = {}): void => {
+    const skipInputTest = (
+        reason: string = '',
+        additionalData: Record<string, unknown> = {}
+    ): void => {
         stopInputTest();
         baseTest.skipTest(reason, {
             eventCount: eventCount.value,

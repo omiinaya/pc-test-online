@@ -12,11 +12,13 @@ export default defineConfig({
         vue(),
         WindiCSS(),
         // Bundle analyzer for production builds
-        process.env.ANALYZE === 'true' ? visualizer({
-            open: true,
-            gzipSize: true,
-            brotliSize: true,
-        }) as PluginOption : null,
+        process.env.ANALYZE === 'true'
+            ? (visualizer({
+                  open: true,
+                  gzipSize: true,
+                  brotliSize: true,
+              }) as PluginOption)
+            : null,
     ].filter(Boolean) as PluginOption[],
 
     resolve: {
@@ -89,7 +91,7 @@ export default defineConfig({
                 },
 
                 // Optimize chunk names
-                chunkFileNames: (chunkInfo) => {
+                chunkFileNames: chunkInfo => {
                     const facadeModuleId = chunkInfo.facadeModuleId;
                     if (facadeModuleId) {
                         const fileName = facadeModuleId
@@ -102,7 +104,7 @@ export default defineConfig({
                 },
 
                 // Optimize asset names
-                assetFileNames: (assetInfo) => {
+                assetFileNames: assetInfo => {
                     const extType = assetInfo.name?.split('.').pop() || '';
                     const assetMap: Record<string, string> = {
                         png: 'images',
@@ -123,19 +125,22 @@ export default defineConfig({
         },
 
         // Terser optimization - only strip logs in production
-        terserOptions: process.env.NODE_ENV === 'production' ? {
-            compress: {
-                drop_console: true,
-                drop_debugger: true,
-                pure_funcs: ['console.log', 'console.info', 'console.debug'],
-            },
-            mangle: {
-                safari10: true,
-            },
-            format: {
-                safari10: true,
-            },
-        } : undefined,
+        terserOptions:
+            process.env.NODE_ENV === 'production'
+                ? {
+                      compress: {
+                          drop_console: true,
+                          drop_debugger: true,
+                          pure_funcs: ['console.log', 'console.info', 'console.debug'],
+                      },
+                      mangle: {
+                          safari10: true,
+                      },
+                      format: {
+                          safari10: true,
+                      },
+                  }
+                : undefined,
     },
 
     // Optimization
@@ -157,7 +162,15 @@ export default defineConfig({
     },
 
     // Asset optimization
-    assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg', '**/*.webp', '**/*.ico'],
+    assetsInclude: [
+        '**/*.png',
+        '**/*.jpg',
+        '**/*.jpeg',
+        '**/*.gif',
+        '**/*.svg',
+        '**/*.webp',
+        '**/*.ico',
+    ],
 
     // Define global constants
     define: {

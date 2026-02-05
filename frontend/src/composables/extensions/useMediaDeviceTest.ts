@@ -131,18 +131,34 @@ export function useMediaDeviceTest(
 
     // Enhanced initialization for media devices
     const initializeMediaTest = async (): Promise<void> => {
-        if (baseTest.isInitialized.value) return;
+        console.log('[useMediaDeviceTest] initializeMediaTest() called');
+        console.log('[useMediaDeviceTest] isInitialized:', baseTest.isInitialized.value);
+
+        if (baseTest.isInitialized.value) {
+            console.log('[useMediaDeviceTest] Already initialized, skipping');
+            return;
+        }
 
         baseTest.currentState.value = 'initializing';
         baseTest.errorHandling.clearError();
 
         try {
             // First, check if devices exist at all
+            console.log('[useMediaDeviceTest] Checking if devices exist...');
             if (baseTest.deviceEnumeration) {
+                console.log('[useMediaDeviceTest] Enumerating devices...');
                 await baseTest.deviceEnumeration.enumerateDevices();
+                console.log('[useMediaDeviceTest] Devices found:', baseTest.hasDevices.value);
+                console.log(
+                    '[useMediaDeviceTest] Available devices count:',
+                    baseTest.availableDevices.value.length
+                );
 
                 if (!baseTest.hasDevices.value) {
                     // No devices found
+                    console.log(
+                        '[useMediaDeviceTest] No devices found, setting state to no-devices'
+                    );
                     baseTest.currentState.value = 'no-devices';
                     baseTest.isInitialized.value = true;
                     return;
@@ -150,35 +166,65 @@ export function useMediaDeviceTest(
             }
 
             // Devices exist, now check permissions
+            console.log('[useMediaDeviceTest] Checking permissions...');
             if (baseTest.mediaPermissions) {
+                console.log('[useMediaDeviceTest] Initializing permissions...');
                 await baseTest.mediaPermissions.initializePermissions();
+                console.log(
+                    '[useMediaDeviceTest] Permission check complete. hasPermission:',
+                    baseTest.hasPermission.value
+                );
 
                 if (!baseTest.hasPermission.value) {
+                    console.log(
+                        '[useMediaDeviceTest] Permission not granted, setting state to permission-required'
+                    );
                     baseTest.currentState.value = 'permission-required';
                     baseTest.isInitialized.value = true;
                     return;
                 }
 
                 // Permission granted, re-enumerate to get proper labels
+                console.log(
+                    '[useMediaDeviceTest] Permission granted, re-enumerating devices for labels...'
+                );
                 if (baseTest.deviceEnumeration) {
                     await baseTest.deviceEnumeration.enumerateDevices();
+                    console.log(
+                        '[useMediaDeviceTest] Re-enumeration complete. Available devices:',
+                        baseTest.availableDevices.value.length
+                    );
                 }
             }
 
+            console.log('[useMediaDeviceTest] Setting state to ready');
             baseTest.currentState.value = 'ready';
             baseTest.isInitialized.value = true;
 
             // Automatically get device stream after successful initialization
+            console.log('[useMediaDeviceTest] Checking if should auto-start stream...');
+            console.log('[useMediaDeviceTest] - deviceKind:', baseOptions.deviceKind);
+            console.log('[useMediaDeviceTest] - hasPermission:', baseTest.hasPermission.value);
+            console.log('[useMediaDeviceTest] - hasDevices:', baseTest.hasDevices.value);
+
             if (
                 baseOptions.deviceKind &&
                 baseTest.hasPermission.value &&
                 baseTest.hasDevices.value
             ) {
+                console.log('[useMediaDeviceTest] Auto-starting device stream...');
                 await baseTest.getDeviceStream();
+                console.log(
+                    '[useMediaDeviceTest] Auto-start complete. hasActiveStream:',
+                    baseTest.hasActiveStream.value
+                );
+            } else {
+                console.log('[useMediaDeviceTest] Not auto-starting stream - conditions not met');
             }
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : 'Unknown initialization error';
+            console.error('[useMediaDeviceTest] Initialization error:', errorMessage);
             baseTest.errorHandling.setError(
                 `Failed to initialize ${baseOptions.testName}: ${errorMessage}`
             );

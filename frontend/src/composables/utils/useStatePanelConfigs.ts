@@ -19,8 +19,15 @@ interface StatePanelConfigs {
 interface UseStatePanelConfigsReturn {
     configs: StatePanelConfigs;
     getConfig: (stateName: string, customProps?: Record<string, unknown>) => StatePanelConfig;
-    getConfigForDevice: (stateName: string, customDeviceType: string, customProps?: Record<string, unknown>) => StatePanelConfig;
-    getErrorConfig: (error: unknown, customProps?: Record<string, unknown>) => StatePanelConfig | null;
+    getConfigForDevice: (
+        stateName: string,
+        customDeviceType: string,
+        customProps?: Record<string, unknown>
+    ) => StatePanelConfig;
+    getErrorConfig: (
+        error: unknown,
+        customProps?: Record<string, unknown>
+    ) => StatePanelConfig | null;
 }
 
 /**
@@ -112,7 +119,10 @@ export function useStatePanelConfigs(deviceType = 'device'): UseStatePanelConfig
     /**
      * Get configuration for a specific state
      */
-    const getConfig = (stateName: string, customProps: Record<string, unknown> = {}): StatePanelConfig => {
+    const getConfig = (
+        stateName: string,
+        customProps: Record<string, unknown> = {}
+    ): StatePanelConfig => {
         const baseConfig = configs[stateName];
         if (!baseConfig) {
             console.warn(`StatePanel config '${stateName}' not found`);
@@ -128,7 +138,11 @@ export function useStatePanelConfigs(deviceType = 'device'): UseStatePanelConfig
     /**
      * Get configuration with custom device type
      */
-    const getConfigForDevice = (stateName: string, customDeviceType: string, customProps: Record<string, unknown> = {}): StatePanelConfig => {
+    const getConfigForDevice = (
+        stateName: string,
+        customDeviceType: string,
+        customProps: Record<string, unknown> = {}
+    ): StatePanelConfig => {
         const baseConfig = configs[stateName];
         if (!baseConfig) {
             console.warn(`StatePanel config '${stateName}' not found`);
@@ -154,7 +168,10 @@ export function useStatePanelConfigs(deviceType = 'device'): UseStatePanelConfig
     /**
      * Get error configuration based on error type
      */
-    const getErrorConfig = (error: unknown, customProps: Record<string, unknown> = {}): StatePanelConfig | null => {
+    const getErrorConfig = (
+        error: unknown,
+        customProps: Record<string, unknown> = {}
+    ): StatePanelConfig | null => {
         if (!error) return null;
 
         const errorString = error.toString().toLowerCase();

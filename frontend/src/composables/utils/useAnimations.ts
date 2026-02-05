@@ -56,10 +56,7 @@ export function useAnimations() {
     /**
      * Create a delayed animation with automatic cleanup
      */
-    const createDelayedAnimation = (
-        callback: FrameRequestCallback,
-        delay = 0
-    ): (() => void) => {
+    const createDelayedAnimation = (callback: FrameRequestCallback, delay = 0): (() => void) => {
         const timeoutId = setTimeout(() => {
             const animId = requestAnimationFrame(callback);
             runningAnimations.value.add(animId);
@@ -120,7 +117,10 @@ export function useAnimations() {
 export function useCheckmarkAnimation() {
     const isAnimating: Ref<boolean> = ref(false);
 
-    const animateCheckmark = (element: HTMLElement | SVGElement | null, options: CheckmarkAnimationOptions = {}) => {
+    const animateCheckmark = (
+        element: HTMLElement | SVGElement | null,
+        options: CheckmarkAnimationOptions = {}
+    ) => {
         const { duration = 600, delay = 0, onComplete = () => {} } = options;
 
         if (!element) return;
@@ -185,5 +185,6 @@ export const easingFunctions = {
     easeInOutQuad: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
     easeInCubic: (t: number) => t * t * t,
     easeOutCubic: (t: number) => --t * t * t + 1,
-    easeInOutCubic: (t: number) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+    easeInOutCubic: (t: number) =>
+        t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
 };

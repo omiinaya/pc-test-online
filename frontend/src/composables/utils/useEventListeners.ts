@@ -133,18 +133,24 @@ export function usePointerEvents() {
         const { onMouseDown, onMouseUp, onMouseMove, onWheel, onContextMenu, onAuxClick } =
             handlers;
 
-        if (onMouseDown) addPointerListener('mousedown', onMouseDown as EventListenerOrEventListenerObject);
-        if (onMouseUp) addPointerListener('mouseup', onMouseUp as EventListenerOrEventListenerObject);
-        if (onMouseMove) addPointerListener('mousemove', onMouseMove as EventListenerOrEventListenerObject);
+        if (onMouseDown)
+            addPointerListener('mousedown', onMouseDown as EventListenerOrEventListenerObject);
+        if (onMouseUp)
+            addPointerListener('mouseup', onMouseUp as EventListenerOrEventListenerObject);
+        if (onMouseMove)
+            addPointerListener('mousemove', onMouseMove as EventListenerOrEventListenerObject);
         if (onWheel) addPointerListener('wheel', onWheel as EventListenerOrEventListenerObject);
-        if (onContextMenu) addPointerListener('contextmenu', onContextMenu as EventListenerOrEventListenerObject);
-        if (onAuxClick) addPointerListener('auxclick', onAuxClick as EventListenerOrEventListenerObject);
+        if (onContextMenu)
+            addPointerListener('contextmenu', onContextMenu as EventListenerOrEventListenerObject);
+        if (onAuxClick)
+            addPointerListener('auxclick', onAuxClick as EventListenerOrEventListenerObject);
     };
 
     const addKeyboardListeners = (handlers: KeyboardEventHandlers = {}) => {
         const { onKeyDown, onKeyUp } = handlers;
 
-        if (onKeyDown) addPointerListener('keydown', onKeyDown as EventListenerOrEventListenerObject);
+        if (onKeyDown)
+            addPointerListener('keydown', onKeyDown as EventListenerOrEventListenerObject);
         if (onKeyUp) addPointerListener('keyup', onKeyUp as EventListenerOrEventListenerObject);
     };
 
