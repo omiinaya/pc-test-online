@@ -318,6 +318,22 @@ export default {
                         kind: track.kind,
                         id: track.id,
                     });
+
+                    // Log track constraints and settings
+                    try {
+                        const constraints = track.getConstraints();
+                        const settings = track.getSettings();
+                        console.log(`[WebcamTest] Video track ${index} constraints:`, constraints);
+                        console.log(`[WebcamTest] Video track ${index} settings:`, settings);
+                        console.log(`[WebcamTest] Video track ${index} width:`, settings.width);
+                        console.log(`[WebcamTest] Video track ${index} height:`, settings.height);
+                        console.log(
+                            `[WebcamTest] Video track ${index} frameRate:`,
+                            settings.frameRate
+                        );
+                    } catch (e) {
+                        console.warn('[WebcamTest] Could not get track constraints/settings:', e);
+                    }
                 });
             } else {
                 console.log('[WebcamTest] No stream available');
@@ -352,6 +368,17 @@ export default {
             console.log('[WebcamTest] - video.autoplay:', video.autoplay);
             console.log('[WebcamTest] - video.playsInline:', video.playsInline);
             console.log('[WebcamTest] - video.classList:', video.classList.toString());
+            console.log('[WebcamTest] - video.style.display:', video.style.display);
+            console.log('[WebcamTest] - video.style.visibility:', video.style.visibility);
+            console.log('[WebcamTest] - video.offsetWidth:', video.offsetWidth);
+            console.log('[WebcamTest] - video.offsetHeight:', video.offsetHeight);
+
+            // Check computed styles
+            const computedStyle = window.getComputedStyle(video);
+            console.log('[WebcamTest] - computed display:', computedStyle.display);
+            console.log('[WebcamTest] - computed visibility:', computedStyle.visibility);
+            console.log('[WebcamTest] - computed opacity:', computedStyle.opacity);
+            console.log('[WebcamTest] - computed filter:', computedStyle.filter);
 
             // Only set srcObject if it's not already set to this stream
             if (video.srcObject !== this.stream) {
@@ -388,7 +415,9 @@ export default {
                             'enabled:',
                             track.enabled,
                             'readyState:',
-                            track.readyState
+                            track.readyState,
+                            'muted:',
+                            track.muted
                         );
                     });
                 }
@@ -452,10 +481,59 @@ export default {
                     console.log('[WebcamTest] video.videoWidth after play():', video.videoWidth);
                     console.log('[WebcamTest] video.videoHeight after play():', video.videoHeight);
                     this.logStateValues('after play() success');
+
+                    // Start monitoring video frames
+                    this.startVideoFrameCheck(video);
                 })
                 .catch(err => {
                     console.error('[WebcamTest] Error playing video:', err);
                 });
+        },
+
+        // New method to periodically check if video is actually showing frames
+        startVideoFrameCheck(video) {
+            console.log('[WebcamTest] Starting video frame check');
+            let lastCurrentTime = video.currentTime;
+            let checkCount = 0;
+
+            const checkFrame = () => {
+                checkCount++;
+                const currentTime = video.currentTime;
+                const timeDiff = currentTime - lastCurrentTime;
+
+                console.log(`[WebcamTest] Frame check #${checkCount}:`);
+                console.log(`[WebcamTest] - currentTime: ${currentTime}`);
+                console.log(`[WebcamTest] - timeDiff: ${timeDiff}`);
+                console.log(`[WebcamTest] - videoWidth: ${video.videoWidth}`);
+                console.log(`[WebcamTest] - videoHeight: ${video.videoHeight}`);
+                console.log(`[WebcamTest] - readyState: ${video.readyState}`);
+                console.log(`[WebcamTest] - paused: ${video.paused}`);
+                console.log(`[WebcamTest] - ended: ${video.ended}`);
+                console.log(`[WebcamTest] - networkState: ${video.networkState}`);
+
+                if (video.srcObject) {
+                    const tracks = video.srcObject.getVideoTracks();
+                    tracks.forEach((track, i) => {
+                        console.log(
+                            `[WebcamTest] Track ${i} - enabled: ${track.enabled}, muted: ${track.muted}, readyState: ${track.readyState}`
+                        );
+                    });
+                }
+
+                if (timeDiff > 0) {
+                    console.log('[WebcamTest] ✓ Video is playing - time is advancing');
+                } else if (checkCount > 3) {
+                    console.log('[WebcamTest] ✗ Video appears stuck - time not advancing');
+                }
+
+                lastCurrentTime = currentTime;
+
+                if (checkCount < 10) {
+                    setTimeout(checkFrame, 1000);
+                }
+            };
+
+            setTimeout(checkFrame, 1000);
         },
 
         // Test completion methods
