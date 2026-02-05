@@ -84,7 +84,9 @@ export function useBaseDeviceTest(
     } = options;
 
     // Initialize core composables
-    const deviceEnumeration = deviceKind ? useDeviceEnumeration(deviceKind, deviceType as DeviceType) : null;
+    const deviceEnumeration = deviceKind
+        ? useDeviceEnumeration(deviceKind, deviceType as DeviceType)
+        : null;
     const mediaPermissions = permissionType
         ? useMediaPermissions(deviceType as DeviceType, permissionType)
         : null;
@@ -289,7 +291,7 @@ export function useBaseDeviceTest(
         forceRecreate: boolean = false
     ): Promise<MediaStream | null> => {
         console.log('[useBaseDeviceTest] getDeviceStream() called, forceRecreate:', forceRecreate);
-        
+
         // Create default constraints if none provided
         if (!constraints) {
             if (deviceKind === 'videoinput') {
@@ -315,16 +317,29 @@ export function useBaseDeviceTest(
             // Check if we already have a valid stream with same constraints
             if (!forceRecreate && mediaStream.stream.value) {
                 const existingTracks = mediaStream.stream.value.getTracks();
-                const hasVideo = deviceKind === 'videoinput' ? existingTracks.some(t => t.kind === 'video') : true;
-                const hasAudio = deviceKind === 'audioinput' ? existingTracks.some(t => t.kind === 'audio') : true;
-                
+                const hasVideo =
+                    deviceKind === 'videoinput'
+                        ? existingTracks.some(
+                              t => t.kind === 'video' && !t.muted && t.readyState === 'live'
+                          )
+                        : true;
+                const hasAudio =
+                    deviceKind === 'audioinput'
+                        ? existingTracks.some(
+                              t => t.kind === 'audio' && !t.muted && t.readyState === 'live'
+                          )
+                        : true;
+
                 if (hasVideo && hasAudio) {
                     console.log('[useBaseDeviceTest] Reusing existing stream');
                     currentState.value = 'streaming';
                     return mediaStream.stream.value;
                 }
+                console.log(
+                    '[useBaseDeviceTest] Existing stream has muted or ended tracks, creating new stream'
+                );
             }
-            
+
             console.log('[useBaseDeviceTest] Creating new stream');
             const stream = await mediaStream.createStream(constraints);
 
