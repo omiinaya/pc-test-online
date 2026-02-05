@@ -42,14 +42,37 @@ export function useMediaDeviceTest(
         try {
             const constraints =
                 baseOptions.deviceKind === 'videoinput'
-                    ? { video: true }
+                    ? {
+                          video: {
+                              width: { min: 320, ideal: 1280 },
+                              height: { min: 240, ideal: 720 },
+                          },
+                      }
                     : baseOptions.deviceKind === 'audioinput'
                       ? { audio: true }
                       : {};
 
+            console.log(
+                '[useMediaDeviceTest] Requesting permission with constraints:',
+                constraints
+            );
             const stream = await baseTest.mediaPermissions.requestPermission(constraints);
 
             if (stream) {
+                // Log track details
+                const videoTracks = stream.getVideoTracks();
+                console.log(
+                    '[useMediaDeviceTest] Got stream with',
+                    videoTracks.length,
+                    'video tracks'
+                );
+                videoTracks.forEach((track, i) => {
+                    const settings = track.getSettings();
+                    console.log(
+                        `[useMediaDeviceTest] Track ${i} resolution: ${settings.width}x${settings.height}`
+                    );
+                });
+
                 // Store the stream
                 baseTest.mediaStream.stream.value = stream;
 
@@ -99,15 +122,30 @@ export function useMediaDeviceTest(
             // Update selected device
             baseTest.selectedDeviceId.value = deviceId;
 
-            // Get new stream with updated device
+            // Get new stream with updated device and minimum resolution
             const constraints =
                 baseOptions.deviceKind === 'videoinput'
-                    ? { video: { deviceId: { exact: deviceId } } }
+                    ? {
+                          video: {
+                              deviceId: { exact: deviceId },
+                              width: { min: 320, ideal: 1280 },
+                              height: { min: 240, ideal: 720 },
+                          },
+                      }
                     : { audio: { deviceId: { exact: deviceId } } };
 
             const stream = await baseTest.getDeviceStream(constraints);
 
             if (stream) {
+                // Log the resolution after switch
+                const videoTracks = stream.getVideoTracks();
+                videoTracks.forEach((track, i) => {
+                    const settings = track.getSettings();
+                    console.log(
+                        `[useMediaDeviceTest] After switch, track ${i} resolution: ${settings.width}x${settings.height}`
+                    );
+                });
+
                 if (emit) {
                     const device = baseTest.availableDevices.value.find(
                         d => d.deviceId === deviceId

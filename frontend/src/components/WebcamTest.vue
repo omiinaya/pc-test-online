@@ -77,6 +77,15 @@ export default {
         };
     },
 
+    computed: {
+        currentVideoWidth() {
+            if (this.$refs.videoElement) {
+                return this.$refs.videoElement.videoWidth;
+            }
+            return 0;
+        },
+    },
+
     mounted() {
         console.log('[WebcamTest] mounted() called');
         console.log('[WebcamTest] isInitialized:', this.isInitialized);
@@ -111,6 +120,7 @@ export default {
         console.log('[WebcamTest] hasActiveStream:', this.hasActiveStream);
         console.log('[WebcamTest] stream:', this.stream);
         console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
+        this.logStateValues('activated');
 
         // Vue keep-alive hook - reinitialize if needed
         if (!this.isInitialized || this.hasError) {
@@ -118,15 +128,38 @@ export default {
             this.initializeTest();
             this.startCameraDetectTimer();
         } else if (this.hasActiveStream && this.stream) {
-            // Stream exists from previous session, need to recreate it
-            console.log('[WebcamTest] Stream exists from previous session, recreating...');
-            this.getDeviceStream(null, true)
-                .then(() => {
-                    console.log('[WebcamTest] Stream recreated in activated()');
-                })
-                .catch(err => {
-                    console.error('[WebcamTest] Error recreating stream in activated():', err);
-                });
+            // Check if current stream has proper resolution
+            const videoTracks = this.stream.getVideoTracks();
+            let hasBadResolution = false;
+            videoTracks.forEach(track => {
+                const settings = track.getSettings();
+                console.log(
+                    `[WebcamTest] Checking track resolution in activated: ${settings.width}x${settings.height}`
+                );
+                if (!settings.width || settings.width < 100) {
+                    hasBadResolution = true;
+                    console.log('[WebcamTest] Bad resolution detected, will recreate stream');
+                }
+            });
+
+            if (hasBadResolution) {
+                console.log('[WebcamTest] Recreating stream with proper resolution...');
+                this.getDeviceStream(null, true)
+                    .then(() => {
+                        console.log('[WebcamTest] Stream recreated in activated()');
+                    })
+                    .catch(err => {
+                        console.error('[WebcamTest] Error recreating stream in activated():', err);
+                    });
+            } else {
+                console.log('[WebcamTest] Stream exists from previous session, reconnecting...');
+                if (this.$refs.videoElement) {
+                    this.$refs.videoElement.srcObject = this.stream;
+                    this.$refs.videoElement.play().catch(err => {
+                        console.log('[WebcamTest] Error resuming video in activated():', err);
+                    });
+                }
+            }
         } else if (this.hasActiveStream && this.$refs.videoElement) {
             // Reconnect existing stream to video element if available
             console.log('[WebcamTest] Reconnecting existing stream to video element');
@@ -536,6 +569,71 @@ export default {
             setTimeout(checkFrame, 1000);
         },
 
+        // Force recreate stream with proper resolution constraints
+        async forceRecreateStream() {
+            console.log(
+                '[WebcamTest] forceRecreateStream() called - stopping current stream and creating new one with proper constraints'
+            );
+
+            // Stop current stream
+            if (this.stream) {
+                console.log('[WebcamTest] Stopping current stream');
+                this.stream.getTracks().forEach(track => {
+                    console.log('[WebcamTest] Stopping track:', track.label);
+                    track.stop();
+                });
+            }
+
+            // Clear video element
+            if (this.$refs.videoElement) {
+                console.log('[WebcamTest] Clearing video element srcObject');
+                this.$refs.videoElement.srcObject = null;
+            }
+
+            // Force recreate with high resolution constraints
+            console.log('[WebcamTest] Creating new stream with high resolution constraints');
+            try {
+                const constraints = {
+                    video: {
+                        width: { min: 640, ideal: 1920 },
+                        height: { min: 480, ideal: 1080 },
+                    },
+                };
+                console.log('[WebcamTest] Using constraints:', constraints);
+
+                const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                console.log('[WebcamTest] Got new stream:', newStream);
+
+                // Log track details
+                const videoTracks = newStream.getVideoTracks();
+                videoTracks.forEach((track, i) => {
+                    const settings = track.getSettings();
+                    console.log(
+                        `[WebcamTest] New track ${i}: ${settings.width}x${settings.height}`
+                    );
+                });
+
+                // Update the stream in the composable
+                this.stream = newStream;
+
+                // Assign to video element
+                if (this.$refs.videoElement) {
+                    console.log('[WebcamTest] Assigning new stream to video element');
+                    this.$refs.videoElement.srcObject = newStream;
+                    await this.$refs.videoElement.play();
+                    console.log('[WebcamTest] Video playing with new stream');
+                    console.log(
+                        '[WebcamTest] Video dimensions:',
+                        this.$refs.videoElement.videoWidth,
+                        'x',
+                        this.$refs.videoElement.videoHeight
+                    );
+                }
+            } catch (err) {
+                console.error('[WebcamTest] Error recreating stream:', err);
+            }
+        },
+
         // Test completion methods
         startOver() {
             this.snapshotTaken = false;
@@ -669,6 +767,27 @@ export default {
             :disabled="isLoading"
             @device-changed="switchDevice"
         />
+
+        <!-- Force recreate stream button for debugging -->
+        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px">
+            <button
+                @click="forceRecreateStream"
+                style="
+                    padding: 8px 16px;
+                    background: #2196f3;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                "
+            >
+                Force Recreate Stream (Fix Low Resolution)
+            </button>
+            <p style="margin-top: 8px; font-size: 12px; color: #666">
+                Current videoWidth: <strong>{{ currentVideoWidth }}</strong
+                >px (should be > 300)
+            </p>
+        </div>
 
         <!-- Browser Compatibility Warnings -->
         <div v-if="showCompatibilityWarnings" class="compatibility-warnings">

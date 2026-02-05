@@ -303,10 +303,15 @@ export function useBaseDeviceTest(
         }
 
         try {
-            // Create proper constraints based on device kind
+            // Create proper constraints based on device kind with minimum resolution
             const constraints =
                 deviceKind === 'videoinput'
-                    ? { video: true }
+                    ? {
+                          video: {
+                              width: { min: 320, ideal: 1280 },
+                              height: { min: 240, ideal: 720 },
+                          },
+                      }
                     : deviceKind === 'audioinput'
                       ? { audio: true }
                       : {};
@@ -316,6 +321,21 @@ export function useBaseDeviceTest(
             console.log('[useBaseDeviceTest] Permission request result:', !!streamResult);
 
             if (streamResult) {
+                // Log track details immediately
+                const videoTracks = streamResult.getVideoTracks();
+                console.log(
+                    '[useBaseDeviceTest] Got stream with',
+                    videoTracks.length,
+                    'video tracks'
+                );
+                videoTracks.forEach((track, i) => {
+                    const settings = track.getSettings();
+                    console.log(`[useBaseDeviceTest] Track ${i} settings:`, settings);
+                    console.log(
+                        `[useBaseDeviceTest] Track ${i} resolution: ${settings.width}x${settings.height}`
+                    );
+                });
+
                 // Store the stream in mediaStream composable
                 console.log('[useBaseDeviceTest] Storing stream in mediaStream');
                 mediaStream.stream.value = streamResult as MediaStream;
@@ -378,9 +398,16 @@ export function useBaseDeviceTest(
         // Create default constraints if none provided
         if (!constraints) {
             if (deviceKind === 'videoinput') {
-                constraints = selectedDeviceId.value
-                    ? { video: { deviceId: { exact: selectedDeviceId.value } } }
-                    : { video: true };
+                const baseConstraints = selectedDeviceId.value
+                    ? { deviceId: { exact: selectedDeviceId.value } }
+                    : {};
+                constraints = {
+                    video: {
+                        ...baseConstraints,
+                        width: { min: 320, ideal: 1280 },
+                        height: { min: 240, ideal: 720 },
+                    },
+                };
             } else if (deviceKind === 'audioinput') {
                 constraints = selectedDeviceId.value
                     ? { audio: { deviceId: { exact: selectedDeviceId.value } } }
@@ -389,6 +416,8 @@ export function useBaseDeviceTest(
                 return null;
             }
         }
+
+        console.log('[useBaseDeviceTest] Using constraints:', constraints);
 
         // If force recreate, stop existing stream first
         if (forceRecreate && mediaStream.stream.value) {
@@ -427,6 +456,15 @@ export function useBaseDeviceTest(
             const stream = await mediaStream.createStream(constraints);
 
             if (stream) {
+                // Log the actual resolution we got
+                const videoTracks = stream.getVideoTracks();
+                videoTracks.forEach((track, i) => {
+                    const settings = track.getSettings();
+                    console.log(
+                        `[useBaseDeviceTest] New stream track ${i} resolution: ${settings.width}x${settings.height}`
+                    );
+                });
+
                 currentState.value = 'streaming';
                 console.log('[useBaseDeviceTest] Stream created, state set to streaming');
             }
@@ -458,10 +496,16 @@ export function useBaseDeviceTest(
             // Update selected device
             selectedDeviceId.value = deviceId;
 
-            // Get new stream with updated device
+            // Get new stream with updated device and minimum resolution
             const constraints =
                 deviceKind === 'videoinput'
-                    ? { video: { deviceId: { exact: deviceId } } }
+                    ? {
+                          video: {
+                              deviceId: { exact: deviceId },
+                              width: { min: 320, ideal: 1280 },
+                              height: { min: 240, ideal: 720 },
+                          },
+                      }
                     : { audio: { deviceId: { exact: deviceId } } };
 
             await getDeviceStream(constraints);
