@@ -270,11 +270,36 @@ export function useBaseDeviceTest(
 
             if (deviceKind && hasPermission.value && hasDevices.value) {
                 console.log('[useBaseDeviceTest] Auto-starting stream...');
-                await getDeviceStream();
+                const stream = await getDeviceStream();
                 console.log(
                     '[useBaseDeviceTest] Auto-start complete. hasActiveStream:',
                     hasActiveStream.value
                 );
+
+                // Verify the stream has proper resolution
+                if (stream) {
+                    const videoTracks = stream.getVideoTracks();
+                    let hasProperResolution = true;
+                    videoTracks.forEach((track, i) => {
+                        const settings = track.getSettings();
+                        console.log(
+                            `[useBaseDeviceTest] Auto-start track ${i} resolution: ${settings.width}x${settings.height}`
+                        );
+                        if (!settings.width || settings.width < 100) {
+                            console.log(
+                                `[useBaseDeviceTest] Track ${i} has bad resolution, will recreate with force`
+                            );
+                            hasProperResolution = false;
+                        }
+                    });
+
+                    if (!hasProperResolution) {
+                        console.log(
+                            '[useBaseDeviceTest] Recreating stream with force flag to get proper resolution'
+                        );
+                        await getDeviceStream(null, true);
+                    }
+                }
             } else {
                 console.log('[useBaseDeviceTest] Not auto-starting - conditions not met');
             }
@@ -443,9 +468,32 @@ export function useBaseDeviceTest(
                         : true;
 
                 if (hasVideo && hasAudio) {
-                    console.log('[useBaseDeviceTest] Reusing existing stream');
-                    currentState.value = 'streaming';
-                    return mediaStream.stream.value;
+                    // Also check resolution for video streams
+                    if (deviceKind === 'videoinput') {
+                        const videoTrack = existingTracks.find(t => t.kind === 'video');
+                        if (videoTrack) {
+                            const settings = videoTrack.getSettings();
+                            console.log(
+                                `[useBaseDeviceTest] Existing stream resolution: ${settings.width}x${settings.height}`
+                            );
+                            if (!settings.width || settings.width < 100) {
+                                console.log(
+                                    '[useBaseDeviceTest] Existing stream has bad resolution, will create new stream'
+                                );
+                                // Don't reuse, continue to create new stream
+                            } else {
+                                console.log(
+                                    '[useBaseDeviceTest] Reusing existing stream with good resolution'
+                                );
+                                currentState.value = 'streaming';
+                                return mediaStream.stream.value;
+                            }
+                        }
+                    } else {
+                        console.log('[useBaseDeviceTest] Reusing existing stream');
+                        currentState.value = 'streaming';
+                        return mediaStream.stream.value;
+                    }
                 }
                 console.log(
                     '[useBaseDeviceTest] Existing stream has muted or ended tracks, creating new stream'
