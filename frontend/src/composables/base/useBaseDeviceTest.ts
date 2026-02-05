@@ -300,8 +300,23 @@ export function useBaseDeviceTest(
                         console.log(
                             '[useBaseDeviceTest] Recreating stream with force flag to get proper resolution'
                         );
-                        // Clear the stream first so the watcher triggers properly
+                        // Completely stop and clear the stream first
+                        if (mediaStream.stream.value) {
+                            console.log(
+                                '[useBaseDeviceTest] Stopping all tracks before recreation'
+                            );
+                            mediaStream.stream.value.getTracks().forEach(track => {
+                                console.log('[useBaseDeviceTest] Stopping track:', track.label);
+                                track.stop();
+                            });
+                        }
                         mediaStream.stream.value = null;
+
+                        // Small delay to ensure browser releases the device
+                        console.log('[useBaseDeviceTest] Waiting for browser to release device...');
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        console.log('[useBaseDeviceTest] Creating fresh stream...');
                         await getDeviceStream(null, true);
                     }
                 }

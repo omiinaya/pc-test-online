@@ -74,7 +74,80 @@ export default {
             skipped: false,
             skipTimerResourceId: null,
             videoEventResourceIds: [],
+            videoWidthDisplay: 0,
         };
+    },
+
+    computed: {
+        currentVideoWidth() {
+            // Return the cached value for display
+            return this.videoWidthDisplay;
+        },
+    },
+
+    watch: {
+        stream: {
+            handler(newStream) {
+                console.log('[WebcamTest] stream watcher triggered');
+                console.log('[WebcamTest] stream value:', newStream);
+                console.log('[WebcamTest] hasPermission:', this.hasPermission);
+                console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
+
+                // Update video width display when stream changes
+                this.$nextTick(() => {
+                    this.updateVideoWidth();
+                });
+
+                // Log all state values
+                this.logStateValues('stream watcher');
+
+                if (newStream && this.hasPermission) {
+                    if (this.$refs.videoElement) {
+                        console.log('[WebcamTest] Calling setupCamera() from stream watcher');
+                        this.setupCamera();
+                    } else {
+                        console.log('[WebcamTest] Video element not ready, scheduling retry');
+                        // Retry after a short delay to allow DOM to update
+                        this.$nextTick(() => {
+                            console.log(
+                                '[WebcamTest] Retry: videoElement ref:',
+                                this.$refs.videoElement
+                            );
+                            if (this.$refs.videoElement) {
+                                console.log('[WebcamTest] Calling setupCamera() from retry');
+                                this.setupCamera();
+                            } else {
+                                console.log(
+                                    '[WebcamTest] Retry failed - video element still not available'
+                                );
+                                // One more retry with longer delay
+                                setTimeout(() => {
+                                    console.log(
+                                        '[WebcamTest] Final retry: videoElement ref:',
+                                        this.$refs.videoElement
+                                    );
+                                    if (this.$refs.videoElement) {
+                                        console.log(
+                                            '[WebcamTest] Calling setupCamera() from final retry'
+                                        );
+                                        this.setupCamera();
+                                    } else {
+                                        console.log(
+                                            '[WebcamTest] Final retry failed - video element still not available'
+                                        );
+                                    }
+                                }, 100);
+                            }
+                        });
+                    }
+                } else {
+                    console.log('[WebcamTest] setupCamera() NOT called - conditions not met');
+                    console.log('[WebcamTest] - stream exists:', !!newStream);
+                    console.log('[WebcamTest] - hasPermission:', this.hasPermission);
+                }
+            },
+            immediate: true,
+        },
     },
 
     computed: {
@@ -282,6 +355,17 @@ export default {
             console.log(
                 `[WebcamTest] - blurred class should apply: ${(this.isLoading || this.hasError || this.needsPermission || this.showNoDevicesState) && !this.hasActiveStream}`
             );
+            // Update video width display
+            this.updateVideoWidth();
+        },
+
+        // Update video width display
+        updateVideoWidth() {
+            if (this.$refs.videoElement) {
+                this.videoWidthDisplay = this.$refs.videoElement.videoWidth;
+            } else {
+                this.videoWidthDisplay = 0;
+            }
         },
 
         // Most device test logic is now handled by useEnhancedDeviceTest
