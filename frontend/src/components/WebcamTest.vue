@@ -275,63 +275,74 @@ export default {
         this.videoEventResourceIds = [];
     },
 
-    watch: {
-        // Watch for when stream becomes available to setup camera
-        stream: {
-            handler(newStream) {
-                console.log('[WebcamTest] stream watcher triggered');
-                console.log('[WebcamTest] stream value:', newStream);
-                console.log('[WebcamTest] hasPermission:', this.hasPermission);
-                console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
+watch: {
+  // Watch for when stream becomes available to setup camera
+  stream: {
+    handler(newStream, oldStream) {
+      console.log('[WebcamTest] stream watcher triggered');
+      console.log('[WebcamTest] stream value:', newStream);
+      console.log('[WebcamTest] old stream:', oldStream);
+      console.log('[WebcamTest] hasPermission:', this.hasPermission);
+      console.log('[WebcamTest] videoElement ref:', this.$refs.videoElement);
 
-                // Log all state values
-                this.logStateValues('stream watcher');
+      // Update video width display when stream changes
+      this.$nextTick(() => {
+        this.updateVideoWidth();
+      });
 
-                if (newStream && this.hasPermission) {
-                    if (this.$refs.videoElement) {
-                        console.log('[WebcamTest] Calling setupCamera() from stream watcher');
-                        this.setupCamera();
-                    } else {
-                        console.log('[WebcamTest] Video element not ready, scheduling retry');
-                        // Retry after a short delay to allow DOM to update
-                        this.$nextTick(() => {
-                            console.log(
-                                '[WebcamTest] Retry: videoElement ref:',
-                                this.$refs.videoElement
-                            );
-                            if (this.$refs.videoElement) {
-                                console.log('[WebcamTest] Calling setupCamera() from retry');
-                                this.setupCamera();
-                            } else {
-                                console.log(
-                                    '[WebcamTest] Retry failed - video element still not available'
-                                );
-                                // One more retry with longer delay
-                                setTimeout(() => {
-                                    console.log(
-                                        '[WebcamTest] Final retry: videoElement ref:',
-                                        this.$refs.videoElement
-                                    );
-                                    if (this.$refs.videoElement) {
-                                        console.log(
-                                            '[WebcamTest] Calling setupCamera() from final retry'
-                                        );
-                                        this.setupCamera();
-                                    } else {
-                                        console.log(
-                                            '[WebcamTest] Final retry failed - video element still not available'
-                                        );
-                                    }
-                                }, 100);
-                            }
-                        });
-                    }
+      // If we got a new stream, check its resolution
+      if (newStream && newStream !== oldStream) {
+        this.$nextTick(async () => {
+          const videoTracks = newStream.getVideoTracks();
+          if (videoTracks.length > 0) {
+            // Wait a bit for track settings to populate
+            await new Promise(resolve => setTimeout(resolve, 300));
+            const settings = videoTracks[0].getSettings();
+            console.log(`[WebcamTest] New stream resolution: ${settings.width}x${settings.height}`);
+
+            if (!settings.width || settings.width < 100) {
+              console.error('[WebcamTest] CRITICAL: Stream has bad resolution! Will force recreate.');
+              // Force recreate the stream
+              await this.forceRecreateStream();
+              return;
+            }
+          }
+
+          // Stream is good, proceed with setup
+          if (newStream && this.hasPermission) {
+            if (this.$refs.videoElement) {
+              console.log('[WebcamTest] Calling setupCamera() from stream watcher');
+              this.setupCamera();
+            } else {
+              console.log('[WebcamTest] Video element not ready, scheduling retry');
+              // Retry after a short delay to allow DOM to update
+              this.$nextTick(() => {
+                console.log('[WebcamTest] Retry: videoElement ref:', this.$refs.videoElement);
+                if (this.$refs.videoElement) {
+                  console.log('[WebcamTest] Calling setupCamera() from retry');
+                  this.setupCamera();
                 } else {
-                    console.log('[WebcamTest] setupCamera() NOT called - conditions not met');
-                    console.log('[WebcamTest] - stream exists:', !!newStream);
-                    console.log('[WebcamTest] - hasPermission:', this.hasPermission);
+                  console.log('[WebcamTest] Retry failed - video element still not available');
+                  // One more retry with longer delay
+                  setTimeout(() => {
+                    console.log('[WebcamTest] Final retry: videoElement ref:', this.$refs.videoElement);
+                    if (this.$refs.videoElement) {
+                      console.log('[WebcamTest] Calling setupCamera() from final retry');
+                      this.setupCamera();
+                    } else {
+                      console.log('[WebcamTest] Final retry failed - video element still not available');
+                    }
+                  }, 100);
                 }
-            },
+              });
+            }
+          }
+        });
+      }
+    },
+    immediate: true,
+  },
+},
             immediate: true,
         },
     },

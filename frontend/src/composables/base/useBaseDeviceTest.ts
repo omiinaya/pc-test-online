@@ -314,10 +314,35 @@ export function useBaseDeviceTest(
 
                         // Small delay to ensure browser releases the device
                         console.log('[useBaseDeviceTest] Waiting for browser to release device...');
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                        await new Promise(resolve => setTimeout(resolve, 500));
 
                         console.log('[useBaseDeviceTest] Creating fresh stream...');
-                        await getDeviceStream(null, true);
+                        const newStream = await getDeviceStream(null, true);
+
+                        if (newStream) {
+                            // Verify the new stream has proper resolution
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            const newVideoTracks = newStream.getVideoTracks();
+                            let newHasProperResolution = true;
+                            newVideoTracks.forEach((track, i) => {
+                                const settings = track.getSettings();
+                                console.log(
+                                    `[useBaseDeviceTest] New stream track ${i} resolution: ${settings.width}x${settings.height}`
+                                );
+                                if (!settings.width || settings.width < 100) {
+                                    newHasProperResolution = false;
+                                }
+                            });
+
+                            if (!newHasProperResolution) {
+                                console.error(
+                                    '[useBaseDeviceTest] CRITICAL: New stream still has bad resolution even after recreation!'
+                                );
+                                console.error(
+                                    '[useBaseDeviceTest] This suggests the camera device is not providing proper resolution.'
+                                );
+                            }
+                        }
                     }
                 }
             } else {
