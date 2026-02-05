@@ -543,37 +543,6 @@ export default {
 
 <template>
     <div class="webcam-test-container">
-        <!-- Debug state info (visible for debugging) -->
-        <div
-            class="debug-info"
-            style="
-                position: absolute;
-                top: 0;
-                left: 0;
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px;
-                z-index: 9999;
-                font-size: 12px;
-            "
-        >
-            <p><strong>Debug Info:</strong></p>
-            <p>isLoading: {{ isLoading }}</p>
-            <p>hasError: {{ hasError }}</p>
-            <p>needsPermission: {{ needsPermission }}</p>
-            <p>showNoDevicesState: {{ showNoDevicesState }}</p>
-            <p>hasPermission: {{ hasPermission }}</p>
-            <p>hasActiveStream: {{ hasActiveStream }}</p>
-            <p>stream: {{ !!stream }}</p>
-            <p>
-                blurred:
-                {{
-                    (isLoading || hasError || needsPermission || showNoDevicesState) &&
-                    !hasActiveStream
-                }}
-            </p>
-        </div>
-
         <!-- Always show video wrapper with overlay states -->
         <div class="video-wrapper">
             <video
@@ -659,28 +628,6 @@ export default {
             :disabled="isLoading"
             @device-changed="switchDevice"
         />
-
-        <!-- Debug: Force recreate stream button -->
-        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px">
-            <button
-                @click="forceRecreateStream"
-                style="
-                    padding: 8px 16px;
-                    background: #ff5722;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                "
-            >
-                Debug: Force Recreate Stream
-            </button>
-            <p style="margin-top: 8px; font-size: 12px; color: #666">
-                videoWidth: <strong>{{ currentVideoWidth }}</strong
-                >px
-                <span v-if="currentVideoWidth < 100" style="color: red"> (TOO SMALL!)</span>
-            </p>
-        </div>
 
         <!-- Browser Compatibility Warnings -->
         <div v-if="showCompatibilityWarnings" class="compatibility-warnings">
