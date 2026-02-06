@@ -204,11 +204,19 @@ export default {
                         let currentNoteIndex = 0;
 
                         const playNextNote = () => {
+                            console.log(
+                                `[SpeakerTest] playNextNote called, currentNoteIndex: ${currentNoteIndex}, total notes: ${scaleFrequencies.length}`
+                            );
                             if (currentNoteIndex >= scaleFrequencies.length) {
+                                console.log('[SpeakerTest] All notes played, stopping');
                                 stopSound(false);
                                 resolve();
                                 return;
                             }
+
+                            console.log(
+                                `[SpeakerTest] Playing note ${currentNoteIndex}: ${scaleFrequencies[currentNoteIndex]}Hz`
+                            );
 
                             // Create new oscillator for each note
                             const noteOscillator = audioContext.value.createOscillator();
