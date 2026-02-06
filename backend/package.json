@@ -13,22 +13,22 @@
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "csurf": "^1.11.0",
-    "express": "^4.18.2",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
-    "helmet": "^7.1.0",
-    "i18n": "^0.15.1",
-    "morgan": "^1.10.0",
+    "helmet": "^8.1.0",
+    "i18n": "^0.15.3",
+    "morgan": "^1.10.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "nodemon": "^3.0.1",
-    "prettier": "^3.1.0"
+    "eslint-plugin-promise": "^7.2.1",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.8.1"
   }
 }
