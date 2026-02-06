@@ -115,6 +115,9 @@ export default {
             }
         };
 
+        // Track timeout resource for cleanup
+        let currentFallbackTimeoutId = null;
+
         /**
          * Play sound for specific channel
          */
@@ -160,13 +163,17 @@ export default {
          * Left: do re mi fa, Right: so la si do, Both: full scale
          */
         const playChannel = async channel => {
+            // Clear any existing fallback timeout first
+            if (currentFallbackTimeoutId) {
+                clearTimeout(currentFallbackTimeoutId);
+                currentFallbackTimeoutId = null;
+            }
+
             try {
                 // Ensure audio context is properly initialized and resumed on user interaction
                 if (!audioContext.value || audioContext.value.state === 'closed') {
                     await initializeAudioContext();
                 } else if (audioContext.value.state === 'suspended') {
-                    // This resume() call is crucial for browser autoplay policies
-                    // It must be called directly in response to user interaction
                     await audioContext.value.resume();
                 }
 
@@ -188,35 +195,42 @@ export default {
 
                         let scaleFrequencies;
                         if (channel === 'Left') {
-                            // First 4 notes: do re mi fa
                             scaleFrequencies = fullScaleFrequencies.slice(0, 4);
                         } else if (channel === 'Right') {
-                            // Last 4 notes: so la si do
                             scaleFrequencies = fullScaleFrequencies.slice(4, 8);
                         } else {
-                            // Both: full scale
                             scaleFrequencies = fullScaleFrequencies;
                         }
 
                         const noteDuration = 250; // 250ms per note for better clarity
-                        const totalDuration = scaleFrequencies.length * noteDuration;
-
                         let currentNoteIndex = 0;
+                        let fallbackTimeoutId = null; // Local variable for this Promise instance
+                        let isResolved = false; // Track if Promise is already resolved
+
+                        const safeResolve = () => {
+                            if (!isResolved) {
+                                isResolved = true;
+                                // Clear fallback timeout
+                                if (fallbackTimeoutId) {
+                                    clearTimeout(fallbackTimeoutId);
+                                    fallbackTimeoutId = null;
+                                }
+                                // Also clear module-level reference if it matches
+                                if (currentFallbackTimeoutId) {
+                                    clearTimeout(currentFallbackTimeoutId);
+                                    currentFallbackTimeoutId = null;
+                                }
+                                resolve();
+                            }
+                        };
 
                         const playNextNote = () => {
-                            console.log(
-                                `[SpeakerTest] playNextNote called, currentNoteIndex: ${currentNoteIndex}, total notes: ${scaleFrequencies.length}`
-                            );
                             if (currentNoteIndex >= scaleFrequencies.length) {
-                                console.log('[SpeakerTest] All notes played, stopping');
+                                console.log('[SpeakerTest] All notes played, resolving Promise');
                                 stopSound(false);
-                                resolve();
+                                safeResolve();
                                 return;
                             }
-
-                            console.log(
-                                `[SpeakerTest] Playing note ${currentNoteIndex}: ${scaleFrequencies[currentNoteIndex]}Hz`
-                            );
 
                             // Create new oscillator for each note
                             const noteOscillator = audioContext.value.createOscillator();
@@ -282,7 +296,11 @@ export default {
                             currentNoteIndex++;
 
                             // Schedule next note
-                            testTimeout.value = setTimeout(playNextNote, noteDuration);
+                            testTimeout.value = setTimeout(() => {
+                                playNextNote();
+                            }, noteDuration);
+
+                            // Track the timeout for memory management
                             if (timeoutResourceId.value !== null) {
                                 memoryManager.untrackResource(timeoutResourceId.value);
                             }
@@ -302,16 +320,18 @@ export default {
                         playNextNote();
 
                         // Fallback timeout for safety
-                        const fallbackTimeoutId = setTimeout(() => {
+                        const actualTimeoutMs = scaleFrequencies.length * noteDuration + 1000; // Add 1 second buffer
+                        fallbackTimeoutId = setTimeout(() => {
+                            console.log(
+                                `[SpeakerTest] Fallback timeout fired after ${actualTimeoutMs}ms, forcing stop`
+                            );
+                            fallbackTimeoutId = null;
                             stopSound(false);
-                            resolve();
-                        }, totalDuration + 500);
-                        const fallbackResourceId = memoryManager.trackResource(
-                            () => clearTimeout(fallbackTimeoutId),
-                            'timeout',
-                            'Fallback safety timeout'
-                        );
-                        oscillatorResourceIds.value.push(fallbackResourceId);
+                            safeResolve();
+                        }, actualTimeoutMs);
+
+                        // Also store in module-level variable for external cleanup
+                        currentFallbackTimeoutId = fallbackTimeoutId;
                     } catch (error) {
                         console.error('Error in playChannel:', error);
                         reject(error);
@@ -327,7 +347,19 @@ export default {
          * Stop current sound
          */
         const stopSound = (endTest = true) => {
+            console.log(`[SpeakerTest] stopSound called, endTest: ${endTest}`);
+
+            // Clear the fallback timeout
+            if (currentFallbackTimeoutId) {
+                console.log(
+                    `[SpeakerTest] Clearing fallback timeout ID: ${currentFallbackTimeoutId}`
+                );
+                clearTimeout(currentFallbackTimeoutId);
+                currentFallbackTimeoutId = null;
+            }
+
             if (testTimeout.value) {
+                console.log(`[SpeakerTest] Clearing timeout ID: ${testTimeout.value}`);
                 clearTimeout(testTimeout.value);
                 testTimeout.value = null;
             }

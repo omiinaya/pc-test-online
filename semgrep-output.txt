@@ -1,0 +1,206 @@
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 101 files tracked by git with 2537 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>      73      67          Pro rules    1473                                                                
+  ts              337      45          Community    1064                                                                
+  json              4      13                                                                                           
+  js              327       3                                                                                           
+  dockerfile        6       1                                                                                           
+  html              1       1                                                                                           
+                                                                                                                        
+                    
+                    
+┌──────────────────┐
+│ 27 Code Findings │
+└──────────────────┘
+                         
+    backend/src/server.js
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+           15┆ console.log(`[${timestamp}] [PID:${pid}] [${env}] DEBUG: ${message}`, context);
+   
+     ❱ javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage
+          A CSRF middleware was not detected in your express application. Ensure you are either using one such
+          as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your    
+          routes with a token or cookies.                                                                     
+          Details: https://sg.run/BxzR                                                                        
+                                                                                                              
+           18┆ const app = express();
+   
+     ❱ javascript.express.log.console-log-express.console-log-express
+          Detected a logger that logs user input without properly neutralizing the output. The log message  
+          could contain characters like ` ` and ` ` and cause an attacker to forge log entries or include   
+          malicious content into the logs. Use proper input validation and/or output encoding to prevent log
+          entries from being forged.                                                                        
+          Details: https://sg.run/pK7Ok                                                                     
+                                                                                                            
+          193┆ console.log('Detailed Test Results:', {
+          194┆   timestamp: new Date().toISOString(),
+          195┆   totalTests: testResults.length,
+          196┆   results: testResults.map(result => ({
+          197┆     testType: result.testType,
+          198┆     status: result.status,
+          199┆     duration: result.duration
+          200┆   }))
+          201┆ });
+                       
+    frontend/Dockerfile
+   ❯❯❱ dockerfile.security.missing-user.missing-user
+          By not specifying a USER, a program in the container may run as 'root'. This is a security hazard.
+          If an attacker can control a process running as root, they may have control over the container.   
+          Ensure that the last USER in a Dockerfile is a USER other than 'root'.                            
+          Details: https://sg.run/Gbvn                                                                      
+                                                                                                            
+           ▶▶┆ Autofix ▶ USER non-root CMD ["nginx", "-g", "daemon off;"]
+           31┆ CMD ["nginx", "-g", "daemon off;"]
+                       
+    frontend/index.html
+    ❯❱ html.security.audit.missing-integrity.missing-integrity
+          This tag is missing an 'integrity' subresource integrity attribute. The 'integrity' attribute allows
+          for the browser to verify that externally hosted files (for example from a CDN) are delivered       
+          without unexpected manipulation. Without this attribute, if an attacker can modify the externally   
+          hosted resource, this could lead to XSS and other types of attacks. To prevent this, include the    
+          base64-encoded cryptographic hash of the resource (file) you’re telling the browser to fetch in the 
+          'integrity' attribute for all externally hosted files.                                              
+          Details: https://sg.run/krXA                                                                        
+                                                                                                              
+           20┆ <script async                                                                 
+               src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-
+               pub-1440039437221216"                                                         
+           21┆     crossorigin="anonymous"></script>
+                                                      
+    frontend/src/composables/base/useBaseDeviceTest.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+          403┆ console.log(`[useBaseDeviceTest] Track ${i} settings:`, settings);
+                                                    
+    frontend/src/composables/useDeviceEnumeration.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+           94┆ console.error(`${deviceType}: Error enumerating devices:`, err);
+                                                
+    frontend/src/composables/useErrorHandling.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+           99┆ console.error(`${componentName}: Error in ${context}:`, err);
+                                                   
+    frontend/src/composables/useMediaPermissions.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+           21┆ console.log(`[useMediaPermissions:${deviceType}] Initializing for permission:`,
+               permissionName);                                                               
+            ⋮┆----------------------------------------
+           43┆ `[useMediaPermissions:${deviceType}] Background permission check result:`,
+            ⋮┆----------------------------------------
+           50┆ `[useMediaPermissions:${deviceType}] Handling permission state:`,
+            ⋮┆----------------------------------------
+          110┆ `[useMediaPermissions:${deviceType}] requestPermission() called with constraints:`,
+            ⋮┆----------------------------------------
+          120┆ `[useMediaPermissions:${deviceType}] Permission granted, stream created:`,
+            ⋮┆----------------------------------------
+          126┆ `[useMediaPermissions:${deviceType}] permissionGranted:`,
+            ⋮┆----------------------------------------
+          131┆ console.error(`[useMediaPermissions:${deviceType}] access error:`, err);
+            ⋮┆----------------------------------------
+          147┆ console.log(`[useMediaPermissions:${deviceType}] Unknown error:`, err.message);
+                                                    
+    frontend/src/composables/useStatePanelConfigs.ts
+    ❯❱ javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+          RegExp() called with a `deviceType` function argument, this might allow an attacker to cause a      
+          Regular Expression Denial-of-Service (ReDoS) within your application as RegExP blocks the main      
+          thread. For this reason, it is recommended to use hardcoded regexes instead. If your regex is run on
+          user-controlled input, consider performing input validation or use a regex checking/sanitization    
+          library such as https://www.npmjs.com/package/recheck to verify that the regex does not appear      
+          vulnerable to ReDoS.                                                                                
+          Details: https://sg.run/gr65                                                                        
+                                                                                                              
+          158┆ title: baseConfig.title.replace(new RegExp(deviceType, 'gi'), customDeviceType),
+            ⋮┆----------------------------------------
+          160┆ new RegExp(deviceType.toLowerCase(), 'gi'),
+                                              
+    frontend/src/composables/useTestResults.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+          131┆ console.error(`${testType} test failed:`, reason);
+                                                          
+    frontend/src/composables/utils/useStatePanelConfigs.ts
+    ❯❱ javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+          RegExp() called with a `deviceType` function argument, this might allow an attacker to cause a      
+          Regular Expression Denial-of-Service (ReDoS) within your application as RegExP blocks the main      
+          thread. For this reason, it is recommended to use hardcoded regexes instead. If your regex is run on
+          user-controlled input, consider performing input validation or use a regex checking/sanitization    
+          library such as https://www.npmjs.com/package/recheck to verify that the regex does not appear      
+          vulnerable to ReDoS.                                                                                
+          Details: https://sg.run/gr65                                                                        
+                                                                                                              
+          155┆ title: baseConfig.title.replace(new RegExp(deviceType, 'gi'), customDeviceType),
+            ⋮┆----------------------------------------
+          157┆ new RegExp(deviceType.toLowerCase(), 'gi'),
+                        
+    frontend/src/main.ts
+     ❱ javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring
+          Detected string concatenation with a non-literal variable in a util.format / console.log function.
+          If an attacker injects a format specifier in the string, it will forge the log message. Try to use
+          constant values for the format string.                                                            
+          Details: https://sg.run/7Y5R                                                                      
+                                                                                                            
+           40┆ `[${DEBUG_ID}] Checking if #app element exists:`,
+            ⋮┆----------------------------------------
+           48┆ console.log(`[${DEBUG_ID}] Mounted app instance:`, vueApp ? 'Available' : 'Undefined');
+            ⋮┆----------------------------------------
+           51┆ `[${DEBUG_ID}] CRITICAL: App mount failed at ${new Date().toISOString()}`,
+            ⋮┆----------------------------------------
+           56┆ console.error(`[${DEBUG_ID}] Mount error details:`, {
+            ⋮┆----------------------------------------
+           62┆ console.error(`[${DEBUG_ID}] Mount error details:`, { error: mountError });
+            ⋮┆----------------------------------------
+           67┆ console.error(`[${DEBUG_ID}] App element state:`, {
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 27 (27 blocking)
+ • Rules run: 420
+ • Targets scanned: 101
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Files matching .semgrepignore patterns: 1
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 420 rules on 101 files: 27 findings.
+
+📢 Too many findings? Try Semgrep Pro for more powerful queries and less noise.
+   See https://sg.run/false-positives.
+
