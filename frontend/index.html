@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -17,8 +17,17 @@
         <meta name="apple-mobile-web-app-title" content="MMIT Lab" />
 
         <!-- Google AdSense Script -->
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1440039437221216"
-            crossorigin="anonymous"></script>
+        <!-- SECURITY NOTE: This external script lacks subresource integrity (SRI).
+             - AdSense scripts are dynamic and change frequently, making SRI impractical
+             - Alternative: Self-host the script with calculated SRI hash
+             - Recommendation: Use Content Security Policy with strict-dynamic or hash/nonces
+             - For production: Implement proper CSP headers and consider self-hosting critical third-party scripts -->
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1440039437221216"
+            crossorigin="anonymous"
+            data-disable-analytics="true"
+        ></script>
 
         <title>MMIT Lab</title>
         <meta
@@ -27,9 +36,23 @@
         />
         <!-- Critical CSS for above-the-fold content -->
         <style>
-            *{margin:0;padding:0;box-sizing:border-box}
-            html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;font-display:swap;background:#0a0a0a}
-            #app{height:100%}
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+                    Cantarell, sans-serif;
+                font-display: swap;
+                background: #0a0a0a;
+            }
+            #app {
+                height: 100%;
+            }
         </style>
     </head>
     <body>

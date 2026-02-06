@@ -1,5 +1,6 @@
 // Composable for common StatePanel configurations
 import type { StatePanelState } from '../types';
+import { replaceDeviceTypeCaseInsensitive } from '../utils/regex';
 
 export interface StatePanelConfig {
     state: StatePanelState;
@@ -152,13 +153,14 @@ export function useStatePanelConfigs(deviceType: string = 'device'): UseStatePan
             return {} as StatePanelConfig;
         }
 
-        // Replace device type in title and message
+        // Replace device type in title and message using safe regex
         const updatedConfig = {
             ...baseConfig,
-            title: baseConfig.title.replace(new RegExp(deviceType, 'gi'), customDeviceType),
-            message: baseConfig.message.replace(
-                new RegExp(deviceType.toLowerCase(), 'gi'),
-                customDeviceType.toLowerCase()
+            title: replaceDeviceTypeCaseInsensitive(baseConfig.title, deviceType, customDeviceType),
+            message: replaceDeviceTypeCaseInsensitive(
+                baseConfig.message,
+                deviceType,
+                customDeviceType
             ),
         };
 

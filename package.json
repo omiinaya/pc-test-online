@@ -4,7 +4,9 @@
   "description": "Computer repair testing application",
   "main": "backend/src/server.js",
   "author": "OmarM",
-  "engines": { "node": "22" },
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "dev": "node scripts/kill-ports.js 3000 5173 && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "cd frontend && npm run dev",
@@ -44,6 +46,7 @@
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "pino": "^10.3.0",
     "vite": "^7.0.2"
   }
 }

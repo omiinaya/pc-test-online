@@ -1,0 +1,62 @@
+version: 2
+updates:
+    # Frontend dependencies
+    - package-ecosystem: 'npm'
+      directory: '/frontend'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      open-pull-requests-limit: 10
+      groups:
+          dependencies:
+              patterns:
+                  - '*'
+      reviewers:
+          - '' # Add your team members' GitHub usernames
+      commit-message:
+          prefix: 'chore(frontend):'
+          include: 'scope'
+
+    # Backend dependencies
+    - package-ecosystem: 'npm'
+      directory: '/backend'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      open-pull-requests-limit: 10
+      groups:
+          dependencies:
+              patterns:
+                  - '*'
+      reviewers:
+          - '' # Add your team members' GitHub usernames
+      commit-message:
+          prefix: 'chore(backend):'
+          include: 'scope'
+
+    # Docker base images (if using Docker)
+    - package-ecosystem: 'docker'
+      directory: '/frontend'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      reviewers:
+          - ''
+      commit-message:
+          prefix: 'chore(docker-frontend):'
+          include: 'scope'
+
+    - package-ecosystem: 'docker'
+      directory: '/backend'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      reviewers:
+          - ''
+      commit-message:
+          prefix: 'chore(docker-backend):'
+          include: 'scope'

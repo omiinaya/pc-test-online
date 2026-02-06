@@ -1,0 +1,112 @@
+# Custom Semgrep Rules for mmit-testing-app
+# These rules enforce security and code quality standards
+
+rules:
+    - id: no-console-in-production-build
+      pattern: console.$METHOD(...)
+      paths:
+          include:
+              - 'frontend/src/**/*.ts'
+              - 'frontend/src/**/*.vue'
+              - 'backend/src/**/*.js'
+      message: "Avoid using console methods in production code. Use the structured logger instead: Frontend: import { log } from '@/utils/logger', Backend: const logger = require('./logger')"
+      languages: [javascript, typescript]
+      severity: WARNING
+      metadata:
+          category: best-practice
+          technology: [javascript, typescript]
+
+    - id: check-localstorage-usage
+      pattern: localStorage.$METHOD(...)
+      message: 'Ensure sensitive data is not stored in localStorage. Consider using secure session storage or cookies with httpOnly flag.'
+      languages: [javascript, typescript]
+      severity: WARNING
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A03:2021 - Injection'
+
+    - id: no-hardcoded-secrets
+      pattern: |
+          $X = "...", where $X.includes("password") or $X.includes("secret") or $X.includes("api_key")
+      message: 'Hardcoded secrets detected. Use environment variables instead.'
+      languages: [javascript, typescript]
+      severity: ERROR
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A07:2021 - Identification and Authentication Failures'
+
+    - id: check-insecure-protocols
+      pattern: http://$URL
+      message: 'Use HTTPS instead of HTTP for secure communication.'
+      languages: [javascript, typescript]
+      severity: ERROR
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A05:2021 - Security Misconfiguration'
+
+    - id: no-eval-in-code
+      pattern: eval(...)
+      message: 'Avoid using eval() as it can execute arbitrary code and is a major security risk. Use safer alternatives like JSON.parse() or Function constructor with caution.'
+      languages: [javascript, typescript]
+      severity: ERROR
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A03:2021 - Injection'
+
+    - id: check-dynamic-import-strings
+      pattern: import("$$$STRING")
+      message: 'Dynamic imports with user-controlled strings can lead to code injection. Validate and sanitize the import path before using it.'
+      languages: [javascript, typescript]
+      severity: WARNING
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A03:2021 - Injection'
+
+    - id: no-dangerously-set-innerhtml
+      pattern: dangerouslySetInnerHTML.$X=$Y
+      message: 'Using dangerouslySetInnerHTML allows arbitrary HTML injection and XSS attacks. Use safe DOM manipulation methods or sanitize HTML before rendering.'
+      languages: [javascript, typescript]
+      severity: ERROR
+      metadata:
+          category: security
+          technology: [react, vue]
+          owasp: 'A03:2021 - Injection'
+
+    - id: check-cookie-security
+      pattern: cookie.$METHOD(..., $OPTIONS)
+      message: "When setting cookies, ensure security attributes are set: httpOnly: true (prevents XSS), secure: true (HTTPS only), sameSite: 'strict' or 'lax'"
+      languages: [javascript, typescript]
+      severity: WARNING
+      metadata:
+          category: security
+          technology: [javascript, typescript]
+          owasp: 'A05:2021 - Security Misconfiguration'
+
+    - id: no-empty-catch-blocks
+      pattern: |
+          catch ($E) {
+              ...
+          }
+      message: "Empty catch blocks hide errors and make debugging difficult. At least log the error: catch (error) { logger.error('Error:', error); }"
+      languages: [javascript, typescript]
+      severity: WARNING
+      metadata:
+          category: best-practice
+          technology: [javascript, typescript]
+
+    - id: check-unused-variables
+      pattern: |
+          const $VAR = $VAL;
+          ...
+          if (!$VAR) $STMT
+      message: 'Variables defined but never used may indicate dead code or bugs.'
+      languages: [javascript, typescript]
+      severity: INFO
+      metadata:
+          category: maintainability
+          technology: [javascript, typescript]

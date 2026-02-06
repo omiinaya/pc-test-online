@@ -1,0 +1,106 @@
+name: Security Scan
+
+on:
+    push:
+        branches: [main, develop, staging]
+    pull_request:
+        branches: [main, develop]
+    schedule:
+        # Run every Monday at 00:00 UTC
+        - cron: '0 0 * * 1'
+    workflow_dispatch:
+
+jobs:
+    semgrep-scan:
+        name: Semgrep Security Scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Run Semgrep
+              uses: returntocorp/semgrep-action@v1
+              with:
+                  config: >-
+                      p/security-audit
+                      p/owasp-top-ten
+                      p/cwe-top-25
+                      p/javascript
+                      p/typescript
+                  generateSarif: '1'
+                  auditOn: push
+
+            - name: Upload SARIF file to GitHub Security
+              uses: github/codeql-action/upload-sarif@v2
+              if: always()
+              with:
+                  sarif_file: semgrep.sarif
+                  category: semgrep
+
+            - name: Print Semgrep results summary
+              if: always()
+              run: |
+                  echo "Semgrep scan completed"
+                  echo "Check the 'Security' tab in GitHub for detailed findings"
+
+    dependency-check:
+        name: Dependency Vulnerability Scan
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: 'npm'
+
+            - name: Install dependencies (frontend)
+              working-directory: ./frontend
+              run: npm ci
+
+            - name: Install dependencies (backend)
+              working-directory: ./backend
+              run: npm ci
+
+            - name: Run npm audit (frontend)
+              working-directory: ./frontend
+              run: npm audit --audit-level=moderate
+              continue-on-error: true
+
+            - name: Run npm audit (backend)
+              working-directory: ./backend
+              run: npm audit --audit-level=moderate
+              continue-on-error: true
+
+    codeql-analysis:
+        name: CodeQL Analysis
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v2
+              with:
+                  languages: javascript, typescript
+                  queries: security-extended,security-and-quality
+
+            - name: Autobuild
+              uses: github/codeql-action/autobuild@v2
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v2
+              with:
+                  category: '/language:javascript-typescript'
