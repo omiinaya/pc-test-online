@@ -133,7 +133,7 @@ export function useWindowResize(
         if (immediate) {
             // Trigger the handler immediately
             if (typeof handler === 'function') {
-                handler(new Event('resize') as any);
+                (handler as (evt: Event) => void)(new Event('resize'));
             }
         }
     });

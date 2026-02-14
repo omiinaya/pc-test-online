@@ -153,7 +153,7 @@ export class TypeScriptMigrationHelper {
                 const parts = param.split('=').map(p => p.trim());
                 const paramName = parts[0];
                 const defaultValue = parts[1];
-                // @ts-ignore - defaultValue is guaranteed to be string after split
+                // @ts-expect-error - defaultValue is guaranteed to be string after split
                 const inferredType = this.inferParameterType(paramName, defaultValue || '');
 
                 return defaultValue

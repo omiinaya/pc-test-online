@@ -23,7 +23,7 @@ const logger = pino({
 /**
  * Sanitize log data to prevent log injection and limit size
  */
-export function sanitizeLogData(data: any): any {
+export function sanitizeLogData(data: unknown): unknown {
     if (data === null || data === undefined) {
         return data;
     }
@@ -32,7 +32,7 @@ export function sanitizeLogData(data: any): any {
         // Limit string length to prevent log bloat
         const MAX_STRING_LENGTH = 1000;
         return data.length > MAX_STRING_LENGTH
-            ? data.substring(0, MAX_STRING_LENGTH) + '... [truncated]'
+            ? `${data.substring(0, MAX_STRING_LENGTH)}... [truncated]`
             : data;
     }
 
@@ -47,7 +47,7 @@ export function sanitizeLogData(data: any): any {
     }
 
     if (data && typeof data === 'object') {
-        const sanitized: any = {};
+        const sanitized: Record<string, unknown> = {};
         const MAX_OBJECT_KEYS = 50;
         let keysProcessed = 0;
 
@@ -92,7 +92,7 @@ export const log = {
     /**
      * Debug level logging - only in development
      */
-    debug: (message: string, data?: any) => {
+    debug: (message: string, data?: unknown) => {
         if (!isProduction) {
             logger.debug(
                 {
@@ -106,7 +106,7 @@ export const log = {
     /**
      * Info level logging
      */
-    info: (message: string, data?: any) => {
+    info: (message: string, data?: unknown) => {
         logger.info(
             {
                 data: data ? sanitizeLogData(data) : undefined,
@@ -118,7 +118,7 @@ export const log = {
     /**
      * Warning level logging
      */
-    warn: (message: string, data?: any) => {
+    warn: (message: string, data?: unknown) => {
         logger.warn(
             {
                 data: data ? sanitizeLogData(data) : undefined,
@@ -130,7 +130,7 @@ export const log = {
     /**
      * Error level logging - always logged
      */
-    error: (message: string, error?: any) => {
+    error: (message: string, error?: unknown) => {
         logger.error(
             {
                 error: error ? sanitizeLogData(error) : undefined,
@@ -142,7 +142,7 @@ export const log = {
     /**
      * Fatal error logging - highest severity
      */
-    fatal: (message: string, error?: any) => {
+    fatal: (message: string, error?: unknown) => {
         logger.fatal(
             {
                 error: error ? sanitizeLogData(error) : undefined,
@@ -155,7 +155,7 @@ export const log = {
 /**
  * Create a child logger with additional context
  */
-export function createChildLogger(context: Record<string, any>) {
+export function createChildLogger(context: Record<string, unknown>) {
     return logger.child({
         context: sanitizeLogData(context),
     });

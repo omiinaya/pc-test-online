@@ -12,7 +12,7 @@ export interface ErrorMessages {
     HTTPS_REQUIRED: () => string;
     INITIALIZATION_FAILED: (componentName: string) => string;
     UNEXPECTED_ERROR: (operation: string) => string;
-    [key: string]: (...params: any[]) => string;
+    [key: string]: (...params: unknown[]) => string;
 }
 
 export interface UseErrorHandlingReturn {
@@ -21,7 +21,7 @@ export interface UseErrorHandlingReturn {
     hasError: Ref<boolean>;
 
     // Methods
-    setError: (errorType: keyof ErrorMessages, ...params: any[]) => void;
+    setError: (errorType: keyof ErrorMessages, ...params: unknown[]) => void;
     setCustomError: (message: string) => void;
     handleError: (err: unknown, context?: string) => void;
     clearError: () => void;
@@ -72,7 +72,7 @@ export function useErrorHandling(componentName: string = 'Component'): UseErrorH
     /**
      * Set an error with a standardized message
      */
-    const setError = (errorType: keyof ErrorMessages, ...params: any[]): void => {
+    const setError = (errorType: keyof ErrorMessages, ...params: unknown[]): void => {
         const messageFunction = errorMessages[errorType];
         if (messageFunction) {
             error.value = messageFunction(...params);

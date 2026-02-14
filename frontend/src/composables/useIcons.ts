@@ -18,7 +18,7 @@ interface IconProps {
     strokeLinejoin?: 'arcs' | 'bevel' | 'miter' | 'miter-clip' | 'round';
     class?: string;
     style?: Record<string, string>;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 const defaultIconProps: IconProps = {
@@ -35,8 +35,8 @@ const defaultIconProps: IconProps = {
 
 interface IconPath {
     tag?: string;
-    attrs?: Record<string, any>;
-    children?: any[];
+    attrs?: Record<string, unknown>;
+    children?: unknown[];
 }
 
 /**

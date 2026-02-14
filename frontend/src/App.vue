@@ -1,5 +1,5 @@
-<script>
-import { defineAsyncComponent } from 'vue';
+<script lang="ts">
+import { defineAsyncComponent, ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resetAllTestStates } from './composables/useTestState';
 import { useCSSCompatibility } from './composables/useCSSCompatibility';
@@ -47,7 +47,9 @@ export default {
         TouchTest: defineAsyncComponent(() => import('./components/TouchTest.vue')),
         BatteryTest: defineAsyncComponent(() => import('./components/BatteryTest.vue')),
         TestsCompleted: defineAsyncComponent(() => import('./components/TestsCompleted.vue')),
-        VisualizerContainer: defineAsyncComponent(() => import('./components/VisualizerContainer.vue')),
+        VisualizerContainer: defineAsyncComponent(
+            () => import('./components/VisualizerContainer.vue')
+        ),
         TestActionButtons: defineAsyncComponent(() => import('./components/TestActionButtons.vue')),
         TestHeader: defineAsyncComponent(() => import('./components/TestHeader.vue')),
         AppFooter: defineAsyncComponent(() => import('./components/AppFooter.vue')),
@@ -259,29 +261,33 @@ export default {
         },
     },
     methods: {
-      // Debounced test switching using the new debounce utility
-      debouncedSetActiveTest: debounce(function(this: any, testType: string) {
-        // If we're already switching, ignore new requests
-        if (this.isSwitching) {
-          console.log(
-            `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
-          );
-          return;
-        }
+        // Debounced test switching using the new debounce utility
+        debouncedSetActiveTest: debounce(
+            function (this: ComponentPublicInstance, testType: string) {
+                // If we're already switching, ignore new requests
+                if (this.isSwitching) {
+                    console.log(
+                        `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
+                    );
+                    return;
+                }
 
-        // Mark as switching
-        this.isSwitching = true;
-        console.log(`Switching from ${this.activeTest} to ${testType}`);
+                // Mark as switching
+                this.isSwitching = true;
+                console.log(`Switching from ${this.activeTest} to ${testType}`);
 
-        // Perform the switch immediately for good UX
-        this.setActiveTest(testType);
+                // Perform the switch immediately for good UX
+                this.setActiveTest(testType);
 
-        // Reset switching flag after a short delay to prevent rapid switches
-        setTimeout(() => {
-          this.isSwitching = false;
-          console.log(`Switch cooldown ended, ready for next switch`);
-        }, 200); // 200ms cooldown between switches
-      }, 50, { leading: true, trailing: false }),
+                // Reset switching flag after a short delay to prevent rapid switches
+                setTimeout(() => {
+                    this.isSwitching = false;
+                    console.log(`Switch cooldown ended, ready for next switch`);
+                }, 200); // 200ms cooldown between switches
+            },
+            50,
+            { leading: true, trailing: false }
+        ),
 
         setActiveTest(testType) {
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
@@ -863,15 +869,19 @@ export default {
             this.showExportMenu = false;
         },
         // Handle window resize to detect mobile/desktop mode with debouncing
-        handleResize: debounce(function(this: any) {
-          this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
-          console.log(
-            'Debounced resize - window.innerWidth:',
-            window.innerWidth,
-            'isMobile:',
-            this.isMobile
-          );
-        }, 250, { leading: false, trailing: true }),
+        handleResize: debounce(
+            function (this: ComponentPublicInstance) {
+                this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
+                console.log(
+                    'Debounced resize - window.innerWidth:',
+                    window.innerWidth,
+                    'isMobile:',
+                    this.isMobile
+                );
+            },
+            250,
+            { leading: false, trailing: true }
+        ),
     },
     mounted() {
         console.log('[DEBUG] App.mounted() - Component mounted to DOM', {

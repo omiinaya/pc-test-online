@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
 export interface DebounceOptions {
     leading?: boolean;
     trailing?: boolean;

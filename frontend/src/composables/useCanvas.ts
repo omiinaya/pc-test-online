@@ -111,7 +111,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null> = ref(null)):
         if (!context.value) return;
 
         Object.entries(styles).forEach(([property, value]) => {
-            (context.value as any)[property] = value;
+            (context.value as Record<string, unknown>)[property] = value;
         });
     };
 

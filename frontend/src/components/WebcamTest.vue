@@ -423,7 +423,8 @@ export default {
             let lastCurrentTime = video.currentTime;
             let checkCount = 0;
 
-            const checkFrame = () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            function checkFrame() {
                 checkCount++;
                 const currentTime = video.currentTime;
                 const timeDiff = currentTime - lastCurrentTime;
@@ -458,7 +459,7 @@ export default {
                 if (checkCount < 10) {
                     setTimeout(checkFrame, 1000);
                 }
-            };
+            }
         },
 
         // Force recreate stream with proper resolution constraints

@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { Ref } from 'vue';
 import type {
     DeviceType,
     TestType,
     TestStatus,
     DeviceInfo,
     TestResult,
-    TestConfig,
     VueRef,
     VueComputed,
 } from '@/types';
@@ -31,7 +29,7 @@ describe('Composable Function Types', () => {
                 startTest: async () => {},
                 stopTest: () => {},
                 resetTest: () => {},
-                selectDevice: (device: DeviceInfo) => {},
+                selectDevice: (_device: DeviceInfo) => {},
                 refreshDevices: async () => {},
             };
 
@@ -89,15 +87,17 @@ describe('Composable Function Types', () => {
                 testStatus: { value: 'completed' as TestStatus } as VueRef<TestStatus>,
 
                 // Input-specific properties
-                inputEvents: { value: [] as any[] } as VueRef<any[]>,
+                inputEvents: { value: [] as unknown[] } as VueRef<unknown[]>,
                 isRecording: { value: false } as VueRef<boolean>,
-                recordedData: { value: {} as Record<string, any> } as VueRef<Record<string, any>>,
+                recordedData: { value: {} as Record<string, unknown> } as VueRef<
+                    Record<string, unknown>
+                >,
 
                 // Input-specific methods
                 startRecording: () => {},
                 stopRecording: () => {},
                 clearRecordedData: () => {},
-                simulateInput: (event: any) => {},
+                simulateInput: (_event: unknown) => {},
             };
 
             expect(mockReturn.deviceType).toBe('keyboard');
@@ -122,8 +122,8 @@ describe('Composable Function Types', () => {
                 error: { value: null as Error | null } as VueRef<Error | null>,
 
                 refreshDevices: async () => {},
-                getDevicesByKind: (kind: string) => [] as DeviceInfo[],
-                getDeviceById: (deviceId: string) => null as DeviceInfo | null,
+                getDevicesByKind: (_kind: string) => [] as DeviceInfo[],
+                getDeviceById: (_deviceId: string) => null as DeviceInfo | null,
             };
 
             expect(mockReturn.availableDevices.value).toEqual([]);
@@ -143,9 +143,9 @@ describe('Composable Function Types', () => {
                 passedTests: { value: 0 } as VueComputed<number>,
                 failedTests: { value: 0 } as VueComputed<number>,
 
-                addTestResult: (result: TestResult) => {},
+                addTestResult: (_result: TestResult) => {},
                 clearResults: () => {},
-                getResultsByType: (testType: TestType) => [] as TestResult[],
+                getResultsByType: (_testType: TestType) => [] as TestResult[],
                 exportResults: () => '{}',
             };
 
@@ -167,9 +167,9 @@ describe('Composable Function Types', () => {
                 isTestRunning: { value: false } as VueRef<boolean>,
                 testTimeout: { value: 30000 } as VueRef<number>,
 
-                startTest: (testType: TestType) => {},
-                completeTest: (success: boolean, data?: any) => {},
-                failTest: (error: Error) => {},
+                startTest: (_testType: TestType) => {},
+                completeTest: (_success: boolean, _data?: unknown) => {},
+                failTest: (_error: Error) => {},
                 resetTestState: () => {},
             };
 
