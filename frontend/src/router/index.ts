@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router } from 'vue-router';
 import TestsPage from '../views/TestsPage.vue';
+import NotFoundPage from '../views/NotFoundPage.vue';
 
 // Define route type for better type safety
 export type AppRoute = RouteRecordRaw & {
     meta?: {
         requiresAuth?: boolean;
         title?: string;
+        noindex?: boolean;
     };
 };
 
@@ -18,12 +20,14 @@ const routes: AppRoute[] = [
             title: 'Device Tests',
         },
     },
-    // Catch-all route - redirect anything else to TestsPage
+    // Catch-all route - show 404 page instead of redirect (better for SEO)
     {
         path: '/:pathMatch(.*)*',
-        redirect: '/',
+        name: 'NotFound',
+        component: NotFoundPage,
         meta: {
-            title: 'Not Found',
+            title: 'Page Not Found',
+            noindex: true, // Prevent indexing 404 pages
         },
     },
 ];

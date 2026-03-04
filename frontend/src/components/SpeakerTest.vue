@@ -163,6 +163,8 @@ export default {
          * Left: do re mi fa, Right: so la si do, Both: full scale
          */
         const playChannel = async channel => {
+            console.log(`[SpeakerTest] playChannel(${channel}) starting...`);
+
             // Clear any existing fallback timeout first
             if (currentFallbackTimeoutId) {
                 clearTimeout(currentFallbackTimeoutId);
@@ -177,7 +179,11 @@ export default {
                     await audioContext.value.resume();
                 }
 
-                stopSound(false); // Stop previous sound without setting isPlaying to false
+                // Clear test timeout if exists
+                if (testTimeout.value) {
+                    clearTimeout(testTimeout.value);
+                    testTimeout.value = null;
+                }
 
                 return new Promise((resolve, reject) => {
                     try {
@@ -203,9 +209,11 @@ export default {
                         }
 
                         const noteDuration = 250; // 250ms per note for better clarity
+                        const noteDurationSec = noteDuration / 1000; // Convert to seconds
                         let currentNoteIndex = 0;
                         let fallbackTimeoutId = null; // Local variable for this Promise instance
                         let isResolved = false; // Track if Promise is already resolved
+                        const startTime = audioContext.value.currentTime + 0.1; // Start 100ms from now
 
                         const safeResolve = () => {
                             if (!isResolved) {
@@ -225,17 +233,16 @@ export default {
                         };
 
                         const playNextNote = () => {
+                            console.log(
+                                `[SpeakerTest] playNextNote() - Note ${currentNoteIndex}/${scaleFrequencies.length}, freq: ${scaleFrequencies[currentNoteIndex]}Hz`
+                            );
+
                             if (currentNoteIndex >= scaleFrequencies.length) {
-                                console.log('[SpeakerTest] All notes played, resolving Promise');
+                                console.log('[SpeakerTest] All notes completed! Cleaning up...');
                                 stopSound(false);
                                 safeResolve();
                                 return;
                             }
-
-                            // Create new oscillator for each note
-                            const noteOscillator = audioContext.value.createOscillator();
-                            const noteGain = audioContext.value.createGain();
-                            const notePan = audioContext.value.createStereoPanner();
 
                             noteOscillator.type = 'sine';
                             noteOscillator.frequency.setValueAtTime(
@@ -273,17 +280,28 @@ export default {
                                 .connect(notePan)
                                 .connect(audioContext.value.destination);
 
-                            noteOscillator.start();
+                            const startTime = audioContext.value.currentTime;
+                            noteOscillator.start(startTime);
 
-                            // Stop the note
+                            console.log(
+                                `[SpeakerTest] Note ${currentNoteIndex} started at audio time ${startTime}, will stop at ${startTime + noteDuration / 1000}s`
+                            );
+
+                            // Stop the note using audio context time for precise timing
+                            noteOscillator.stop(startTime + noteDuration / 1000);
+
+                            // Also use setTimeout as fallback cleanup
                             const noteTimeoutId = setTimeout(() => {
+                                console.log(
+                                    `[SpeakerTest] setTimeout cleanup for note ${currentNoteIndex - 1}`
+                                );
                                 try {
                                     noteOscillator.stop();
                                     noteOscillator.disconnect();
                                 } catch (e) {
                                     // Ignore errors when stopping
                                 }
-                            }, noteDuration);
+                            }, noteDuration + 100); // Add 100ms buffer
 
                             // Track the timeout for memory management
                             const noteTimeoutResourceId = memoryManager.trackResource(
@@ -296,7 +314,11 @@ export default {
                             currentNoteIndex++;
 
                             // Schedule next note
+                            console.log(
+                                `[SpeakerTest] Scheduling note ${currentNoteIndex} in ${noteDuration}ms`
+                            );
                             testTimeout.value = setTimeout(() => {
+                                console.log(`[SpeakerTest] Timeout fired - calling playNextNote()`);
                                 playNextNote();
                             }, noteDuration);
 
@@ -317,18 +339,25 @@ export default {
                         };
 
                         // Start playing the scale
+                        console.log(
+                            `[SpeakerTest] === Starting to play ${scaleFrequencies.length} notes ===`
+                        );
                         playNextNote();
 
                         // Fallback timeout for safety
                         const actualTimeoutMs = scaleFrequencies.length * noteDuration + 1000; // Add 1 second buffer
+                        console.log(
+                            `[SpeakerTest] Setting fallback timeout for ${actualTimeoutMs}ms (${scaleFrequencies.length} notes * ${noteDuration}ms + 1000ms buffer)`
+                        );
                         fallbackTimeoutId = setTimeout(() => {
                             console.log(
-                                `[SpeakerTest] Fallback timeout fired after ${actualTimeoutMs}ms, forcing stop`
+                                `[SpeakerTest] Fallback timeout fired after ${actualTimeoutMs}ms, forcing stop - currentNoteIndex: ${currentNoteIndex}`
                             );
                             fallbackTimeoutId = null;
                             stopSound(false);
                             safeResolve();
                         }, actualTimeoutMs);
+                        console.log(`[SpeakerTest] Fallback timeout ID: ${fallbackTimeoutId}`);
 
                         // Also store in module-level variable for external cleanup
                         currentFallbackTimeoutId = fallbackTimeoutId;
@@ -347,7 +376,13 @@ export default {
          * Stop current sound
          */
         const stopSound = (endTest = true) => {
-            console.log(`[SpeakerTest] stopSound called, endTest: ${endTest}`);
+            console.log(
+                `[SpeakerTest] stopSound called with endTest: ${endTest}, currentNoteIndex: ${currentNoteIndex}, testTimeout.value: ${testTimeout.value}`
+            );
+
+            // Stack trace to help debug who's calling stopSound
+            const stack = new Error().stack;
+            console.log(`[SpeakerTest] stopSound stack trace:`, stack?.split('\n')?.[2]?.trim());
 
             // Clear the fallback timeout
             if (currentFallbackTimeoutId) {

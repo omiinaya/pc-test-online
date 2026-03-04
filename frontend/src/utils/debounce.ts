@@ -4,14 +4,14 @@ export interface DebounceOptions {
     maxWait?: number;
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
     func: T,
     wait: number,
     options: DebounceOptions = {}
 ): (...args: Parameters<T>) => void {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let lastArgs: Parameters<T> | null = null;
-    let lastThis: any;
+    let lastThis: unknown;
     let result: ReturnType<T> | undefined;
     let lastCallTime: number | null = null;
     let lastInvokeTime = 0;
@@ -70,12 +70,12 @@ export function debounce<T extends (...args: any[]) => any>(
         timeoutId = setTimeout(timerExpired, remainingWait);
     };
 
-    const debounced = function (this: any, ...args: Parameters<T>): void {
+    const debounced = function (this: unknown, ...args: Parameters<T>): void {
         const time = Date.now();
         const isInvoking = shouldInvoke(time);
 
         lastArgs = args;
-        lastThis = this;
+        lastThis = this as Parameters<T>['this'] extends infer R ? R : unknown;
         lastCallTime = time;
 
         if (isInvoking) {
@@ -118,7 +118,7 @@ export interface ThrottleOptions {
     trailing?: boolean;
 }
 
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
     func: T,
     wait: number,
     options: ThrottleOptions = {}

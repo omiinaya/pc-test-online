@@ -81,9 +81,7 @@ const csrfProtection = csrf({
     },
 });
 
-// Apply CSRF protection to all routes (token endpoint will be exempted)
-app.use(csrfProtection);
-
+// Apply CORS before other middleware
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
@@ -123,14 +121,14 @@ if (process.env.NODE_ENV === 'production') {
 // API Routes with enhanced i18n support
 logger.debugLog('Setting up API routes');
 
-// CSRF token endpoint (exempt from CSRF protection by bypassing middleware)
-app.get('/api/csrf-token', (req, res) => {
+// CSRF token endpoint (GET - no CSRF required)
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.json({
         csrfToken: req.csrfToken(),
     });
 });
 
-// Health endpoint with comprehensive information
+// Health endpoint with comprehensive information (GET - no CSRF required for crawlers)
 app.get('/api/health', (req, res) => {
     logger.debugLog('Health endpoint accessed', {
         method: req.method,
@@ -186,8 +184,8 @@ app.get('/api', (req, res) => {
     });
 });
 
-// Enhanced test results endpoint with validation and i18n
-app.post('/api/test-results', testLimiter, validateTestResult, (req, res) => {
+// Enhanced test results endpoint with validation and i18n (CSRF protected)
+app.post('/api/test-results', csrfProtection, testLimiter, validateTestResult, (req, res) => {
     logger.debugLog('Test results endpoint accessed', {
         method: req.method,
         path: req.path,
@@ -266,50 +264,58 @@ app.get('/api/system-info', (req, res) => {
     });
 });
 
-// Validation example endpoint
-app.post('/api/validate', validationLimiter, validateValidateRequest, (req, res) => {
-    logger.debugLog('Validation endpoint accessed', {
-        method: req.method,
-        path: req.path,
-        contentType: req.get('Content-Type'),
-    });
-    const { email, password, age } = req.body;
-    const errors = [];
+// Validation example endpoint (CSRF protected)
+app.post(
+    '/api/validate',
+    csrfProtection,
+    validationLimiter,
+    validateValidateRequest,
+    (req, res) => {
+        logger.debugLog('Validation endpoint accessed', {
+            method: req.method,
+            path: req.path,
+            contentType: req.get('Content-Type'),
+        });
+        const { email, password, age } = req.body;
+        const errors = [];
 
-    // Email validation
-    if (!email) {
-        errors.push(req.t('validation.required.field', { field: 'email' }));
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.push(req.t('validation.format.email'));
-    }
+        // Email validation
+        if (!email) {
+            errors.push(req.t('validation.required.field', { field: 'email' }));
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.push(req.t('validation.format.email'));
+        }
 
-    // Password validation
-    if (!password) {
-        errors.push(req.t('validation.required.field', { field: 'password' }));
-    } else if (password.length < 8) {
-        errors.push(req.t('validation.length.min', { min: 8 }));
-    }
+        // Password validation
+        if (!password) {
+            errors.push(req.t('validation.required.field', { field: 'password' }));
+        } else if (password.length < 8) {
+            errors.push(req.t('validation.length.min', { min: 8 }));
+        }
 
-    // Age validation
-    if (age && (age < 18 || age > 120)) {
-        errors.push(req.t('validation.value.between', { min: 18, max: 120 }));
-    }
+        // Age validation
+        if (age && (age < 18 || age > 120)) {
+            errors.push(req.t('validation.value.between', { min: 18, max: 120 }));
+        }
 
-    if (errors.length > 0) {
-        return res.status(400).json({
-            error: req.t('api.errors.validation.invalidData'),
-            message: req.t('api.errors.validation.missingRequired', { fields: errors.join(', ') }),
-            details: errors,
-            code: 'VALIDATION_ERROR',
+        if (errors.length > 0) {
+            return res.status(400).json({
+                error: req.t('api.errors.validation.invalidData'),
+                message: req.t('api.errors.validation.missingRequired', {
+                    fields: errors.join(', '),
+                }),
+                details: errors,
+                code: 'VALIDATION_ERROR',
+            });
+        }
+
+        res.json({
+            success: true,
+            message: req.t('validation.success'),
+            timestamp: new Date().toISOString(),
         });
     }
-
-    res.json({
-        success: true,
-        message: req.t('validation.success'),
-        timestamp: new Date().toISOString(),
-    });
-});
+);
 
 // Catch all handler for production (serve frontend)
 logger.debugLog('Setting up catch-all handler for production');

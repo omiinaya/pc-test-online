@@ -1,9 +1,31 @@
 <script>
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, type ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resetAllTestStates } from './composables/useTestState';
 import { useCSSCompatibility } from './composables/useCSSCompatibility';
 import { debounce } from './utils/debounce';
+import LoadingSpinner from './components/LoadingSpinner.vue';
+import AsyncErrorFallback from './components/AsyncErrorFallback.vue';
+import PerformanceMonitor from './components/PerformanceMonitor.vue';
+
+// Type for the App component instance (Options API)
+interface AppThis extends ComponentPublicInstance {
+    isMobile: boolean;
+    showSummaryModal: boolean;
+    activeTest: string;
+    results: Record<string, boolean | null>;
+    skippedTests: string[];
+    testIconMap: Record<string, string>;
+    testNameMap: Record<string, string>;
+    timings: Record<string, { start: number | null; end: number | null; duration: number | null }>;
+    runCounts: Record<string, number>;
+    showExportMenu: boolean;
+    switchDebounceTimer: ReturnType<typeof setTimeout> | null;
+    isSwitching: boolean;
+    showPerformanceMonitor: boolean;
+    setActiveTest: (testType: string) => void;
+}
+
 // Dynamic imports for PDF libraries to reduce initial bundle size
 
 export default {
@@ -39,18 +61,91 @@ export default {
         return { t };
     },
     components: {
-        WebcamTest: defineAsyncComponent(() => import('./components/WebcamTest.vue')),
-        MicrophoneTest: defineAsyncComponent(() => import('./components/MicrophoneTest.vue')),
-        SpeakerTest: defineAsyncComponent(() => import('./components/SpeakerTest.vue')),
-        KeyboardTest: defineAsyncComponent(() => import('./components/KeyboardTest.vue')),
-        MouseTest: defineAsyncComponent(() => import('./components/MouseTest.vue')),
-        TouchTest: defineAsyncComponent(() => import('./components/TouchTest.vue')),
-        BatteryTest: defineAsyncComponent(() => import('./components/BatteryTest.vue')),
-        TestsCompleted: defineAsyncComponent(() => import('./components/TestsCompleted.vue')),
-        VisualizerContainer: defineAsyncComponent(() => import('./components/VisualizerContainer.vue')),
-        TestActionButtons: defineAsyncComponent(() => import('./components/TestActionButtons.vue')),
-        TestHeader: defineAsyncComponent(() => import('./components/TestHeader.vue')),
-        AppFooter: defineAsyncComponent(() => import('./components/AppFooter.vue')),
+        WebcamTest: defineAsyncComponent({
+            loader: () => import('./components/WebcamTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        MicrophoneTest: defineAsyncComponent({
+            loader: () => import('./components/MicrophoneTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        SpeakerTest: defineAsyncComponent({
+            loader: () => import('./components/SpeakerTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        KeyboardTest: defineAsyncComponent({
+            loader: () => import('./components/KeyboardTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        MouseTest: defineAsyncComponent({
+            loader: () => import('./components/MouseTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        TouchTest: defineAsyncComponent({
+            loader: () => import('./components/TouchTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        BatteryTest: defineAsyncComponent({
+            loader: () => import('./components/BatteryTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        TestsCompleted: defineAsyncComponent({
+            loader: () => import('./components/TestsCompleted.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        VisualizerContainer: defineAsyncComponent({
+            loader: () => import('./components/VisualizerContainer.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        TestActionButtons: defineAsyncComponent({
+            loader: () => import('./components/TestActionButtons.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        TestHeader: defineAsyncComponent({
+            loader: () => import('./components/TestHeader.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        AppFooter: defineAsyncComponent({
+            loader: () => import('./components/AppFooter.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000
+        }),
+        PerformanceMonitor,
     },
     data() {
         return {
@@ -106,6 +201,7 @@ export default {
             showExportMenu: false,
             switchDebounceTimer: null,
             isSwitching: false,
+            showPerformanceMonitor: false,
         };
     },
     computed: {
@@ -258,9 +354,9 @@ export default {
             return styleMap[this.activeTest] || { minHeight: '250px' };
         },
     },
-    methods: {
+methods: {
       // Debounced test switching using the new debounce utility
-      debouncedSetActiveTest: debounce(function(this: any, testType: string) {
+      debouncedSetActiveTest: debounce(function(this: AppThis, testType: string) {
         // If we're already switching, ignore new requests
         if (this.isSwitching) {
           console.log(
@@ -477,6 +573,9 @@ export default {
         },
         toggleExportMenu() {
             this.showExportMenu = !this.showExportMenu;
+        },
+        togglePerformanceMonitor() {
+            this.showPerformanceMonitor = !this.showPerformanceMonitor;
         },
         async exportAsPDF() {
             // Dynamic imports to reduce initial bundle size
@@ -863,7 +962,7 @@ export default {
             this.showExportMenu = false;
         },
         // Handle window resize to detect mobile/desktop mode with debouncing
-        handleResize: debounce(function(this: any) {
+        handleResize: debounce(function(this: AppThis) {
           this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
           console.log(
             'Debounced resize - window.innerWidth:',
@@ -1273,6 +1372,19 @@ export default {
                 </div>
             </div>
         </transition>
+
+        <!-- Performance Monitor Toggle Button -->
+        <button
+            class="performance-toggle-btn"
+            @click="togglePerformanceMonitor"
+            :title="showPerformanceMonitor ? $t('performance.hide') : $t('performance.show')"
+            aria-label="Toggle performance monitor"
+        >
+            ⚡
+        </button>
+
+        <!-- Performance Monitor Panel -->
+        <PerformanceMonitor v-if="showPerformanceMonitor" class="performance-panel" />
     </div>
 </template>
 
@@ -1840,5 +1952,72 @@ export default {
     background-color: #1a1a1a;
     border-bottom: 1px solid #333;
     z-index: 100;
+}
+
+/* Performance Monitor Toggle Button */
+.performance-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.performance-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+}
+
+.performance-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+/* Performance Monitor Panel */
+.performance-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 9998;
+    max-width: 420px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--surface-primary, #1e1e1e);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    padding: 16px;
+}
+
+/* Dark scrollbar for performance panel */
+.performance-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.performance-panel::-webkit-scrollbar-track {
+    background: var(--surface-secondary, #2a2a2a);
+    border-radius: 4px;
+}
+
+.performance-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color, #444);
+    border-radius: 4px;
+}
+
+.performance-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #666);
 }
 </style>

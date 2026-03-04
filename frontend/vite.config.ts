@@ -1,6 +1,7 @@
 import { defineConfig, type PluginOption } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import WindiCSS from 'vite-plugin-windicss';
+import { VitePWA } from 'vite-plugin-pwa';
 import { type UserConfig } from 'vite';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -11,6 +12,50 @@ export default defineConfig({
     plugins: [
         vue(),
         WindiCSS(),
+        // Progressive Web App support with service worker
+        new VitePWA({
+            registerType: 'autoUpdate',
+            includeAssets: ['favicon.ico'],
+            manifest: {
+                name: 'MMIT Testing Suite',
+                short_name: 'MMIT Test',
+                description: 'Computer hardware testing application',
+                theme_color: '#ffffff',
+                background_color: '#ffffff',
+                display: 'standalone',
+                icons: [
+                    {
+                        src: 'pwa-192x192.png',
+                        sizes: '192x192',
+                        type: 'image/png',
+                    },
+                    {
+                        src: 'pwa-512x512.png',
+                        sizes: '512x512',
+                        type: 'image/png',
+                    },
+                ],
+            },
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+                runtimeCaching: [
+                    {
+                        urlPattern: /^https:\/\/api\./i,
+                        handler: 'NetworkFirst',
+                        options: {
+                            cacheName: 'api-cache',
+                            expiration: {
+                                maxEntries: 50,
+                                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200],
+                            },
+                        },
+                    },
+                ],
+            },
+        }),
         // Bundle analyzer for production builds
         process.env.ANALYZE === 'true'
             ? (visualizer({

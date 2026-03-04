@@ -32,7 +32,7 @@ export function sanitizeLogData(data: any): any {
         // Limit string length to prevent log bloat
         const MAX_STRING_LENGTH = 1000;
         return data.length > MAX_STRING_LENGTH
-            ? data.substring(0, MAX_STRING_LENGTH) + '... [truncated]'
+            ? `${data.substring(0, MAX_STRING_LENGTH)}... [truncated]`
             : data;
     }
 

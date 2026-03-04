@@ -1,5 +1,7 @@
 <script>
 import { defineAsyncComponent } from 'vue';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
+import AsyncErrorFallback from '../components/AsyncErrorFallback.vue';
 import { resetAllTestStates } from '../composables/useTestState';
 import { useCSSCompatibility } from '../composables/useCSSCompatibility';
 import { useI18n } from 'vue-i18n';
@@ -9,21 +11,83 @@ import { debounce } from '../utils/debounce';
 export default {
     name: 'TestsPage',
     components: {
-        WebcamTest: defineAsyncComponent(() => import('../components/WebcamTest.vue')),
-        MicrophoneTest: defineAsyncComponent(() => import('../components/MicrophoneTest.vue')),
-        SpeakerTest: defineAsyncComponent(() => import('../components/SpeakerTest.vue')),
-        KeyboardTest: defineAsyncComponent(() => import('../components/KeyboardTest.vue')),
-        MouseTest: defineAsyncComponent(() => import('../components/MouseTest.vue')),
-        TouchTest: defineAsyncComponent(() => import('../components/TouchTest.vue')),
-        BatteryTest: defineAsyncComponent(() => import('../components/BatteryTest.vue')),
-        TestsCompleted: defineAsyncComponent(() => import('../components/TestsCompleted.vue')),
-        VisualizerContainer: defineAsyncComponent(
-            () => import('../components/VisualizerContainer.vue')
-        ),
-        TestActionButtons: defineAsyncComponent(
-            () => import('../components/TestActionButtons.vue')
-        ),
-        TestHeader: defineAsyncComponent(() => import('../components/TestHeader.vue')),
+        WebcamTest: defineAsyncComponent({
+            loader: () => import('../components/WebcamTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        MicrophoneTest: defineAsyncComponent({
+            loader: () => import('../components/MicrophoneTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        SpeakerTest: defineAsyncComponent({
+            loader: () => import('../components/SpeakerTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        KeyboardTest: defineAsyncComponent({
+            loader: () => import('../components/KeyboardTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        MouseTest: defineAsyncComponent({
+            loader: () => import('../components/MouseTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        TouchTest: defineAsyncComponent({
+            loader: () => import('../components/TouchTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        BatteryTest: defineAsyncComponent({
+            loader: () => import('../components/BatteryTest.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        TestsCompleted: defineAsyncComponent({
+            loader: () => import('../components/TestsCompleted.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        VisualizerContainer: defineAsyncComponent({
+            loader: () => import('../components/VisualizerContainer.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        TestActionButtons: defineAsyncComponent({
+            loader: () => import('../components/TestActionButtons.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
+        TestHeader: defineAsyncComponent({
+            loader: () => import('../components/TestHeader.vue'),
+            loadingComponent: LoadingSpinner,
+            errorComponent: AsyncErrorFallback,
+            delay: 200,
+            timeout: 10000,
+        }),
     },
     setup() {
         const { t } = useI18n();
