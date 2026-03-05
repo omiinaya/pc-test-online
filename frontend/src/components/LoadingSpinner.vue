@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 export default {
     name: 'LoadingSpinner',
     props: {
         size: {
-            type: String,
+            type: String as () => 'small' | 'medium' | 'large',
             default: 'medium',
-            validator: value => ['small', 'medium', 'large'].includes(value),
+            validator: (value: string) => ['small', 'medium', 'large'].includes(value),
         },
     },
     setup() {
