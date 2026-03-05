@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 export default {
     name: 'DeviceSelector',
     props: {
         devices: {
-            type: Array,
+            type: Array as () => any[], // Could be more specific with device interface
             required: true,
         },
         selectedDeviceId: {
