@@ -202,6 +202,7 @@ export default {
             switchDebounceTimer: null,
             isSwitching: false,
             showPerformanceMonitor: false,
+            announcement: '',
         };
     },
     computed: {
@@ -440,6 +441,11 @@ methods: {
 
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
+            this.announcement = this.t('announcements.testFailed', { test: this.testNameMap[testType] });
+            // Clear announcement after 3 seconds for better UX
+            setTimeout(() => {
+                this.announcement = '';
+            }, 3000);
         },
         onTestSkipped(payload) {
             // Support both old (string) and new (object) signatures for robustness
@@ -483,6 +489,11 @@ methods: {
             this.results[testType] = null; // Keep as pending, but filtered out of summary
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
+            this.announcement = this.t('announcements.testSkipped', { test: this.testNameMap[testType] });
+            // Clear announcement after 3 seconds for better UX
+            setTimeout(() => {
+                this.announcement = '';
+            }, 3000);
         },
         autoAdvance(currentTest) {
             const tests = [
@@ -1062,12 +1073,17 @@ methods: {
 
 <template>
     <!-- [DEBUG] App template rendering started at: {{ new Date().toISOString() }} -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div v-if="!isMobile" class="app-layout">
         <!-- App Header with test title only in navbar -->
         <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />
 
         <!-- Main Content Only - Sidebars removed to avoid duplication with TestsPage.vue -->
-        <main class="main-content">
+        <main class="main-content" id="main-content">
+            <!-- Screen reader live region for announcements -->
+            <div aria-live="polite" aria-atomic="true" class="visually-hidden">
+                {{ announcement }}
+            </div>
             <!-- Test Header with description only -->
             <TestHeader :test-description="currentTestDescription" :center-align="true" />
 
@@ -1126,7 +1142,11 @@ methods: {
         </header>
 
         <!-- Main Content -->
-        <main class="mobile-main-content">
+        <main class="mobile-main-content" id="main-content">
+            <!-- Screen reader live region for announcements -->
+            <div aria-live="polite" aria-atomic="true" class="visually-hidden">
+                {{ announcement }}
+            </div>
             <VisualizerContainer
                 :custom-styles="currentContainerStyles"
                 :keyboard-mode="activeTest === 'keyboard'"
@@ -1389,6 +1409,34 @@ methods: {
 </template>
 
 <style>
+/* Skip link for accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: white;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+}
+.skip-link:focus {
+    top: 0;
+}
+
+/* Visually hidden but accessible */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* Global Layout */
 .app-layout {
     display: flex;

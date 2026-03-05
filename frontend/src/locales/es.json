@@ -4,14 +4,14 @@
     "title": "MMIT Lab - Suite de Pruebas de Hardware",
     "description": "Pruebas de hardware completas hechas simples y accesibles"
   },
-  
+
   "navigation": {
     "tests": "Pruebas",
     "about": "Acerca de",
     "webVitals": "Web Vitals",
     "home": "Inicio"
   },
-  
+
   "tests": {
     "webcam": {
       "name": "Cámara",
@@ -53,7 +53,7 @@
       "description": "Revisa tus resultados de prueba y descarga el informe completo."
     }
   },
-  
+
   "buttons": {
     "pass": "Aprobar",
     "fail": "Fallar",
@@ -74,7 +74,7 @@
     "confirm": "Confirmar",
     "dismiss": "Descartar"
   },
-  
+
   "messages": {
     "success": {
       "testPassed": "¡Prueba aprobada exitosamente!",
@@ -100,7 +100,7 @@
       "grantPermission": "Por favor concede permiso para acceder al dispositivo"
     }
   },
-  
+
   "status": {
     "pending": "Pendiente",
     "inProgress": "En Progreso",
@@ -113,7 +113,7 @@
     "connected": "Conectado",
     "disconnected": "Desconectado"
   },
-  
+
   "ui": {
     "loading": "Cargando...",
     "saving": "Guardando...",
@@ -141,7 +141,7 @@
     "exitFullscreen": "Salir de Pantalla Completa",
     "view_source_code": "Ver Código Fuente en GitHub"
   },
-  
+
   "permissions": {
     "camera": "Acceso a Cámara",
     "microphone": "Acceso a Micrófono",
@@ -152,7 +152,7 @@
     "required": "Requerido para esta característica",
     "optional": "Opcional para experiencia mejorada"
   },
-  
+
   "results": {
     "summary": "Resumen de Pruebas",
     "totalTests": "Total de Pruebas",
@@ -171,7 +171,7 @@
     "duration": "Duración",
     "status": "Estado"
   },
-  
+
   "about": {
     "title": "Acerca de MMIT Lab",
     "subtitle": "Pruebas de hardware completas hechas simples y accesibles",
@@ -267,7 +267,7 @@
       ]
     }
   },
-  
+
   "sidebar": {
     "tests": "Pruebas",
     "summary": "Resumen",
@@ -276,7 +276,7 @@
     "skippedTests": "Pruebas Saltadas",
     "passedTests": "Pruebas Aprobadas"
   },
-  
+
   "export": {
     "title": "Exportar Resultados",
     "format": "Formato de Exportación",
@@ -295,14 +295,14 @@
       "skipped": "Saltado:"
     }
   },
-  
+
   "time": {
     "seconds": "{count} segundo | {count} segundos",
     "minutes": "{count} minuto | {count} minutos",
     "hours": "{count} hora | {count} horas",
     "days": "{count} día | {count} días"
   },
-  
+
   "common": {
     "unknown": "Desconocido",
     "unknownComponent": "Componente Desconocido",
@@ -456,7 +456,7 @@
     "resetTests": "Reiniciar Pruebas",
     "exportResults": "Exportar Resultados"
   },
-  
+
   "battery": {
     "chargeLabel": "Carga",
     "statusLabel": "Estado",
@@ -480,7 +480,6 @@
     },
     "startingTest": "Iniciando prueba en {seconds}s..."
   },
-
 
   "keyboard": {
     "mobile_unavailable": "Prueba de Teclado No Disponible en Móvil",
@@ -556,5 +555,10 @@
       "requires_interaction": "Requiere interacción",
       "not_available": "N/A"
     }
+  },
+  "announcements": {
+    "testCompleted": "Prueba {test} completada exitosamente.",
+    "testFailed": "Prueba {test} fallida.",
+    "testSkipped": "Prueba {test} omitida."
   }
 }
