@@ -244,6 +244,11 @@ export default {
                                 return;
                             }
 
+                            // Create new oscillator for each note
+                            const noteOscillator = audioContext.value.createOscillator();
+                            const noteGain = audioContext.value.createGain();
+                            const notePan = audioContext.value.createStereoPanner();
+
                             noteOscillator.type = 'sine';
                             noteOscillator.frequency.setValueAtTime(
                                 scaleFrequencies[currentNoteIndex],
