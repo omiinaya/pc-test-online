@@ -15,7 +15,14 @@ export default defineConfig({
         // Progressive Web App support with service worker
         new VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico'],
+            includeAssets: [
+                'favicon-optimized.svg',
+                'favicon.svg',
+                'favicon.png',
+                'robots.txt',
+                'sitemap.xml',
+                'manifest.json',
+            ],
             manifest: {
                 name: 'MMIT Testing Suite',
                 short_name: 'MMIT Test',
@@ -111,7 +118,6 @@ export default defineConfig({
                 manualChunks: {
                     // Vendor chunks
                     'vue-vendor': ['vue', '@vueuse/core'],
-                    'ml-vendor': ['@tensorflow/tfjs', 'ml-matrix'],
 
                     // Component chunks
                     'test-components': [

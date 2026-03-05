@@ -8,7 +8,7 @@ export default {
             validator: value => ['small', 'medium', 'large'].includes(value),
         },
     },
-    setup(props) {
+    setup() {
         const sizeClasses = {
             small: 'spinner--small',
             medium: 'spinner--medium',

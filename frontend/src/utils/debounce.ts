@@ -1,22 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Debounce and Throttle utilities for performance optimization
+// These use `any` internally to preserve `this` context for any function signature
+
 export interface DebounceOptions {
     leading?: boolean;
     trailing?: boolean;
     maxWait?: number;
 }
 
-export function debounce<T extends (...args: unknown[]) => unknown>(
+export function debounce<T extends (...args: any[]) => any>(
     func: T,
     wait: number,
     options: DebounceOptions = {}
-): (...args: Parameters<T>) => void {
+): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let lastArgs: Parameters<T> | null = null;
-    let lastThis: unknown;
-    let result: ReturnType<T> | undefined;
+    let lastThis: any = null;
+    let result: any;
     let lastCallTime: number | null = null;
     let lastInvokeTime = 0;
 
     const { leading = false, trailing = true, maxWait } = options;
+
     const shouldInvoke = (time: number): boolean => {
         const timeSinceLastCall = lastCallTime ? time - lastCallTime : wait;
         const timeSinceLastInvoke = time - lastInvokeTime;
@@ -28,7 +33,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
         );
     };
 
-    const invokeFunc = (time: number): ReturnType<T> | undefined => {
+    const invokeFunc = (time: number): void => {
         const args = lastArgs;
         const thisArg = lastThis;
 
@@ -40,7 +45,6 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
         if (args) {
             result = func.apply(thisArg, args);
         }
-        return result;
     };
 
     const trailingEdge = (time: number): void => {
@@ -70,12 +74,12 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
         timeoutId = setTimeout(timerExpired, remainingWait);
     };
 
-    const debounced = function (this: unknown, ...args: Parameters<T>): void {
+    const debounced = function (this: any, ...args: Parameters<T>): void {
         const time = Date.now();
         const isInvoking = shouldInvoke(time);
 
         lastArgs = args;
-        lastThis = this as Parameters<T>['this'] extends infer R ? R : unknown;
+        lastThis = this;
         lastCallTime = time;
 
         if (isInvoking) {
@@ -110,24 +114,25 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
         return result;
     };
 
-    return debounced;
+    return debounced as T & {
+        cancel(): void;
+        flush(): ReturnType<T> | undefined;
+    };
 }
 
-export interface ThrottleOptions {
-    leading?: boolean;
-    trailing?: boolean;
-}
-
-export function throttle<T extends (...args: unknown[]) => unknown>(
+export function throttle<T extends (...args: any[]) => any>(
     func: T,
     wait: number,
-    options: ThrottleOptions = {}
-): (...args: Parameters<T>) => void {
+    options: { leading?: boolean; trailing?: boolean } = {}
+): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
     const { leading = true, trailing = true } = options;
 
     return debounce(func, wait, {
         leading,
         trailing,
         maxWait: wait,
-    });
+    }) as T & {
+        cancel(): void;
+        flush(): ReturnType<T> | undefined;
+    };
 }
