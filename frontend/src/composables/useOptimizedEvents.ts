@@ -9,7 +9,7 @@ export interface OptimizedEventOptions {
 }
 
 export function useOptimizedEvents() {
-    const listeners = new Map<string, Function>();
+    const listeners = new Map<string, () => void>();
 
     const addOptimizedEventListener = <K extends keyof WindowEventMap | string>(
         target: Window | Document | HTMLElement,
@@ -46,7 +46,7 @@ export function useOptimizedEvents() {
 
     // Common optimized events
     const addResizeListener = (
-        listener: (this: Window, ev: UIEvent) => any,
+        listener: (this: Window, ev: UIEvent) => void,
         options?: OptimizedEventOptions
     ) => {
         return addOptimizedEventListener(window, 'resize', listener as EventListener, {
@@ -57,7 +57,7 @@ export function useOptimizedEvents() {
     };
 
     const addScrollListener = (
-        listener: (this: Window, ev: Event) => any,
+        listener: (this: Window, ev: Event) => void,
         options?: OptimizedEventOptions
     ) => {
         return addOptimizedEventListener(window, 'scroll', listener as EventListener, {
@@ -69,7 +69,7 @@ export function useOptimizedEvents() {
 
     const addInputListener = (
         target: HTMLElement,
-        listener: (this: HTMLElement, ev: Event) => any,
+        listener: (this: HTMLElement, ev: Event) => void,
         options?: OptimizedEventOptions
     ) => {
         return addOptimizedEventListener(target, 'input', listener as EventListener, {
@@ -79,12 +79,12 @@ export function useOptimizedEvents() {
     };
 
     const addVisibilityChangeListener = (
-        listener: (this: Document, ev: Event) => any,
+        listener: (this: Document, ev: Event) => void,
         options?: OptimizedEventOptions
     ) => {
         return addOptimizedEventListener(
             document,
-            'visibilitychange' as any,
+            'visibilitychange',
             listener as EventListener,
             options
         );

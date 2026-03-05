@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { defineAsyncComponent, type ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resetAllTestStates } from './composables/useTestState';
@@ -66,84 +66,84 @@ export default {
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         MicrophoneTest: defineAsyncComponent({
             loader: () => import('./components/MicrophoneTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         SpeakerTest: defineAsyncComponent({
             loader: () => import('./components/SpeakerTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         KeyboardTest: defineAsyncComponent({
             loader: () => import('./components/KeyboardTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         MouseTest: defineAsyncComponent({
             loader: () => import('./components/MouseTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         TouchTest: defineAsyncComponent({
             loader: () => import('./components/TouchTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         BatteryTest: defineAsyncComponent({
             loader: () => import('./components/BatteryTest.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         TestsCompleted: defineAsyncComponent({
             loader: () => import('./components/TestsCompleted.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         VisualizerContainer: defineAsyncComponent({
             loader: () => import('./components/VisualizerContainer.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         TestActionButtons: defineAsyncComponent({
             loader: () => import('./components/TestActionButtons.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         TestHeader: defineAsyncComponent({
             loader: () => import('./components/TestHeader.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         AppFooter: defineAsyncComponent({
             loader: () => import('./components/AppFooter.vue'),
             loadingComponent: LoadingSpinner,
             errorComponent: AsyncErrorFallback,
             delay: 200,
-            timeout: 10000
+            timeout: 10000,
         }),
         PerformanceMonitor,
     },
@@ -355,30 +355,34 @@ export default {
             return styleMap[this.activeTest] || { minHeight: '250px' };
         },
     },
-methods: {
-      // Debounced test switching using the new debounce utility
-      debouncedSetActiveTest: debounce(function(this: AppThis, testType: string) {
-        // If we're already switching, ignore new requests
-        if (this.isSwitching) {
-          console.log(
-            `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
-          );
-          return;
-        }
+    methods: {
+        // Debounced test switching using the new debounce utility
+        debouncedSetActiveTest: debounce(
+            function (this: AppThis, testType: string) {
+                // If we're already switching, ignore new requests
+                if (this.isSwitching) {
+                    console.log(
+                        `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
+                    );
+                    return;
+                }
 
-        // Mark as switching
-        this.isSwitching = true;
-        console.log(`Switching from ${this.activeTest} to ${testType}`);
+                // Mark as switching
+                this.isSwitching = true;
+                console.log(`Switching from ${this.activeTest} to ${testType}`);
 
-        // Perform the switch immediately for good UX
-        this.setActiveTest(testType);
+                // Perform the switch immediately for good UX
+                this.setActiveTest(testType);
 
-        // Reset switching flag after a short delay to prevent rapid switches
-        setTimeout(() => {
-          this.isSwitching = false;
-          console.log(`Switch cooldown ended, ready for next switch`);
-        }, 200); // 200ms cooldown between switches
-      }, 50, { leading: true, trailing: false }),
+                // Reset switching flag after a short delay to prevent rapid switches
+                setTimeout(() => {
+                    this.isSwitching = false;
+                    console.log(`Switch cooldown ended, ready for next switch`);
+                }, 200); // 200ms cooldown between switches
+            },
+            50,
+            { leading: true, trailing: false }
+        ),
 
         setActiveTest(testType) {
             // Only start timing if we're switching to a new test or the test hasn't started timing yet
@@ -441,7 +445,9 @@ methods: {
 
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
-            this.announcement = this.t('announcements.testFailed', { test: this.testNameMap[testType] });
+            this.announcement = this.t('announcements.testFailed', {
+                test: this.testNameMap[testType],
+            });
             // Clear announcement after 3 seconds for better UX
             setTimeout(() => {
                 this.announcement = '';
@@ -489,7 +495,9 @@ methods: {
             this.results[testType] = null; // Keep as pending, but filtered out of summary
             this.runCounts[testType] += 1;
             this.autoAdvance(testType);
-            this.announcement = this.t('announcements.testSkipped', { test: this.testNameMap[testType] });
+            this.announcement = this.t('announcements.testSkipped', {
+                test: this.testNameMap[testType],
+            });
             // Clear announcement after 3 seconds for better UX
             setTimeout(() => {
                 this.announcement = '';
@@ -973,15 +981,19 @@ methods: {
             this.showExportMenu = false;
         },
         // Handle window resize to detect mobile/desktop mode with debouncing
-        handleResize: debounce(function(this: AppThis) {
-          this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
-          console.log(
-            'Debounced resize - window.innerWidth:',
-            window.innerWidth,
-            'isMobile:',
-            this.isMobile
-          );
-        }, 250, { leading: false, trailing: true }),
+        handleResize: debounce(
+            function (this: AppThis) {
+                this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
+                console.log(
+                    'Debounced resize - window.innerWidth:',
+                    window.innerWidth,
+                    'isMobile:',
+                    this.isMobile
+                );
+            },
+            250,
+            { leading: false, trailing: true }
+        ),
     },
     mounted() {
         console.log('[DEBUG] App.mounted() - Component mounted to DOM', {
