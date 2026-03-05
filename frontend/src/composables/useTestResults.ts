@@ -48,7 +48,7 @@ export interface UseTestProgressReturn {
  */
 export function useTestResults(
     testType: TestType,
-    emit: (event: string, ...args: unknown[]) => void
+    emit: (event: 'test-completed' | 'test-failed' | 'test-skipped', ...args: any[]) => void
 ): UseTestResultsReturn {
     const testStatus: Ref<TestStatus> = ref('pending');
     const testStartTime: Ref<number | null> = ref(null);

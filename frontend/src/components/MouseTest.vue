@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useTestResults } from '../composables/useTestResults';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle';
@@ -10,6 +10,7 @@ export default {
     components: {},
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        void props;
         // Initialize composables for normalized patterns
         const testResults = useTestResults('mouse', emit);
         const lifecycle = useComponentLifecycle();
@@ -27,17 +28,17 @@ export default {
         const leftReleasing = ref(false);
         const rightReleasing = ref(false);
         const middleReleasing = ref(false);
-        const scrollTimeout = ref(null);
+        const scrollTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
         const testCompleted = ref(false);
-        const scrollDirection = ref(null); // 'up', 'down', or null
+        const scrollDirection = ref<'up' | 'down' | null>(null); // 'up', 'down', or null
         const middleClicked = ref(false);
 
         // Methods
-        const handleMouseDown = e => {
+        const handleMouseDown = (e: MouseEvent) => {
             e.preventDefault();
 
             // Start test timing on first mouse interaction
-            if (testResults && testResults.testStatus === 'pending') {
+            if (testResults.testStatus.value === 'pending') {
                 testResults.startTest();
             }
 
@@ -64,7 +65,7 @@ export default {
             }
         };
 
-        const handleMouseUp = e => {
+        const handleMouseUp = (e: MouseEvent) => {
             switch (e.button) {
                 case 0:
                     leftPressed.value = false;
@@ -90,11 +91,11 @@ export default {
             }
         };
 
-        const handleContextMenu = e => {
+        const handleContextMenu = (e: MouseEvent) => {
             e.preventDefault();
         };
 
-        const handleWheel = e => {
+        const handleWheel = (e: WheelEvent) => {
             scrollActive.value = true;
             scrollTested.value = true;
             if (e.deltaY < 0) {
@@ -102,14 +103,14 @@ export default {
             } else if (e.deltaY > 0) {
                 scrollDirection.value = 'down';
             }
-            clearTimeout(scrollTimeout.value);
+            clearTimeout(scrollTimeout.value as any);
             scrollTimeout.value = setTimeout(() => {
                 scrollActive.value = false;
                 scrollDirection.value = null;
             }, 300);
         };
 
-        const handleAuxClick = e => {
+        const handleAuxClick = (e: MouseEvent) => {
             if (e.button === 1) {
                 middleClicked.value = true;
                 setTimeout(() => {

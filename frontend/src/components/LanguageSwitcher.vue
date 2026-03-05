@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
 import { availableLocales, changeLocale, getCurrentLocale } from '../i18n';
+import type { SupportedLocale } from '../i18n';
 
 export default {
     name: 'LanguageSwitcher',
+    emits: ['language-changed'],
     data() {
         return {
             availableLocales,
@@ -11,12 +13,11 @@ export default {
         };
     },
     methods: {
-        changeLanguage(locale) {
+        changeLanguage(locale: SupportedLocale) {
             const success = changeLocale(locale);
             if (success) {
                 this.currentLocale = locale;
                 this.showDropdown = false;
-                // Emit event for parent components if needed
                 this.$emit('language-changed', locale);
             }
         },
@@ -28,8 +29,9 @@ export default {
         },
     },
     computed: {
-        currentLanguageName() {
-            return this.availableLocales[this.currentLocale] || 'English';
+        currentLanguageName(): string {
+            const localeInfo = this.availableLocales[this.currentLocale];
+            return localeInfo ? localeInfo.name : 'English';
         },
     },
 };

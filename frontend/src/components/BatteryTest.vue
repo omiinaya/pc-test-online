@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
 import { useTestResults } from '../composables/useTestResults';
@@ -6,6 +6,7 @@ import { useComponentLifecycle } from '../composables/useComponentLifecycle';
 import { useGlobalReset } from '../composables/useTestState';
 import { useErrorHandling } from '../composables/useErrorHandling';
 import { useBatteryCompatibility } from '../composables/useBatteryCompatibility';
+import type { BatteryManager, MockBatteryManager } from '../composables/useBatteryCompatibility';
 
 export default {
     name: 'BatteryTest',
@@ -14,6 +15,9 @@ export default {
     },
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        // Mark props as used to avoid TS warning
+        void props;
+
         // Initialize composables for normalized patterns
         const testResults = useTestResults('battery', emit);
         const lifecycle = useComponentLifecycle();
@@ -22,7 +26,7 @@ export default {
 
         // Reactive state
         const batterySupported = ref(false);
-        const batteryManager = ref(null);
+        const batteryManager = ref<BatteryManager | MockBatteryManager | null>(null);
         const isCharging = ref(false);
         const batteryLevel = ref(0);
         const testPhase = ref('initial');
@@ -66,16 +70,16 @@ export default {
         };
 
         const waitForUnplug = () => {
-            if (!batteryManager.value) return;
+            const manager = batteryManager.value;
+            if (!manager) return;
             // Listen for unplug event
             const onUnplug = () => {
-                if (!batteryManager.value.charging) {
-                    batteryManager.value.removeEventListener('chargingchange', onUnplug);
+                if (!manager.charging) {
+                    manager.removeEventListener('chargingchange', onUnplug);
                     testPhase.value = 'waitAfterUnplug';
-                    // Remove automatic completion - let user manually complete
                 }
             };
-            batteryManager.value.addEventListener('chargingchange', onUnplug);
+            manager.addEventListener('chargingchange', onUnplug);
         };
 
         const clearTimer = () => {
@@ -132,7 +136,7 @@ export default {
                         updateBatteryStatus();
 
                         // Start test timing when battery test is ready
-                        if (testResults && testResults.testStatus === 'pending') {
+                        if (testResults.testStatus.value === 'pending') {
                             testResults.startTest();
                         }
 
@@ -175,7 +179,8 @@ export default {
                 }
             } catch (error) {
                 console.error('Battery API error:', error);
-                errorHandling.setError(`Battery API error: ${error.message}`);
+                const message = error instanceof Error ? error.message : String(error);
+                errorHandling.setError(`Battery API error: ${message}`);
                 batterySupported.value = false;
                 cleanup();
             }

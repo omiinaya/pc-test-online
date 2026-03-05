@@ -1,12 +1,14 @@
-<script>
+<script lang="ts">
 import { ref, onUnmounted, nextTick, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
-import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
+import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest';
 import { useCanvas } from '../composables/useCanvas';
 import { useAnimations } from '../composables/useAnimations';
 import { useMemoryManagement } from '../composables/useMemoryManagement';
+import { useTestResults } from '../composables/useTestResults';
+// AudioContext and AnalyserNode are global DOM types - no import needed
 
 export default {
     name: 'MicrophoneTest',
@@ -16,6 +18,9 @@ export default {
     },
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        // Mark props as used to avoid TS warning
+        void props;
+
         const { t } = useI18n();
         // Media device test with all normalized patterns
         const deviceTest = useMediaDeviceTest(
@@ -32,24 +37,27 @@ export default {
             emit
         );
 
+        // Test results handling
+        const testResults = useTestResults('microphone', emit);
+
         // Use memory management for tracking resources
         const memoryManager = useMemoryManagement();
 
         // Canvas for waveform visualization
-        const waveformCanvas = ref(null);
+        const waveformCanvas = ref<HTMLCanvasElement | null>(null);
         const { context: canvasCtx, initializeCanvas, clearCanvas } = useCanvas(waveformCanvas);
 
         // Animation management
         const { requestAnimationFrame, cleanupAnimations } = useAnimations();
 
         // Audio analysis state
-        const audioContext = ref(null);
-        const analyser = ref(null);
-        const dataArray = ref(null);
-        const volumeLevel = ref(0);
-        const isAnalyzing = ref(false);
-        const audioContextResourceId = ref(null);
-        const analyserResourceId = ref(null);
+        const audioContext = ref<AudioContext | null>(null);
+        const analyser = ref<AnalyserNode | null>(null);
+        const dataArray = ref<Uint8Array | null>(null);
+        const volumeLevel = ref<number>(0);
+        const isAnalyzing = ref<boolean>(false);
+        const audioContextResourceId = ref<number | null>(null);
+        const analyserResourceId = ref<number | null>(null);
 
         /**
          * Setup audio analysis for visualization
@@ -62,8 +70,8 @@ export default {
                 }
 
                 // Start test timing when audio analysis begins
-                if (deviceTest.testResults && deviceTest.testResults.testStatus === 'pending') {
-                    deviceTest.testResults.startTest();
+                if (testResults.testStatus.value === 'pending') {
+                    testResults.startTest();
                 }
 
                 // Initialize canvas first
@@ -75,7 +83,7 @@ export default {
 
                 // Setup audio context and analyser only if not already created
                 if (!audioContext.value || audioContext.value.state === 'closed') {
-                    audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContext.value = new AudioContext();
 
                     // Track audio context for memory management
                     if (audioContextResourceId.value !== null) {
@@ -127,8 +135,9 @@ export default {
                 return true;
             } catch (error) {
                 console.error('Failed to setup audio analysis:', error);
+                const errorMessage = error instanceof Error ? error.message : String(error);
                 deviceTest.errorHandling.setError(
-                    `Failed to setup audio analysis: ${error.message}`
+                    `Failed to setup audio analysis: ${errorMessage}`
                 );
                 return false;
             }
@@ -159,14 +168,17 @@ export default {
          * Visualization loop
          */
         const visualize = () => {
-            if (!isAnalyzing.value || !analyser.value || !canvasCtx.value) return;
+            if (!isAnalyzing.value || !analyser.value || !canvasCtx.value || !dataArray.value)
+                return;
 
             // Get audio data
             analyser.value.getByteTimeDomainData(dataArray.value);
 
             // Calculate volume level
             let sumSquares = 0.0;
-            for (const amplitude of dataArray.value) {
+            const data = dataArray.value;
+            for (let i = 0; i < data.length; i++) {
+                const amplitude = data[i] ?? 128;
                 const val = amplitude / 128.0 - 1.0;
                 sumSquares += val * val;
             }
@@ -202,7 +214,7 @@ export default {
             let x = 0;
 
             for (let i = 0; i < dataArray.value.length; i++) {
-                const v = dataArray.value[i] / 128.0;
+                const v = (dataArray.value[i] ?? 128) / 128.0;
                 const y = (v * height) / 2;
 
                 if (i === 0) {
@@ -221,7 +233,7 @@ export default {
         /**
          * Handle device change
          */
-        const handleDeviceChange = async deviceId => {
+        const handleDeviceChange = async (deviceId: string) => {
             stopVisualization();
 
             const stream = await deviceTest.switchDevice(deviceId);
@@ -415,7 +427,7 @@ export default {
                 <StatePanel
                     state="error"
                     :title="$t('errors.device.microphone_error')"
-                    :message="currentError"
+                    :message="currentError || ''"
                     :showRetryButton="true"
                     @retry="resetTest"
                 />

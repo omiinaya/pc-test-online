@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 export default {
     name: 'VisualizerContainer',
     props: {
@@ -43,7 +43,7 @@ export default {
             default: '',
         },
         customStyles: {
-            type: Object,
+            type: Object as () => Record<string, any>,
             default: () => ({}),
         },
         keyboardMode: {
@@ -52,7 +52,7 @@ export default {
         },
     },
     computed: {
-        containerStyle() {
+        containerStyle(): Record<string, any> {
             const baseStyles = {
                 backgroundColor: this.backgroundColor,
                 borderColor: this.borderColor,

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { defineAsyncComponent } from 'vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import AsyncErrorFallback from '../components/AsyncErrorFallback.vue';
@@ -123,13 +123,13 @@ export default {
                 battery: '🔋',
             },
             testNameMap: {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
+                webcam: this.$t('tests.webcam.name'),
+                microphone: this.$t('tests.microphone.name'),
+                speakers: this.$t('tests.speakers.name'),
+                keyboard: this.$t('tests.keyboard.name'),
+                mouse: this.$t('tests.mouse.name'),
+                touch: this.$t('tests.touch.name'),
+                battery: this.$t('tests.battery.name'),
             },
             timings: {
                 webcam: { start: null, end: null, duration: null },
@@ -165,11 +165,9 @@ export default {
     computed: {
         // Real-time elapsed time for each test - optimized for reactivity
         realTimeElapsed() {
-            // This computed property depends on timerTick to force re-evaluation
             const now = Date.now();
-            const elapsed = {};
+            const elapsed: Record<string, number> = {};
 
-            // Access individual timers directly for optimal reactivity
             const timers = [
                 { test: 'webcam', timer: this.realTimeTimerWebcam },
                 { test: 'microphone', timer: this.realTimeTimerMicrophone },
@@ -193,8 +191,7 @@ export default {
 
         // Formatted real-time timers with two decimal places
         formattedRealTimeTimers() {
-            // This computed property depends on timerTick to force re-evaluation
-            const formatted = {};
+            const formatted: Record<string, string> = {};
             Object.keys(this.realTimeElapsed).forEach(test => {
                 const time = this.realTimeElapsed[test];
                 formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
@@ -219,29 +216,29 @@ export default {
         },
         currentTestTitle() {
             const titleMap = {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
-                testsCompleted: this.t('tests.completed.name'),
+                webcam: this.$t('tests.webcam.name'),
+                microphone: this.$t('tests.microphone.name'),
+                speakers: this.$t('tests.speakers.name'),
+                keyboard: this.$t('tests.keyboard.name'),
+                mouse: this.$t('tests.mouse.name'),
+                touch: this.$t('tests.touch.name'),
+                battery: this.$t('tests.battery.name'),
+                testsCompleted: this.$t('tests.completed.name'),
             };
-            return titleMap[this.activeTest] || this.t('tests.webcam.name');
+            return titleMap[this.activeTest] || this.$t('tests.webcam.name');
         },
         currentTestDescription() {
             const descriptionMap = {
-                webcam: this.t('tests.webcam.description'),
-                microphone: this.t('tests.microphone.description'),
-                speakers: this.t('tests.speakers.description'),
-                keyboard: this.t('tests.keyboard.description'),
-                mouse: this.t('tests.mouse.description'),
-                touch: this.t('tests.touch.description'),
-                battery: this.t('tests.battery.description'),
-                testsCompleted: this.t('tests.completed.description'),
+                webcam: this.$t('tests.webcam.description'),
+                microphone: this.$t('tests.microphone.description'),
+                speakers: this.$t('tests.speakers.description'),
+                keyboard: this.$t('tests.keyboard.description'),
+                mouse: this.$t('tests.mouse.description'),
+                touch: this.$t('tests.touch.description'),
+                battery: this.$t('tests.battery.description'),
+                testsCompleted: this.$t('tests.completed.description'),
             };
-            return descriptionMap[this.activeTest] || this.t('tests.webcam.description');
+            return descriptionMap[this.activeTest] || this.$t('tests.webcam.description');
         },
         // Dynamic component mapping for keep-alive functionality
         currentTestComponent() {
@@ -324,13 +321,13 @@ export default {
         // Internationalized test names for sidebar and export functions
         i18nTestNameMap() {
             return {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
+                webcam: this.$t('tests.webcam.name'),
+                microphone: this.$t('tests.microphone.name'),
+                speakers: this.$t('tests.speakers.name'),
+                keyboard: this.$t('tests.keyboard.name'),
+                mouse: this.$t('tests.mouse.name'),
+                touch: this.$t('tests.touch.name'),
+                battery: this.$t('tests.battery.name'),
             };
         },
         // Format individual test timing for display
@@ -382,13 +379,13 @@ export default {
             if (!this.i18nTestNameMap || typeof this.i18nTestNameMap !== 'object') {
                 console.warn('i18nTestNameMap is not properly defined, using fallback mapping');
                 const fallbackMap = {
-                    webcam: this.t('tests.webcam.name'),
-                    microphone: this.t('tests.microphone.name'),
-                    speakers: this.t('tests.speakers.name'),
-                    keyboard: this.t('tests.keyboard.name'),
-                    mouse: this.t('tests.mouse.name'),
-                    touch: this.t('tests.touch.name'),
-                    battery: this.t('tests.battery.name'),
+                    webcam: this.$t('tests.webcam.name'),
+                    microphone: this.$t('tests.microphone.name'),
+                    speakers: this.$t('tests.speakers.name'),
+                    keyboard: this.$t('tests.keyboard.name'),
+                    mouse: this.$t('tests.mouse.name'),
+                    touch: this.$t('tests.touch.name'),
+                    battery: this.$t('tests.battery.name'),
                 };
                 return fallbackMap[test] || this.getSafeFallback(test);
             }
@@ -453,18 +450,18 @@ export default {
                 testStr === 'reactive-object' ||
                 testStr === 'conversion-error'
             ) {
-                return this.t('errors.unknownTest');
+                return this.$t('errors.unknownTest');
             }
 
             // Use translation for the test name based on the test key
             const translationMap = {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
+                webcam: this.$t('tests.webcam.name'),
+                microphone: this.$t('tests.microphone.name'),
+                speakers: this.$t('tests.speakers.name'),
+                keyboard: this.$t('tests.keyboard.name'),
+                mouse: this.$t('tests.mouse.name'),
+                touch: this.$t('tests.touch.name'),
+                battery: this.$t('tests.battery.name'),
             };
 
             return translationMap[testStr] || testStr.charAt(0).toUpperCase() + testStr.slice(1);
@@ -864,19 +861,19 @@ export default {
                     let statusIcon = '';
 
                     if (this.results[test] === true) {
-                        status = this.t('status.passed');
+                        status = this.$t('status.passed');
                         statusClass = 'status-passed';
                         statusIcon = '✓';
                     } else if (this.results[test] === false) {
-                        status = this.t('status.failed');
+                        status = this.$t('status.failed');
                         statusClass = 'status-failed';
                         statusIcon = '✗';
                     } else if (this.skippedTests.includes(test)) {
-                        status = this.t('status.skipped');
+                        status = this.$t('status.skipped');
                         statusClass = 'status-skipped';
                         statusIcon = '↷';
                     } else {
-                        status = this.t('status.pending');
+                        status = this.$t('status.pending');
                         statusClass = 'status-pending';
                         statusIcon = '⏳';
                     }
@@ -904,7 +901,7 @@ export default {
             container.innerHTML = `
         <div class="pdf-content">
           <div class="header">
-            <h1>${this.t('app.name')} ${this.t('results.summary')}</h1>
+            <h1>${this.$t('app.name')} ${this.$t('results.summary')}</h1>
             <div class="accent-bar"></div>
           </div>
           
@@ -914,14 +911,14 @@ export default {
               <span class="value">${completedCount}/${Object.keys(this.results).length}</span>
             </div>
             <div class="summary-item passed">
-              <span class="label">${this.t('export.summaryLabels.passed')}</span>
+              <span class="label">${this.$t('export.summaryLabels.passed')}</span>
               <span class="value">${passedCount}</span>
             </div>
           ${
               failedCount > 0
                   ? `
             <div class="summary-item failed">
-              <span class="label">${this.t('export.summaryLabels.failed')}</span>
+              <span class="label">${this.$t('export.summaryLabels.failed')}</span>
               <span class="value">${passedCount}</span>
             </div>
           `
@@ -931,7 +928,7 @@ export default {
               skippedCount > 0
                   ? `
             <div class="summary-item skipped">
-              <span class="label">${this.t('export.summaryLabels.skipped')}</span>
+              <span class="label">${this.$t('export.summaryLabels.skipped')}</span>
               <span class="value">${skippedCount}</span>
             </div>
           `
@@ -943,10 +940,10 @@ export default {
             <table class="results-table">
               <thead>
                 <tr>
-                  <th>${this.t('results.testDetails')}</th>
-                  <th>${this.t('status.status')}</th>
-                  <th>${this.t('results.runCount')}</th>
-                  <th>${this.t('results.duration')} (s)</th>
+                  <th>${this.$t('results.testDetails')}</th>
+                  <th>${this.$t('status.status')}</th>
+                  <th>${this.$t('results.runCount')}</th>
+                  <th>${this.$t('results.duration')} (s)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1214,18 +1211,18 @@ export default {
 
             // Prepare CSV header with translated labels
             const header = [
-                this.t('results.testDetails'),
-                this.t('status.status'),
-                this.t('results.runCount'),
-                `${this.t('results.duration')} (s)`,
+                this.$t('results.testDetails'),
+                this.$t('status.status'),
+                this.$t('results.runCount'),
+                `${this.$t('results.duration')} (s)`,
             ];
             const rows = [header];
             const tests = Object.keys(this.results);
             for (const test of tests) {
                 let status = '';
-                if (this.results[test] === true) status = this.t('status.passed');
-                else if (this.results[test] === false) status = this.t('status.failed');
-                else status = this.t('status.pending');
+                if (this.results[test] === true) status = this.$t('status.passed');
+                else if (this.results[test] === false) status = this.$t('status.failed');
+                else status = this.$t('status.pending');
                 const runCount = this.runCounts[test] || 0;
                 const duration =
                     this.timings[test] && typeof this.timings[test].duration === 'number'

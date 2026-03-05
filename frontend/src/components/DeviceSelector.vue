@@ -38,6 +38,14 @@ export default {
         },
     },
     emits: ['device-changed'],
+    methods: {
+        onChange(event: Event): void {
+            const target = event.target as HTMLSelectElement | null;
+            if (target) {
+                this.$emit('device-changed', target.value);
+            }
+        },
+    },
 };
 </script>
 
@@ -47,7 +55,7 @@ export default {
         <select
             :id="selectId"
             :value="selectedDeviceId"
-            @change="$emit('device-changed', $event.target.value)"
+            @change="onChange"
             :disabled="disabled || devices.length <= 0"
         >
             <option v-if="devices.length <= 0" value="">

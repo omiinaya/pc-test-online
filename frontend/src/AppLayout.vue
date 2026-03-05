@@ -1,9 +1,16 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import TestsPage from './views/TestsPage.vue';
 
-export default {
+interface FooterUpdatePayload {
+    showExportMenu?: boolean;
+    completedTests?: number;
+    totalTests?: number;
+}
+
+export default defineComponent({
     name: 'AppLayout',
     components: {
         AppHeader,
@@ -29,7 +36,7 @@ export default {
         console.log('Router matched:', this.$route.matched);
     },
     methods: {
-        handleFooterUpdate(payload) {
+        handleFooterUpdate(payload: FooterUpdatePayload) {
             // Update footer state based on emitted events from child components
             if (payload && typeof payload === 'object') {
                 if ('showExportMenu' in payload) {
@@ -67,12 +74,13 @@ export default {
         },
         setupGlobalEventHandlers() {
             // Set up event listeners for global events from TestsPage
-            window.addEventListener('tests-page-update-footer', event => {
-                this.handleFooterUpdate(event.detail);
+            window.addEventListener('tests-page-update-footer', (event: Event) => {
+                const customEvent = event as CustomEvent<FooterUpdatePayload>;
+                this.handleFooterUpdate(customEvent.detail);
             });
         },
     },
-};
+});
 </script>
 
 <template>

@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
-import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest.ts';
+import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest';
 import { CameraIcon, CheckIcon } from '../composables/useIcons';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';

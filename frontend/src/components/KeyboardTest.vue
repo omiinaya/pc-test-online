@@ -1,10 +1,31 @@
-<script>
+<script lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTestResults } from '../composables/useTestResults';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle';
 import { usePointerEvents } from '../composables/useEventListeners';
 import { useGlobalReset } from '../composables/useTestState';
-import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
+import { useTouchCompatibility } from '../composables/useTouchCompatibility';
+
+interface KeyboardKeyBase {
+    code: string;
+    display?: string;
+    style?: string;
+}
+
+interface KeyboardKeyState extends KeyboardKeyBase {
+    pressed: boolean;
+    active: boolean;
+    releasing: boolean;
+    tested: boolean;
+}
+
+interface KeyboardLayout {
+    main: KeyboardKeyState[][];
+    functions: KeyboardKeyState[][];
+    navigation: KeyboardKeyState[][];
+    arrows: KeyboardKeyState[][];
+}
 
 const keyboardLayoutDefinition = {
     main: [
@@ -137,6 +158,8 @@ export default {
     components: {},
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        void props;
+        const { t } = useI18n();
         // Initialize composables for normalized patterns
         const testResults = useTestResults('keyboard', emit);
         const lifecycle = useComponentLifecycle();
@@ -144,7 +167,7 @@ export default {
         const touchCompat = useTouchCompatibility();
 
         // Reactive state
-        const keyboardLayout = ref({
+        const keyboardLayout = ref<KeyboardLayout>({
             main: [],
             functions: [],
             navigation: [],
@@ -155,18 +178,25 @@ export default {
 
         // Computed properties
         const pressedKeysCount = computed(() => {
-            const allKeys = Object.values(keyboardLayout.value).flat(2);
+            const allSections = Object.values(keyboardLayout.value) as KeyboardKeyState[][][];
+            const allKeys = allSections.flat(2);
             return allKeys.filter(k => k.pressed).length;
         });
 
         // Methods
         const initializeKeyboard = () => {
-            for (const section in keyboardLayoutDefinition) {
+            (
+                Object.keys(keyboardLayoutDefinition) as Array<
+                    keyof typeof keyboardLayoutDefinition
+                >
+            ).forEach(section => {
                 keyboardLayout.value[section] = keyboardLayoutDefinition[section].map(row =>
                     row.map(key => {
                         const isBlank = key.code === 'blank';
                         const display = isBlank ? '' : key.display || key.code;
-                        if (!isBlank);
+                        if (!isBlank) {
+                            // Non-blank keys have no extra handling at this point
+                        }
                         return {
                             ...key,
                             display,
@@ -175,17 +205,17 @@ export default {
                             releasing: false,
                             tested: false,
                             code: isBlank ? `blank-${Math.random()}` : key.code,
-                        };
+                        } as KeyboardKeyState;
                     })
                 );
-            }
+            });
         };
 
-        const handleKeyDown = e => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             e.preventDefault();
 
             // Start test timing on first key press
-            if (testResults && testResults.testStatus === 'pending') {
+            if (testResults && testResults.testStatus.value === 'pending') {
                 testResults.startTest();
             }
 
@@ -198,21 +228,22 @@ export default {
             }
         };
 
-        const handleKeyUp = e => {
+        const handleKeyUp = (e: KeyboardEvent) => {
+            e.preventDefault();
+
             const key = findKey(e.code);
             if (key) {
                 key.pressed = false;
                 key.active = false;
                 key.releasing = true;
-                setTimeout(() => {
-                    if (key) key.releasing = false;
-                }, 150); // Match the keyRelease animation duration
             }
         };
 
-        const findKey = code => {
-            for (const section in keyboardLayout.value) {
-                for (const row of keyboardLayout.value[section]) {
+        const findKey = (code: string): KeyboardKeyState | null => {
+            const sections = keyboardLayout.value as Record<string, KeyboardKeyState[][]>;
+            for (const section in sections) {
+                const rows = sections[section];
+                for (const row of rows) {
                     const found = row.find(k => k.code === code);
                     if (found) return found;
                 }
@@ -227,9 +258,9 @@ export default {
         };
 
         // Helper method to convert old style classes to BEM modifiers
-        const getKeyModifierClass = style => {
+        const getKeyModifierClass = (style?: string): string => {
             if (!style) return '';
-            const styleMap = {
+            const styleMap: Record<string, string> = {
                 utility: 'keyboard__key--utility',
                 'key-space': 'keyboard__key--space',
                 'key-backspace': 'keyboard__key--backspace',

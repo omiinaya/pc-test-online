@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { ref, computed, onErrorCaptured, onMounted, readonly } from 'vue';
-import type { ErrorInfo, ErrorType, VueErrorInfo } from '@/types';
+import {
+    ref,
+    computed,
+    onErrorCaptured,
+    onMounted,
+    readonly,
+    type ComponentPublicInstance,
+} from 'vue';
+import type { ErrorInfo, ErrorType } from '@/types';
 
 interface Props {
     fallbackTitle?: string;
@@ -85,15 +92,16 @@ const errorDetails = computed(() => {
 });
 
 // Error capture
-onErrorCaptured((err: Error, info: VueErrorInfo) => {
+onErrorCaptured((err: Error, instance: ComponentPublicInstance | null, info: string) => {
     console.error('ErrorBoundary caught error:', err);
     console.error('Error info:', info);
 
     error.value = err;
+    const componentName = instance?.$options?.name || 'Unknown';
     const newErrorInfo: ErrorInfo = {
         type: mapErrorType(err.name),
         message: err.message,
-        context: info?.componentName || t('common.unknownComponent'),
+        context: componentName,
         originalError: err,
     };
     errorInfo.value = newErrorInfo;
@@ -192,10 +200,10 @@ const handleReport = () => {
     navigator.clipboard
         ?.writeText(JSON.stringify(errorReport, null, 2))
         .then(() => {
-            alert(this.$t('alerts.errorDetailsCopied'));
+            alert(t('alerts.errorDetailsCopied'));
         })
         .catch(() => {
-            alert(this.$t('alerts.unableToCopyErrorDetails'));
+            alert(t('alerts.unableToCopyErrorDetails'));
         });
 };
 

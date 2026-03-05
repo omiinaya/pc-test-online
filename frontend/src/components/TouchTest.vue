@@ -1,12 +1,37 @@
-<script>
+<script lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
 import { useTestResults } from '../composables/useTestResults';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle';
 import { useEventListeners } from '../composables/useEventListeners';
 import { useGlobalReset } from '../composables/useTestState';
-import { useTouchCompatibility } from '../composables/useTouchCompatibility.ts';
+import { useTouchCompatibility } from '../composables/useTouchCompatibility';
 import { useI18n } from 'vue-i18n';
+
+interface TouchTarget {
+    x: number | null;
+    y: number | null;
+    size: number;
+    isDragging?: boolean;
+    touchId?: number | null;
+    originalX?: number | null;
+    originalY?: number | null;
+}
+
+interface DragIndicatorCache {
+    sourceX: number | null;
+    sourceY: number | null;
+    targetX: number | null;
+    targetY: number | null;
+    angle: number;
+}
+
+interface SafeArea {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+}
 
 export default {
     name: 'TouchTest',
@@ -15,6 +40,7 @@ export default {
     },
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
+        void props; // Mark as used
         const { t } = useI18n();
         // Initialize composables for normalized patterns
         const testResults = useTestResults('touch', emit);
@@ -32,40 +58,48 @@ export default {
         const pointerMoveThrottle = 16; // ~60fps throttling for pointer move events
 
         // Reactive state
-        const stage = ref('idle');
+        const stage = ref<'idle' | 'tap' | 'drag' | 'complete' | 'skipped'>('idle');
         const feedbackText = ref(t('touchTest.startPrompt'));
         const completedChallenges = ref(0);
-        const currentChallenge = ref({ type: null, complete: false });
+        const currentChallenge = ref<{ type: string | null; complete: boolean }>({
+            type: null,
+            complete: false,
+        });
         const transitionsEnabled = ref(false); // Disable transitions during initial container animation
 
-        const tapTarget = ref({ x: null, y: null, size: targetSize });
-        const dragSource = ref({
+        const tapTarget = ref<TouchTarget>({ x: null, y: null, size: targetSize });
+        const dragSource = ref<TouchTarget>({
             x: null,
             y: null,
             size: targetSize,
             isDragging: false,
             touchId: null,
         });
-        const dragTarget = ref({ x: null, y: null, size: targetSize * 1.5 });
+        const dragTarget = ref<TouchTarget>({ x: null, y: null, size: targetSize * 1.5 });
 
-        const successTimer = ref(null);
-        const dragTimeoutTimer = ref(null); // Add timeout for stuck drags
+        const successTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+        const dragTimeoutTimer = ref<ReturnType<typeof setTimeout> | null>(null); // Add timeout for stuck drags
 
-        const safeAreaMargin = ref({
+        const safeAreaMargin = ref<SafeArea>({
             top: 100, // Increased from 40 to 100 to prevent overlap with text
             bottom: 40,
             left: 40,
             right: 40,
         });
-        const safeAreaRect = ref(null); // Calculated safe area bounds
+        const safeAreaRect = ref<{
+            left: number;
+            top: number;
+            width: number;
+            height: number;
+        } | null>(null); // Calculated safe area bounds
         const testCompleted = ref(false);
-        const resizeTimeout = ref(null); // For debouncing resize events
-        const challengeAreaRef = ref(null); // Cache DOM reference to avoid repeated queries
+        const resizeTimeout = ref<ReturnType<typeof setTimeout> | null>(null); // For debouncing resize events
+        const challengeAreaRef = ref<HTMLElement | null>(null); // Cache DOM reference to avoid repeated queries
 
         // Cached calculations for performance optimization
-        const cachedStyleObjects = ref(new Map());
-        const cachedDistanceCalculations = ref(new Map());
-        const dragIndicatorAngleCache = ref({
+        const cachedStyleObjects = ref<Map<string, Record<string, string>>>(new Map());
+        const cachedDistanceCalculations = ref<Map<string, number>>(new Map());
+        const dragIndicatorAngleCache = ref<DragIndicatorCache>({
             sourceX: null,
             sourceY: null,
             targetX: null,
@@ -134,7 +168,7 @@ export default {
         });
 
         // Optimized methods with caching and reduced calculations
-        const getOptimizedStyle = target => {
+        const getOptimizedStyle = (target: TouchTarget): Record<string, string> => {
             // Create a cache key based on target properties
             const cacheKey = `${target.x}-${target.y}-${target.size}`;
 
@@ -312,7 +346,7 @@ export default {
 
         const startTest = () => {
             // Start test timing
-            if (testResults && testResults.testStatus === 'pending') {
+            if (testResults && testResults.testStatus.value === 'pending') {
                 testResults.startTest();
             }
 
@@ -331,7 +365,7 @@ export default {
             clearSuccessTimer();
             currentChallenge.value.complete = false;
 
-            const challengeTypes = ['tap', 'drag'];
+            const challengeTypes: Array<'tap' | 'drag'> = ['tap', 'drag'];
             const randomType = challengeTypes[Math.floor(Math.random() * challengeTypes.length)];
 
             currentChallenge.value.type = randomType;
@@ -696,7 +730,9 @@ export default {
         onMounted(() => {
             lifecycle.initialize(() => {
                 // Add unified touch event listeners using touch compatibility
-                const challengeArea = document.querySelector('.touch-container');
+                const challengeArea = document.querySelector(
+                    '.touch-container'
+                ) as HTMLElement | null;
                 if (challengeArea) {
                     const unifiedTouchHandler = (touchData, gesture) => {
                         // Prevent default for touch events to avoid scrolling
@@ -720,8 +756,8 @@ export default {
                         unifiedTouchHandler
                     );
 
-                    // Store cleanup function for later use
-                    challengeArea._touchCleanup = removeListener;
+                    // Store cleanup function for later use (custom property)
+                    (challengeArea as any)._touchCleanup = removeListener;
                 }
 
                 // Add mouse leave handler for drag reset
@@ -739,7 +775,7 @@ export default {
                 // Delay heavy initialization to avoid interfering with container animations
                 setTimeout(() => {
                     transitionsEnabled.value = true; // Enable transitions after container animation
-                    eventListeners.addEventListener('resize', handleResize);
+                    eventListeners.addEventListener(window, 'resize', handleResize);
                     calculateGridPositions();
                 }, 200);
             });
@@ -748,7 +784,7 @@ export default {
         onUnmounted(() => {
             lifecycle.cleanup(() => {
                 // Clean up unified touch listeners
-                const challengeArea = document.querySelector('.touch-container');
+                const challengeArea = document.querySelector('.touch-container') as any;
                 if (challengeArea && challengeArea._touchCleanup) {
                     challengeArea._touchCleanup();
                     delete challengeArea._touchCleanup;
@@ -791,7 +827,7 @@ export default {
                 lastPointerMoveTime.value = 0;
 
                 // Event listeners are automatically cleaned up by useEventListeners composables
-                eventListeners.removeEventListener('resize', handleResize);
+                eventListeners.removeEventListener(window, 'resize', handleResize);
             });
         });
 

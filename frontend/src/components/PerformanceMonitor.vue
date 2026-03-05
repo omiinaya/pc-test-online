@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { computed } from 'vue';
 import { usePerformance } from '../composables/usePerformance';
 import { useI18n } from 'vue-i18n';
@@ -38,7 +38,7 @@ export default {
             return score;
         });
 
-        const getVitalStatus = vital => {
+        const getVitalStatus = (vital: 'LCP' | 'FID' | 'CLS' | 'FCP' | 'TTFB'): string => {
             const value = performanceMonitor.metrics.value[vital];
             if (value === null) return 'loading';
 
@@ -59,7 +59,7 @@ export default {
             return 'poor';
         };
 
-        const formatVital = (value, unit) => {
+        const formatVital = (value: number | null, unit: 'ms' | ''): string => {
             if (value === null) return '...';
 
             if (unit === 'ms') {
@@ -75,6 +75,7 @@ export default {
             browserCapabilityScore,
             getVitalStatus,
             formatVital,
+            t,
         };
     },
 };

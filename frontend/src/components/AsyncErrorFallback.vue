@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 export default {
     name: 'AsyncErrorFallback',
     props: {

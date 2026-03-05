@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed, PropType } from 'vue';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useDeviceEnumeration } from '../composables/useDeviceEnumeration';
@@ -7,7 +7,7 @@ import {
     useCommonTestPatterns,
     useDeviceChangeHandler,
 } from '../composables/useCommonTestPatterns';
-import type { MediaDeviceKind, MediaDeviceInfo } from '../types';
+import type { MediaDeviceKind, MediaDeviceInfo, DeviceType } from '../types';
 
 export default defineComponent({
     name: 'DeviceTestBase',
@@ -17,13 +17,13 @@ export default defineComponent({
     },
     props: {
         deviceKind: {
-            type: String as () => MediaDeviceKind,
+            type: String as PropType<MediaDeviceKind>,
             required: true,
             validator: (value: string) =>
                 ['videoinput', 'audioinput', 'audiooutput'].includes(value),
         },
         deviceType: {
-            type: String,
+            type: String as PropType<DeviceType>,
             required: true,
         },
         initialDeviceId: {
@@ -74,9 +74,7 @@ export default defineComponent({
                 });
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                commonTest.setCustomError(
-                    `Failed to initialize ${props.deviceType.toLowerCase()}s: ${errorMessage}`
-                );
+                commonTest.error.value = `Failed to initialize ${props.deviceType.toLowerCase()}s: ${errorMessage}`;
                 emit('devices-error', error);
             }
         };
@@ -96,7 +94,7 @@ export default defineComponent({
                 );
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                commonTest.setCustomError(errorMessage);
+                commonTest.error.value = errorMessage;
                 emit('device-change-error', error);
             }
         };

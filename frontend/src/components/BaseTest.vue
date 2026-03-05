@@ -1,7 +1,8 @@
 <script lang="ts">
-import { defineComponent, ref, onMounted, onActivated, onDeactivated } from 'vue';
+import { defineComponent, ref, onMounted, onActivated, onDeactivated, PropType } from 'vue';
 import TestActionButtons from './TestActionButtons.vue';
 import { useTestState } from '../composables/useTestState';
+import type { TestType } from '../types';
 
 export default defineComponent({
     name: 'BaseTest',
@@ -16,7 +17,7 @@ export default defineComponent({
             default: 'auto',
         },
         testType: {
-            type: String,
+            type: String as PropType<TestType>,
             required: true,
         },
         showActionButtons: {

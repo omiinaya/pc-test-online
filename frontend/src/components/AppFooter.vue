@@ -1,6 +1,16 @@
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
     name: 'AppFooter',
+    emits: [
+        'reset-tests',
+        'toggle-export-menu',
+        'export-pdf',
+        'export-json',
+        'export-csv',
+        'close-export-menu',
+    ],
     props: {
         showExportMenu: {
             type: Boolean,
@@ -16,50 +26,51 @@ export default {
         },
     },
     methods: {
-        handleBuiltWithClick() {
+        handleBuiltWithClick(): void {
             // Placeholder for future "built with" link
             // console.log('Built with link clicked - will be implemented later');
         },
-        handleReset() {
+        handleReset(): void {
             this.$emit('reset-tests');
         },
-        handleToggleExport() {
+        handleToggleExport(): void {
             this.$emit('toggle-export-menu');
         },
-        handleExportPdf() {
+        handleExportPdf(): void {
             this.$emit('export-pdf');
         },
-        handleExportJson() {
+        handleExportJson(): void {
             this.$emit('export-json');
         },
-        handleExportCsv() {
+        handleExportCsv(): void {
             this.$emit('export-csv');
         },
-        handleClickOutsideExportMenu(event) {
+        handleClickOutsideExportMenu(event: Event): void {
             if (this.showExportMenu) {
-                const exportMenu = this.$refs.exportOptions;
-                const exportButton = this.$refs.exportButton;
+                const exportMenu = this.$refs.exportOptions as HTMLElement | null;
+                const exportButton = this.$refs.exportButton as HTMLElement | null;
+                const target = event.target as Node | null;
 
                 if (
                     exportMenu &&
                     exportButton &&
-                    !exportMenu.contains(event.target) &&
-                    !exportButton.contains(event.target)
+                    target &&
+                    !exportMenu.contains(target) &&
+                    !exportButton.contains(target)
                 ) {
                     this.$emit('close-export-menu');
-                    // Dispatch custom event for TestsPage to handle
                     window.dispatchEvent(new CustomEvent('app-footer-close-export-menu'));
                 }
             }
         },
     },
-    mounted() {
+    mounted(): void {
         document.addEventListener('click', this.handleClickOutsideExportMenu);
     },
-    beforeUnmount() {
+    beforeUnmount(): void {
         document.removeEventListener('click', this.handleClickOutsideExportMenu);
     },
-};
+});
 </script>
 
 <template>

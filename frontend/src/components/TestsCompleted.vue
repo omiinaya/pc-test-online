@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 export default {
     name: 'TestsCompleted',
     emits: ['start-over'],

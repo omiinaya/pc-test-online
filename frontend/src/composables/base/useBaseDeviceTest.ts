@@ -73,7 +73,7 @@ export interface BaseDeviceTestComposables {
 
 export function useBaseDeviceTest(
     options: UseBaseDeviceTestOptions = {},
-    emit?: (event: string, ...args: unknown[]) => void
+    emit?: (...args: any[]) => void
 ): DeviceTestState & DeviceTestMethods & BaseDeviceTestComposables {
     const {
         deviceKind,

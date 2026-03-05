@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
 import { ref, onUnmounted, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
-import { useBaseDeviceTest } from '../composables/base/useBaseDeviceTest.ts';
+import { useBaseDeviceTest } from '../composables/base/useBaseDeviceTest';
 import { useMemoryManagement } from '../composables/useMemoryManagement';
+import { useTestResults } from '../composables/useTestResults';
 
 export default {
     name: 'SpeakerTest',
@@ -15,12 +16,14 @@ export default {
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
         const { t } = useI18n();
+        void props; // Mark as used
+
         // Base device test with device enumeration but no permissions needed for output
         const deviceTest = useBaseDeviceTest(
             {
                 deviceKind: 'audiooutput',
                 deviceType: t('tests.speakers.name'),
-                permissionType: null, // No permissions needed for audio output
+                permissionType: undefined, // No permissions needed for audio output
                 testName: 'speakers',
                 autoInitialize: true,
                 enableEventListeners: true,
@@ -30,20 +33,23 @@ export default {
             emit
         );
 
+        // Test results handling
+        const testResults = useTestResults('speakers', emit);
+
         // Use memory management for tracking resources
         const memoryManager = useMemoryManagement();
 
         // Speaker test specific state
         const isPlaying = ref(false);
-        const currentTestStep = ref('');
-        const audioContext = ref(null);
-        const oscillator = ref(null);
-        const testTimeout = ref(null);
+        const currentTestStep = ref<string>('');
+        const audioContext = ref<AudioContext | null>(null);
+        const oscillator = ref<OscillatorNode | null>(null);
+        const testTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
         const audioContextReady = ref(false);
         const audioContextInitialized = ref(false);
-        const audioContextResourceId = ref(null);
-        const oscillatorResourceIds = ref([]);
-        const timeoutResourceId = ref(null);
+        const audioContextResourceId = ref<number | null>(null);
+        const oscillatorResourceIds = ref<number[]>([]);
+        const timeoutResourceId = ref<number | null>(null);
 
         /**
          * Initialize audio context with selected speaker
@@ -53,7 +59,7 @@ export default {
             try {
                 // Create AudioContext only once
                 if (!audioContext.value) {
-                    audioContext.value = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContext.value = new AudioContext();
                     audioContextInitialized.value = true;
 
                     // Track audio context for memory management
@@ -74,9 +80,11 @@ export default {
                 }
 
                 // Set the audio output device if one is selected and context supports it
-                if (deviceTest.selectedDeviceId.value && audioContext.value.setSinkId) {
+                if (deviceTest.selectedDeviceId.value && (audioContext.value as any).setSinkId) {
                     try {
-                        await audioContext.value.setSinkId(deviceTest.selectedDeviceId.value);
+                        await (audioContext.value as any).setSinkId(
+                            deviceTest.selectedDeviceId.value
+                        );
                     } catch (sinkError) {
                         console.warn('Failed to set sink ID:', sinkError);
                         // Continue without setting sink ID - most browsers will use default
@@ -94,16 +102,16 @@ export default {
         /**
          * Handle device change
          */
-        const handleDeviceChange = async deviceId => {
+        const handleDeviceChange = async (deviceId: string) => {
             if (isPlaying.value) return;
 
             try {
                 deviceTest.selectedDeviceId.value = deviceId;
 
                 // Only update sink ID if audio context exists and supports it
-                if (audioContext.value && audioContext.value.setSinkId) {
+                if (audioContext.value && (audioContext.value as any).setSinkId) {
                     try {
-                        await audioContext.value.setSinkId(deviceId);
+                        await (audioContext.value as any).setSinkId(deviceId);
                     } catch (sinkError) {
                         console.warn('Failed to set sink ID:', sinkError);
                         // Continue without setting sink ID - browser will use default
@@ -121,12 +129,12 @@ export default {
         /**
          * Play sound for specific channel
          */
-        const playSound = async channel => {
+        const playSound = async (channel: string) => {
             if (isPlaying.value) return;
 
             // Start test timing on first interaction
-            if (deviceTest.testResults && deviceTest.testResults.testStatus === 'pending') {
-                deviceTest.testResults.startTest();
+            if (testResults.testStatus.value === 'pending') {
+                testResults.startTest();
             }
 
             isPlaying.value = true;
@@ -211,7 +219,7 @@ export default {
                         const noteDuration = 250; // 250ms per note for better clarity
                         const noteDurationSec = noteDuration / 1000; // Convert to seconds
                         let currentNoteIndex = 0;
-                        let fallbackTimeoutId = null; // Local variable for this Promise instance
+                        let fallbackTimeoutId: ReturnType<typeof setTimeout> | null = null; // Local variable for this Promise instance
                         let isResolved = false; // Track if Promise is already resolved
                         const startTime = audioContext.value.currentTime + 0.1; // Start 100ms from now
 
@@ -228,7 +236,7 @@ export default {
                                     clearTimeout(currentFallbackTimeoutId);
                                     currentFallbackTimeoutId = null;
                                 }
-                                resolve();
+                                resolve(undefined);
                             }
                         };
 
@@ -382,7 +390,7 @@ export default {
          */
         const stopSound = (endTest = true) => {
             console.log(
-                `[SpeakerTest] stopSound called with endTest: ${endTest}, currentNoteIndex: ${currentNoteIndex}, testTimeout.value: ${testTimeout.value}`
+                `[SpeakerTest] stopSound called with endTest: ${endTest}, testTimeout.value: ${testTimeout.value}`
             );
 
             // Stack trace to help debug who's calling stopSound
