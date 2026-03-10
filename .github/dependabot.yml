@@ -1,5 +1,21 @@
 version: 2
 updates:
+    # Root dependencies (monorepo root)
+    - package-ecosystem: 'npm'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      open-pull-requests-limit: 10
+      groups:
+          dependencies:
+              patterns:
+                  - '*'
+      commit-message:
+          prefix: 'chore(root):'
+          include: 'scope'
+
     # Frontend dependencies
     - package-ecosystem: 'npm'
       directory: '/frontend'
@@ -12,8 +28,6 @@ updates:
           dependencies:
               patterns:
                   - '*'
-      reviewers:
-          - '' # Add your team members' GitHub usernames
       commit-message:
           prefix: 'chore(frontend):'
           include: 'scope'
@@ -30,21 +44,17 @@ updates:
           dependencies:
               patterns:
                   - '*'
-      reviewers:
-          - '' # Add your team members' GitHub usernames
       commit-message:
           prefix: 'chore(backend):'
           include: 'scope'
 
-    # Docker base images (if using Docker)
+    # Docker base images (frontend and backend)
     - package-ecosystem: 'docker'
       directory: '/frontend'
       schedule:
           interval: 'weekly'
           day: 'monday'
           time: '00:00'
-      reviewers:
-          - ''
       commit-message:
           prefix: 'chore(docker-frontend):'
           include: 'scope'
@@ -55,8 +65,17 @@ updates:
           interval: 'weekly'
           day: 'monday'
           time: '00:00'
-      reviewers:
-          - ''
       commit-message:
           prefix: 'chore(docker-backend):'
+          include: 'scope'
+
+    # GitHub Actions
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '00:00'
+      commit-message:
+          prefix: 'chore(actions):'
           include: 'scope'
