@@ -2,6 +2,7 @@ import { createApp, type App } from 'vue';
 import router from './router';
 import AppLayout from './AppLayout.vue';
 import i18n, { initLocale } from './i18n';
+import { installGlobalErrorHandlers, reportPerformance } from './utils/telemetry';
 
 // Debug identifier for tracking execution flow
 const DEBUG_ID = `main-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
@@ -143,6 +144,48 @@ if (typeof window !== 'undefined') {
         },
     };
 }
+
+// =============================
+// Telemetry & Monitoring Setup
+// =============================
+
+// Install global error handlers (unhandled errors, unhandled rejections)
+installGlobalErrorHandlers();
+
+// Report performance metrics after page load
+window.addEventListener('load', () => {
+    const timing = performance.timing;
+    const metrics: Record<string, number> = {
+        loadTime: timing.loadEventEnd - timing.navigationStart,
+        domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+        firstByte: timing.responseStart - timing.navigationStart,
+        requestTime: timing.responseEnd - timing.requestStart,
+    };
+
+    // First Contentful Paint (if available)
+    const paintEntries = performance.getEntriesByType('paint');
+    for (const entry of paintEntries) {
+        if (entry.name === 'first-contentful-paint') {
+            metrics.firstContentfulPaint = entry.startTime;
+        }
+    }
+
+    // Memory usage (Chrome only)
+    // @ts-expect-error Performance.memory is non-standard
+    if (performance.memory) {
+        // @ts-expect-error
+        metrics.memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+    }
+
+    reportPerformance(metrics);
+});
+
+// Also report when page becomes hidden (user navigates away)
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        // Could send a summary via usePerformance but keep it simple: errors are already reported globally.
+    }
+});
 
 // Export for potential testing or module usage
 export { app, vueApp };

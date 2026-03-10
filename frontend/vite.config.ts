@@ -98,6 +98,15 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
+            // Include only composables and utility files for coverage thresholds
+            include: ['src/composables/**/*.ts', 'src/utils/**/*.ts', 'src/types/**/*.ts'],
+            // Enforce minimum coverage thresholds for composables
+            thresholds: {
+                lines: 80,
+                functions: 80,
+                branches: 70,
+                statements: 80,
+            },
         },
     },
 

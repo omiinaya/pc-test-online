@@ -13,21 +13,28 @@ const mockDeviceEnumeration = {
 };
 
 // Mock Vue reactive refs
-const mockRef = initialValue => ({
+const mockRef = <T>(initialValue: T): { value: T } => ({
     value: initialValue,
 });
 
-const mockComputed = fn => ({
+const mockComputed = <T>(fn: () => T): { value: T } => ({
     get value() {
         return fn();
     },
 });
 
 // Import the delay logic (conceptually - would need actual import in real test)
-const testDeviceDetectionDelay = (deviceEnum, delayMs = 2000) => {
-    const detectionStartTime = mockRef(null);
+const testDeviceDetectionDelay = (
+    deviceEnum: {
+        hasDevices: { value: boolean };
+        loadingDevices: { value: boolean };
+        availableDevices: { value: unknown[] };
+    },
+    delayMs = 2000
+) => {
+    const detectionStartTime = mockRef<number | null>(null);
     const showNoDevicesMessage = mockRef(false);
-    let detectionTimer = null;
+    let detectionTimer: ReturnType<typeof setTimeout> | null = null;
 
     const startDetection = () => {
         console.log('⏰ Starting device detection...');
@@ -45,7 +52,7 @@ const testDeviceDetectionDelay = (deviceEnum, delayMs = 2000) => {
                 showNoDevicesMessage.value = true;
             }
             detectionTimer = null;
-        }, delayMs);
+        }, delayMs) as unknown as ReturnType<typeof setTimeout>;
     };
 
     const shouldShowNoDevices = mockComputed(() => {

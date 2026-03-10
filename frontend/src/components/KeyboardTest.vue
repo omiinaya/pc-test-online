@@ -159,7 +159,7 @@ export default {
     emits: ['test-completed', 'test-failed', 'test-skipped', 'start-over'],
     setup(props, { emit }) {
         void props;
-        const { t } = useI18n();
+        void useI18n();
         // Initialize composables for normalized patterns
         const testResults = useTestResults('keyboard', emit);
         const lifecycle = useComponentLifecycle();
@@ -240,9 +240,13 @@ export default {
         };
 
         const findKey = (code: string): KeyboardKeyState | null => {
-            const sections = keyboardLayout.value as Record<string, KeyboardKeyState[][]>;
+            const sections = keyboardLayout.value as Record<
+                string,
+                KeyboardKeyState[][] | undefined
+            >;
             for (const section in sections) {
                 const rows = sections[section];
+                if (!rows) continue;
                 for (const row of rows) {
                     const found = row.find(k => k.code === code);
                     if (found) return found;

@@ -2,23 +2,35 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useOptimizedEvents } from '../useOptimizedEvents';
 
 describe('useOptimizedEvents', () => {
-    let addEventListener: typeof vi.fn;
-    let removeEventListener: typeof vi.fn;
-    let originalAddEventListener: typeof addEventListener;
-    let originalRemoveEventListener: typeof removeEventListener;
+    let windowAdd: ReturnType<typeof vi.fn>;
+    let windowRemove: ReturnType<typeof vi.fn>;
+    let docAdd: ReturnType<typeof vi.fn>;
+    let docRemove: ReturnType<typeof vi.fn>;
+    let originalWindowAdd: typeof window.addEventListener;
+    let originalWindowRemove: typeof window.removeEventListener;
+    let originalDocAdd: typeof document.addEventListener;
+    let originalDocRemove: typeof document.removeEventListener;
 
     beforeEach(() => {
-        addEventListener = vi.fn();
-        removeEventListener = vi.fn();
-        originalAddEventListener = window.addEventListener;
-        originalRemoveEventListener = window.removeEventListener;
-        window.addEventListener = addEventListener;
-        window.removeEventListener = removeEventListener;
+        windowAdd = vi.fn();
+        windowRemove = vi.fn();
+        docAdd = vi.fn();
+        docRemove = vi.fn();
+        originalWindowAdd = window.addEventListener;
+        originalWindowRemove = window.removeEventListener;
+        originalDocAdd = document.addEventListener;
+        originalDocRemove = document.removeEventListener;
+        window.addEventListener = windowAdd;
+        window.removeEventListener = windowRemove;
+        document.addEventListener = docAdd;
+        document.removeEventListener = docRemove;
     });
 
     afterEach(() => {
-        window.addEventListener = originalAddEventListener;
-        window.removeEventListener = originalRemoveEventListener;
+        window.addEventListener = originalWindowAdd;
+        window.removeEventListener = originalWindowRemove;
+        document.addEventListener = originalDocAdd;
+        document.removeEventListener = originalDocRemove;
         vi.clearAllMocks();
     });
 
@@ -38,7 +50,7 @@ describe('useOptimizedEvents', () => {
 
         listeners.addResizeListener(mockCallback);
 
-        expect(addEventListener).toHaveBeenCalledWith(window, 'resize', expect.any(Function), {
+        expect(windowAdd).toHaveBeenCalledWith('resize', expect.any(Function), {
             passive: true,
         });
     });
@@ -49,7 +61,7 @@ describe('useOptimizedEvents', () => {
 
         listeners.addScrollListener(mockCallback);
 
-        expect(addEventListener).toHaveBeenCalledWith(window, 'scroll', expect.any(Function), {
+        expect(windowAdd).toHaveBeenCalledWith('scroll', expect.any(Function), {
             passive: true,
         });
     });
@@ -60,12 +72,8 @@ describe('useOptimizedEvents', () => {
 
         listeners.addVisibilityChangeListener(mockCallback);
 
-        expect(addEventListener).toHaveBeenCalledWith(
-            document,
-            'visibilitychange',
-            expect.any(Function),
-            undefined
-        );
+        // Since no options are passed, addEventListener should be called with two arguments: type and listener
+        expect(docAdd).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
     });
 
     it('cleans up all listeners', () => {
@@ -76,12 +84,7 @@ describe('useOptimizedEvents', () => {
         listeners.cleanupAll();
 
         // Should have called removeEventListener for the test event
-        expect(removeEventListener).toHaveBeenCalledWith(
-            window,
-            'test',
-            expect.any(Function),
-            undefined
-        );
+        expect(windowRemove).toHaveBeenCalledWith('test', expect.any(Function));
     });
 
     it('returns a remove function from addOptimizedEventListener', () => {
@@ -93,11 +96,6 @@ describe('useOptimizedEvents', () => {
 
         // The remove function should call removeEventListener when invoked
         remove();
-        expect(removeEventListener).toHaveBeenCalledWith(
-            window,
-            'custom',
-            expect.any(Function),
-            undefined
-        );
+        expect(windowRemove).toHaveBeenCalledWith('custom', expect.any(Function));
     });
 });

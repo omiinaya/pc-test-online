@@ -5,7 +5,11 @@ import { useTestResults } from '../composables/useTestResults';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle';
 import { useEventListeners } from '../composables/useEventListeners';
 import { useGlobalReset } from '../composables/useTestState';
-import { useTouchCompatibility } from '../composables/useTouchCompatibility';
+import {
+    useTouchCompatibility,
+    type TouchEventData,
+    type GestureData,
+} from '../composables/useTouchCompatibility';
 import { useI18n } from 'vue-i18n';
 
 interface TouchTarget {
@@ -13,7 +17,7 @@ interface TouchTarget {
     y: number | null;
     size: number;
     isDragging?: boolean;
-    touchId?: number | null;
+    touchId?: number | string | null;
     originalX?: number | null;
     originalY?: number | null;
 }
@@ -131,7 +135,9 @@ export default {
             if (
                 stage.value !== 'drag' ||
                 dragSource.value.x === null ||
+                dragSource.value.y === null ||
                 dragTarget.value.x === null ||
+                dragTarget.value.y === null ||
                 currentChallenge.value.complete
             ) {
                 return { display: 'none' };
@@ -173,12 +179,13 @@ export default {
             const cacheKey = `${target.x}-${target.y}-${target.size}`;
 
             // Check if we already have this style object cached
-            if (cachedStyleObjects.value.has(cacheKey)) {
-                return cachedStyleObjects.value.get(cacheKey);
+            const cached = cachedStyleObjects.value.get(cacheKey);
+            if (cached !== undefined) {
+                return cached;
             }
 
             // Create new style object
-            const style = {
+            const style: Record<string, string> = {
                 position: 'absolute',
                 left: `${target.x}px`,
                 top: `${target.y}px`,
@@ -196,11 +203,12 @@ export default {
         };
 
         // Optimized distance calculation with caching
-        const calculateDistance = (x1, y1, x2, y2) => {
+        const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
             const cacheKey = `${x1}-${y1}-${x2}-${y2}`;
 
-            if (cachedDistanceCalculations.value.has(cacheKey)) {
-                return cachedDistanceCalculations.value.get(cacheKey);
+            const cached = cachedDistanceCalculations.value.get(cacheKey);
+            if (cached !== undefined) {
+                return cached;
             }
 
             const distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -278,7 +286,7 @@ export default {
         };
 
         // Optimized position calculation with better boundary checking
-        const getRandomPosition = (size = targetSize) => {
+        const getRandomPosition = (size: number = targetSize): { x: number; y: number } => {
             // First ensure we have calculated safe area
             if (!safeAreaRect.value) {
                 console.log('Safe area not calculated yet, calculating now');
@@ -366,7 +374,8 @@ export default {
             currentChallenge.value.complete = false;
 
             const challengeTypes: Array<'tap' | 'drag'> = ['tap', 'drag'];
-            const randomType = challengeTypes[Math.floor(Math.random() * challengeTypes.length)];
+            const randomIndex = Math.floor(Math.random() * challengeTypes.length);
+            const randomType = challengeTypes[randomIndex]!;
 
             currentChallenge.value.type = randomType;
             stage.value = randomType;
@@ -444,8 +453,8 @@ export default {
                 }
 
                 const sourcePos = getRandomPosition(dragSource.value.size);
-                let targetPos;
-                let distance;
+                let targetPos: { x: number; y: number } = { x: 0, y: 0 };
+                let distance = 0;
                 const minDistance = 150; // Minimum drag distance
                 const maxDistance = 300; // Maximum drag distance to keep it reasonable
                 let attempts = 0;
@@ -534,8 +543,8 @@ export default {
                 console.log('Resetting stuck drag state');
                 dragSource.value.isDragging = false;
                 dragSource.value.touchId = null;
-                dragSource.value.x = dragSource.value.originalX;
-                dragSource.value.y = dragSource.value.originalY;
+                dragSource.value.x = dragSource.value.originalX ?? null;
+                dragSource.value.y = dragSource.value.originalY ?? null;
             }
             clearDragTimeout();
         };
@@ -595,7 +604,10 @@ export default {
         // Watch for global resets
         useGlobalReset(restartTest);
 
-        const handlePointerDown = (touchData, _gesture) => {
+        const handlePointerDown = (
+            touchData: TouchEventData,
+            _gesture: GestureData | null | undefined
+        ) => {
             if (stage.value === 'idle') {
                 startTest();
                 return;
@@ -635,7 +647,10 @@ export default {
             }
         };
 
-        const handlePointerMove = (touchData, _gesture) => {
+        const handlePointerMove = (
+            touchData: TouchEventData,
+            _gesture: GestureData | null | undefined
+        ) => {
             if (stage.value !== 'drag' || !dragSource.value.isDragging) return;
 
             // Throttle pointer move events for better performance
@@ -663,7 +678,7 @@ export default {
             // If we get here, the touch ID wasn't found - this might indicate a problem
             // Check if there's only one touch and we should use it anyway
             if (touchData.changedTouches.length === 1 && dragSource.value.isDragging) {
-                const touch = touchData.changedTouches[0];
+                const touch = touchData.changedTouches[0]!;
                 console.log(
                     'Touch ID mismatch detected, using available touch:',
                     touch.id,
@@ -676,7 +691,10 @@ export default {
             }
         };
 
-        const handlePointerUp = (touchData, _gesture) => {
+        const handlePointerUp = (
+            touchData: TouchEventData,
+            _gesture: GestureData | null | undefined
+        ) => {
             const challengeArea = document.querySelector('.challenge-area');
             if (!challengeArea) return;
 
@@ -688,15 +706,15 @@ export default {
                     console.log('Drag ended with touch ID:', touch.id); // Debug logging
 
                     // Optimized hit detection - precompute center and use optimized distance check
-                    const sourceCenterX = dragSource.value.x + targetSize * 0.5;
-                    const sourceCenterY = dragSource.value.y + targetSize * 0.5;
+                    const sourceCenterX = (dragSource.value.x as number) + targetSize * 0.5;
+                    const sourceCenterY = (dragSource.value.y as number) + targetSize * 0.5;
                     const sourceCenter = { x: sourceCenterX, y: sourceCenterY };
 
                     if (isInsideCircle(sourceCenter, dragTarget.value)) {
                         showSuccessAndContinue();
                     } else {
-                        dragSource.value.x = dragSource.value.originalX;
-                        dragSource.value.y = dragSource.value.originalY;
+                        dragSource.value.x = dragSource.value.originalX ?? dragSource.value.x;
+                        dragSource.value.y = dragSource.value.originalY ?? dragSource.value.y;
                     }
                     return; // Found the right touch, exit
                 }
@@ -712,10 +730,10 @@ export default {
 
         // handleMouseLeave method intentionally removed as unused
 
-        const isInsideCircle = (point, circle) => {
+        const isInsideCircle = (point: { x: number; y: number }, circle: TouchTarget): boolean => {
             const radius = circle.size * 0.5; // Use multiplication instead of division
-            const circleCenterX = circle.x + radius;
-            const circleCenterY = circle.y + radius;
+            const circleCenterX = (circle.x ?? 0) + radius;
+            const circleCenterY = (circle.y ?? 0) + radius;
             const deltaX = point.x - circleCenterX;
             const deltaY = point.y - circleCenterY;
 
@@ -734,7 +752,10 @@ export default {
                     '.touch-container'
                 ) as HTMLElement | null;
                 if (challengeArea) {
-                    const unifiedTouchHandler = (touchData, gesture) => {
+                    const unifiedTouchHandler = (
+                        touchData: TouchEventData,
+                        gesture: GestureData | null | undefined
+                    ) => {
                         // Prevent default for touch events to avoid scrolling
                         if (touchData.originalEvent.type.startsWith('touch')) {
                             touchData.preventDefault();
@@ -785,9 +806,9 @@ export default {
             lifecycle.cleanup(() => {
                 // Clean up unified touch listeners
                 const challengeArea = document.querySelector('.touch-container') as any;
-                if (challengeArea && challengeArea._touchCleanup) {
-                    challengeArea._touchCleanup();
-                    delete challengeArea._touchCleanup;
+                if (challengeArea && (challengeArea as any)._touchCleanup) {
+                    (challengeArea as any)._touchCleanup();
+                    delete (challengeArea as any)._touchCleanup;
                 }
 
                 // Clean up all timers to prevent memory leaks

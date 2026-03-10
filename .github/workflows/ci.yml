@@ -1,0 +1,80 @@
+name: CI
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [18.x, 20.x]
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install dependencies (frontend)
+              run: npm ci
+              working-directory: frontend
+
+            - name: Type checking
+              run: npm run type-check
+              working-directory: frontend
+
+            - name: Lint
+              run: npm run lint
+              working-directory: frontend
+
+            - name: Unit tests with coverage
+              run: npm test -- --coverage --run
+              working-directory: frontend
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v3
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: frontend/coverage/coverage-final.json
+                  fail_ci_if_error: true
+
+    e2e:
+        runs-on: ubuntu-latest
+        needs: test
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: Install dependencies (frontend)
+              run: npm ci
+              working-directory: frontend
+
+            - name: Build frontend
+              run: npm run build
+              working-directory: frontend
+
+            - name: Start preview server (Vite preview)
+              run: npm run preview -- --port 4173 &
+              working-directory: frontend
+
+            - name: Wait for server
+              run: npx wait-on http://localhost:4173
+              working-directory: frontend
+
+            - name: Run Cypress tests
+              uses: cypress-io/github-action@v6
+              with:
+                  working-directory: frontend
+                  browser: chrome
+                  headless: true
+                  config: baseUrl=http://localhost:4173

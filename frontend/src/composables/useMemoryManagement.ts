@@ -1,4 +1,4 @@
-import { onUnmounted, ref, type Ref } from 'vue';
+import { onUnmounted, ref, type Ref, getCurrentInstance } from 'vue';
 
 export interface MemoryResource {
     type: 'timeout' | 'interval' | 'event' | 'stream' | 'connection' | 'observer';
@@ -16,7 +16,7 @@ export interface MemoryMetrics {
 }
 
 export function useMemoryManagement() {
-    const resources: Ref<MemoryResource[]> = ref([]);
+    const trackedResources: Ref<MemoryResource[]> = ref([]);
     let resourceId = 0;
     const metrics: Ref<MemoryMetrics> = ref({
         totalResources: 0,
@@ -40,7 +40,7 @@ export function useMemoryManagement() {
             ...(description !== undefined && { description }),
         };
 
-        resources.value.push(resource);
+        trackedResources.value.push(resource);
         updateMetrics();
 
         return id;
@@ -48,13 +48,13 @@ export function useMemoryManagement() {
 
     // Untrack and cleanup specific resource
     const untrackResource = (id: number): boolean => {
-        const index = resources.value.findIndex(r => r.id === id);
+        const index = trackedResources.value.findIndex(r => r.id === id);
         if (index > -1) {
-            const resource = resources.value[index];
+            const resource = trackedResources.value[index];
             if (resource) {
                 try {
                     resource.cleanup();
-                    resources.value.splice(index, 1);
+                    trackedResources.value.splice(index, 1);
                     updateMetrics();
                     return true;
                 } catch (error) {
@@ -68,7 +68,7 @@ export function useMemoryManagement() {
 
     // Cleanup all resources of specific type
     const cleanupType = (type: MemoryResource['type']): number => {
-        const toRemove = resources.value.filter(r => r.type === type);
+        const toRemove = trackedResources.value.filter(r => r.type === type);
         toRemove.forEach(resource => {
             try {
                 resource.cleanup();
@@ -77,7 +77,7 @@ export function useMemoryManagement() {
             }
         });
 
-        resources.value = resources.value.filter(r => r.type !== type);
+        trackedResources.value = trackedResources.value.filter(r => r.type !== type);
         updateMetrics();
 
         return toRemove.length;
@@ -85,26 +85,26 @@ export function useMemoryManagement() {
 
     // Comprehensive cleanup
     const cleanupAll = (): void => {
-        resources.value.forEach(resource => {
+        trackedResources.value.forEach(resource => {
             try {
                 resource.cleanup();
             } catch (error) {
                 console.warn('Error cleaning up resource:', error);
             }
         });
-        resources.value = [];
+        trackedResources.value = [];
         updateMetrics();
     };
 
     // Update metrics
     const updateMetrics = (): void => {
         const byType: Record<string, number> = {};
-        resources.value.forEach(resource => {
+        trackedResources.value.forEach(resource => {
             byType[resource.type] = (byType[resource.type] || 0) + 1;
         });
 
         metrics.value = {
-            totalResources: resources.value.length,
+            totalResources: trackedResources.value.length,
             byType,
             memoryUsage: getMemoryUsage(),
             leaksDetected: detectPotentialLeaks(),
@@ -125,22 +125,31 @@ export function useMemoryManagement() {
         const now = Date.now();
         const longLivedThreshold = 5 * 60 * 1000; // 5 minutes
 
-        return resources.value.filter(resource => now - resource.createdAt > longLivedThreshold)
-            .length;
+        return trackedResources.value.filter(
+            resource => now - resource.createdAt > longLivedThreshold
+        ).length;
     };
 
-    // Auto-cleanup on component unmount
-    onUnmounted(() => {
-        cleanupAll();
-    });
+    // Manual mount/unmount for testing or manual control
+    const mount = () => true;
+    const unmount = () => cleanupAll();
+
+    // Auto-cleanup on component unmount if within a component
+    if (getCurrentInstance()) {
+        onUnmounted(() => {
+            cleanupAll();
+        });
+    }
 
     return {
-        resources,
+        trackedResources,
         metrics,
         trackResource,
         untrackResource,
         cleanupType,
         cleanupAll,
         updateMetrics,
+        mount,
+        unmount,
     };
 }

@@ -1,207 +1,207 @@
 <script lang="ts">
-// @ts-nocheck
-import { defineComponent, defineAsyncComponent, type ComponentPublicInstance } from 'vue';
+import {
+    defineComponent,
+    defineAsyncComponent,
+    ref,
+    reactive,
+    computed,
+    onMounted,
+    onUnmounted,
+    nextTick,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resetAllTestStates } from './composables/useTestState';
-import { useCSSCompatibility } from './composables/useCSSCompatibility';
 import { debounce } from './utils/debounce';
 import LoadingSpinner from './components/LoadingSpinner.vue';
 import AsyncErrorFallback from './components/AsyncErrorFallback.vue';
 import PerformanceMonitor from './components/PerformanceMonitor.vue';
 
-// Dynamic imports for PDF libraries to reduce initial bundle size
+// Types
+type TestName = 'webcam' | 'microphone' | 'speakers' | 'keyboard' | 'mouse' | 'touch' | 'battery';
+type TestType = TestName | 'testsCompleted';
+type TestResult = boolean | null;
+
+interface TimingInfo {
+    start: number | null;
+    end: number | null;
+    duration: number | null;
+}
+
+interface StyleInfo {
+    minHeight: string;
+    maxWidth?: string;
+}
+
+const testNames: TestName[] = [
+    'webcam',
+    'microphone',
+    'speakers',
+    'keyboard',
+    'mouse',
+    'touch',
+    'battery',
+];
+
+function isTestName(value: string): value is TestName {
+    return testNames.includes(value as TestName);
+}
+
+// Async component definitions
+const WebcamTest = defineAsyncComponent({
+    loader: () => import('./components/WebcamTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const MicrophoneTest = defineAsyncComponent({
+    loader: () => import('./components/MicrophoneTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const SpeakerTest = defineAsyncComponent({
+    loader: () => import('./components/SpeakerTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const KeyboardTest = defineAsyncComponent({
+    loader: () => import('./components/KeyboardTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const MouseTest = defineAsyncComponent({
+    loader: () => import('./components/MouseTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TouchTest = defineAsyncComponent({
+    loader: () => import('./components/TouchTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const BatteryTest = defineAsyncComponent({
+    loader: () => import('./components/BatteryTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TestsCompleted = defineAsyncComponent({
+    loader: () => import('./components/TestsCompleted.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const VisualizerContainer = defineAsyncComponent({
+    loader: () => import('./components/VisualizerContainer.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TestActionButtons = defineAsyncComponent({
+    loader: () => import('./components/TestActionButtons.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TestHeader = defineAsyncComponent({
+    loader: () => import('./components/TestHeader.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const AppFooter = defineAsyncComponent({
+    loader: () => import('./components/AppFooter.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
 
 export default defineComponent({
     name: 'App',
-    beforeCreate() {
-        console.log('[DEBUG] App.beforeCreate() - Component initialization starting', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            environment: typeof window !== 'undefined' ? 'browser' : 'server',
-        });
-    },
-    created() {
-        console.log('[DEBUG] App.created() - Component instance created', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            dataProperties: Object.keys(this.$data || {}),
-            computedProperties: Object.keys(this.$options.computed || {}),
-        });
-    },
-    beforeMount() {
-        console.log('[DEBUG] App.beforeMount() - About to mount component to DOM', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            templateSize:
-                typeof this.$options.template === 'string'
-                    ? this.$options.template.length
-                    : 'unknown',
-        });
-    },
     setup() {
         const { t } = useI18n();
-        console.log('[DEBUG] App.setup() - Composition API setup complete', {
-            timestamp: new Date().toISOString(),
-            hasI18n: !!t,
+        const $t = t;
+
+        // Reactive state
+        const isMobile = ref(false);
+        const showSummaryModal = ref(false);
+        const activeTest = ref<TestType>('webcam');
+        const results = reactive<Record<TestName, TestResult>>({
+            webcam: null,
+            microphone: null,
+            speakers: null,
+            keyboard: null,
+            mouse: null,
+            touch: null,
+            battery: null,
         });
-        return { t };
-    },
-    components: {
-        WebcamTest: defineAsyncComponent({
-            loader: () => import('./components/WebcamTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        MicrophoneTest: defineAsyncComponent({
-            loader: () => import('./components/MicrophoneTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        SpeakerTest: defineAsyncComponent({
-            loader: () => import('./components/SpeakerTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        KeyboardTest: defineAsyncComponent({
-            loader: () => import('./components/KeyboardTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        MouseTest: defineAsyncComponent({
-            loader: () => import('./components/MouseTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TouchTest: defineAsyncComponent({
-            loader: () => import('./components/TouchTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        BatteryTest: defineAsyncComponent({
-            loader: () => import('./components/BatteryTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestsCompleted: defineAsyncComponent({
-            loader: () => import('./components/TestsCompleted.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        VisualizerContainer: defineAsyncComponent({
-            loader: () => import('./components/VisualizerContainer.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestActionButtons: defineAsyncComponent({
-            loader: () => import('./components/TestActionButtons.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestHeader: defineAsyncComponent({
-            loader: () => import('./components/TestHeader.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        AppFooter: defineAsyncComponent({
-            loader: () => import('./components/AppFooter.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        PerformanceMonitor,
-    },
-    data() {
-        return {
-            isMobile: false,
-            showSummaryModal: false,
-            activeTest: 'webcam', // Start with webcam test
-            results: {
-                webcam: null, // null: pending, true: pass, false: fail
-                microphone: null,
-                speakers: null,
-                keyboard: null,
-                mouse: null,
-                touch: null,
-                battery: null,
-            },
-            skippedTests: [],
-            testIconMap: {
-                webcam: '📷',
-                microphone: '🎤',
-                speakers: '🔊',
-                keyboard: '⌨️',
-                mouse: '🖱️',
-                touch: '👆',
-                battery: '🔋',
-            },
-            testNameMap: {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
-            },
-            timings: {
-                webcam: { start: null, end: null, duration: null },
-                microphone: { start: null, end: null, duration: null },
-                speakers: { start: null, end: null, duration: null },
-                keyboard: { start: null, end: null, duration: null },
-                mouse: { start: null, end: null, duration: null },
-                touch: { start: null, end: null, duration: null },
-                battery: { start: null, end: null, duration: null },
-            },
-            runCounts: {
-                webcam: 0,
-                microphone: 0,
-                speakers: 0,
-                keyboard: 0,
-                mouse: 0,
-                touch: 0,
-                battery: 0,
-            },
-            showExportMenu: false,
-            switchDebounceTimer: null,
-            isSwitching: false,
-            showPerformanceMonitor: false,
-            announcement: '',
+        const skippedTests = ref<TestName[]>([]);
+        const testIconMap: Record<TestName, string> = {
+            webcam: '📷',
+            microphone: '🎤',
+            speakers: '🔊',
+            keyboard: '⌨️',
+            mouse: '🖱️',
+            touch: '👆',
+            battery: '🔋',
         };
-    },
-    computed: {
-        availableTests() {
-            const tests = Object.keys(this.results);
-            if (this.isMobile) {
-                return tests.filter(test => test !== 'keyboard');
-            }
-            return tests;
-        },
-        // Test header content
-        currentTestIcon() {
-            const iconMap = {
+        const testNameMap = computed<Record<TestName, string>>(() => ({
+            webcam: $t('tests.webcam.name'),
+            microphone: $t('tests.microphone.name'),
+            speakers: $t('tests.speakers.name'),
+            keyboard: $t('tests.keyboard.name'),
+            mouse: $t('tests.mouse.name'),
+            touch: $t('tests.touch.name'),
+            battery: $t('tests.battery.name'),
+        }));
+        const timings = reactive<Record<TestName, TimingInfo>>({
+            webcam: { start: null, end: null, duration: null },
+            microphone: { start: null, end: null, duration: null },
+            speakers: { start: null, end: null, duration: null },
+            keyboard: { start: null, end: null, duration: null },
+            mouse: { start: null, end: null, duration: null },
+            touch: { start: null, end: null, duration: null },
+            battery: { start: null, end: null, duration: null },
+        });
+        const runCounts = reactive<Record<TestName, number>>({
+            webcam: 0,
+            microphone: 0,
+            speakers: 0,
+            keyboard: 0,
+            mouse: 0,
+            touch: 0,
+            battery: 0,
+        });
+        const showExportMenu = ref(false);
+        const switchDebounceTimer = ref<number | null>(null);
+        const isSwitching = ref(false);
+        const showPerformanceMonitor = ref(false);
+        const announcement = ref('');
+
+        // Computed
+        const availableTests = computed<TestName[]>(() => {
+            const tests = Object.keys(results) as TestName[];
+            return isMobile.value ? tests.filter(test => test !== 'keyboard') : tests;
+        });
+
+        const currentTestIcon = computed<string>(() => {
+            const iconMap: Record<TestType, string> = {
                 webcam: '📷',
                 microphone: '🎤',
                 speakers: '🔊',
@@ -211,124 +211,127 @@ export default defineComponent({
                 battery: '🔋',
                 testsCompleted: '✅',
             };
-            return iconMap[this.activeTest] || '📷';
-        },
-        currentTestTitle() {
-            const titleMap = {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
-                testsCompleted: this.t('tests.completed.name'),
-            };
-            return titleMap[this.activeTest] || this.t('tests.webcam.name');
-        },
-        currentTestDescription() {
-            const descriptionMap = {
-                webcam: this.t('tests.webcam.description'),
-                microphone: this.t('tests.microphone.description'),
-                speakers: this.t('tests.speakers.description'),
-                keyboard: this.t('tests.keyboard.description'),
-                mouse: this.t('tests.mouse.description'),
-                touch: this.t('tests.touch.description'),
-                battery: this.t('tests.battery.description'),
-                testsCompleted: this.t('tests.completed.description'),
-            };
-            return descriptionMap[this.activeTest] || this.t('tests.webcam.description');
-        },
-        // Dynamic component mapping for keep-alive functionality
-        currentTestComponent() {
-            const componentMap = {
-                webcam: 'WebcamTest',
-                microphone: 'MicrophoneTest',
-                speakers: 'SpeakerTest',
-                keyboard: 'KeyboardTest',
-                mouse: 'MouseTest',
-                touch: 'TouchTest',
-                battery: 'BatteryTest',
-                testsCompleted: 'TestsCompleted',
-            };
-            return componentMap[this.activeTest] || 'WebcamTest';
-        },
-        allTestsCompleted() {
-            return this.availableTests.every(
-                test => this.results[test] !== null || this.skippedTests.includes(test)
-            );
-        },
-        completedTestsCount() {
-            // Count as completed if passed, failed, or skipped
-            return this.availableTests.filter(
-                test => this.results[test] !== null || this.skippedTests.includes(test)
-            ).length;
-        },
-        totalTestsCount() {
-            return this.availableTests.length;
-        },
-        passedTests() {
-            return this.availableTests.filter(
-                test => this.results[test] === true && !this.skippedTests.includes(test)
-            );
-        },
-        failedTests() {
-            return this.availableTests.filter(
-                test => this.results[test] === false && !this.skippedTests.includes(test)
-            );
-        },
-        pendingTests() {
-            return this.availableTests.filter(
-                test => this.results[test] === null && !this.skippedTests.includes(test)
-            );
-        },
-        skippedTestsList() {
-            return this.skippedTests.filter(test => this.availableTests.includes(test));
-        },
-        summaryClass() {
-            if (this.failedTests().length > 0) {
-                return 'completed-fail';
-            }
-            if (this.allTestsCompleted) {
-                return 'completed-success';
-            }
-            return 'in-progress';
-        },
-        summaryText() {
-            const totalTests = Object.keys(this.results).length;
-            const completedCount = this.completedTestsCount;
+            return iconMap[activeTest.value] || '📷';
+        });
 
-            if (!this.allTestsCompleted) {
+        const currentTestTitle = computed<string>(() => {
+            const titleMap: Record<TestType, string> = {
+                webcam: $t('tests.webcam.name'),
+                microphone: $t('tests.microphone.name'),
+                speakers: $t('tests.speakers.name'),
+                keyboard: $t('tests.keyboard.name'),
+                mouse: $t('tests.mouse.name'),
+                touch: $t('tests.touch.name'),
+                battery: $t('tests.battery.name'),
+                testsCompleted: $t('tests.completed.name'),
+            };
+            return titleMap[activeTest.value] || $t('tests.webcam.name');
+        });
+
+        const currentTestDescription = computed<string>(() => {
+            const descriptionMap: Record<TestType, string> = {
+                webcam: $t('tests.webcam.description'),
+                microphone: $t('tests.microphone.description'),
+                speakers: $t('tests.speakers.description'),
+                keyboard: $t('tests.keyboard.description'),
+                mouse: $t('tests.mouse.description'),
+                touch: $t('tests.touch.description'),
+                battery: $t('tests.battery.description'),
+                testsCompleted: $t('tests.completed.description'),
+            };
+            return descriptionMap[activeTest.value] || $t('tests.webcam.description');
+        });
+
+        const allTestsCompleted = computed<boolean>(() => {
+            return availableTests.value.every(
+                test => results[test] !== null || skippedTests.value.includes(test)
+            );
+        });
+
+        const completedTestsCount = computed<number>(() => {
+            return availableTests.value.filter(
+                test => results[test] !== null || skippedTests.value.includes(test)
+            ).length;
+        });
+
+        const totalTestsCount = computed<number>(() => availableTests.value.length);
+
+        const passedTests = computed<TestName[]>(() => {
+            return availableTests.value.filter(
+                test => results[test] === true && !skippedTests.value.includes(test)
+            );
+        });
+
+        const failedTests = computed<TestName[]>(() => {
+            return availableTests.value.filter(
+                test => results[test] === false && !skippedTests.value.includes(test)
+            );
+        });
+
+        const pendingTests = computed<TestName[]>(() => {
+            return availableTests.value.filter(
+                test => results[test] === null && !skippedTests.value.includes(test)
+            );
+        });
+
+        const skippedTestsList = computed<TestName[]>(() =>
+            skippedTests.value.filter(test => availableTests.value.includes(test))
+        );
+
+        const summaryClass = computed<string>(() => {
+            if (failedTests.value.length > 0) return 'completed-fail';
+            if (allTestsCompleted.value) return 'completed-success';
+            return 'in-progress';
+        });
+
+        const summaryText = computed<string>(() => {
+            const totalTests = availableTests.value.length;
+            const completedCount = completedTestsCount.value;
+            if (!allTestsCompleted.value) {
                 return `${completedCount}/${totalTests} In Progress...`;
             } else {
-                const failedCount = Object.values(this.results).filter(r => r === false).length;
+                const failedCount = failedTests.value.length;
                 if (failedCount > 0) {
                     return `${totalTests}/${totalTests} Completed (${failedCount} Failed)`;
                 } else {
                     return `${totalTests}/${totalTests} Completed`;
                 }
             }
-        },
-        totalTimeSpent() {
-            return Object.values(this.timings)
+        });
+
+        const totalTimeSpent = computed<number>(() => {
+            return Object.values(timings)
                 .map(t => (typeof t.duration === 'number' ? t.duration : 0))
                 .reduce((a, b) => a + b, 0);
-        },
-        // Internationalized test names for mobile navigation and export functions
-        i18nTestNameMap() {
-            return {
-                webcam: this.t('tests.webcam.name'),
-                microphone: this.t('tests.microphone.name'),
-                speakers: this.t('tests.speakers.name'),
-                keyboard: this.t('tests.keyboard.name'),
-                mouse: this.t('tests.mouse.name'),
-                touch: this.t('tests.touch.name'),
-                battery: this.t('tests.battery.name'),
-            };
-        },
-        // Container styles for smooth morphing based on active test
-        currentContainerStyles() {
-            const styleMap = {
+        });
+
+        const i18nTestNameMap = computed<Record<TestName, string>>(() => ({
+            webcam: $t('tests.webcam.name'),
+            microphone: $t('tests.microphone.name'),
+            speakers: $t('tests.speakers.name'),
+            keyboard: $t('tests.keyboard.name'),
+            mouse: $t('tests.mouse.name'),
+            touch: $t('tests.touch.name'),
+            battery: $t('tests.battery.name'),
+        }));
+
+        const componentMap = {
+            webcam: WebcamTest,
+            microphone: MicrophoneTest,
+            speakers: SpeakerTest,
+            keyboard: KeyboardTest,
+            mouse: MouseTest,
+            touch: TouchTest,
+            battery: BatteryTest,
+            testsCompleted: TestsCompleted,
+        };
+
+        const currentTestComponent = computed(() => {
+            return componentMap[activeTest.value] || WebcamTest;
+        });
+
+        const currentContainerStyles = computed<{ minHeight: string; maxWidth?: string }>(() => {
+            const styleMap: Record<TestType, StyleInfo> = {
                 webcam: { minHeight: '420px' },
                 microphone: { minHeight: '280px' },
                 speakers: { minHeight: '350px', maxWidth: '600px' },
@@ -338,159 +341,144 @@ export default defineComponent({
                 battery: { minHeight: '250px' },
                 testsCompleted: { minHeight: '250px' },
             };
-            return styleMap[this.activeTest] || { minHeight: '250px' };
-        },
-    },
-    methods: {
-        // Debounced test switching using the new debounce utility
-        debouncedSetActiveTest: debounce(
-            function (testType: string) {
-                // If we're already switching, ignore new requests
-                if (this.isSwitching) {
-                    console.log(
-                        `Switching debounced: already switching to ${this.activeTest}, ignoring request for ${testType}`
-                    );
+            return styleMap[activeTest.value] || { minHeight: '250px' };
+        });
+
+        // Methods
+        const debouncedSetActiveTest = debounce(
+            (testType: string) => {
+                if (isSwitching.value) {
                     return;
                 }
-
-                // Mark as switching
-                this.isSwitching = true;
-                console.log(`Switching from ${this.activeTest} to ${testType}`);
-
-                // Perform the switch immediately for good UX
-                this.setActiveTest(testType);
-
-                // Reset switching flag after a short delay to prevent rapid switches
+                isSwitching.value = true;
+                setActiveTest(testType);
                 setTimeout(() => {
-                    this.isSwitching = false;
-                    console.log(`Switch cooldown ended, ready for next switch`);
-                }, 200); // 200ms cooldown between switches
+                    isSwitching.value = false;
+                }, 200);
             },
             50,
             { leading: true, trailing: false }
-        ),
+        );
 
-        setActiveTest(testType: string) {
-            // Only start timing if we're switching to a new test or the test hasn't started timing yet
-            if (this.activeTest !== testType || this.timings[testType].start === null) {
-                this.timings[testType].start = Date.now();
-                this.timings[testType].end = null;
+        const setActiveTest = (testType: string) => {
+            if (!isTestName(testType)) return;
+            const test = testType as TestName;
+            if (activeTest.value !== testType || !timings[test].start) {
+                timings[test].start = Date.now();
+                timings[test].end = null;
             }
-            this.activeTest = testType;
-        },
-        onTestCompleted(testType) {
-            if (!this.timings[testType]) {
-                return;
-            }
-            // Remove from skippedTests if present (robust reactivity)
-            this.skippedTests = this.skippedTests.filter(t => t !== testType);
-            this.results[testType] = true;
-            // Stop timing and store only the last session duration
-            this.timings[testType].end = Date.now();
+            activeTest.value = testType as TestType;
+        };
 
-            // Validate timing data before calculation
-            if (this.timings[testType].start && this.timings[testType].end) {
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Ensure duration is reasonable (between 0 and 10 minutes)
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
+        const onTestCompleted = (testType: string) => {
+            if (!isTestName(testType)) return;
+            const test = testType;
+            skippedTests.value = skippedTests.value.filter(t => t !== test);
+            results[test] = true;
+            const timing = timings[test]!;
+            timing.end = Date.now();
+
+            if (timing.start && timing.end) {
+                const duration = (timing.end - timing.start) / 1000;
+                timing.duration = duration >= 0 && duration <= 600 ? duration : 0;
             } else {
-                this.timings[testType].duration = 0;
+                timing.duration = 0;
             }
 
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-        },
-        onTestFailed(testType) {
-            if (!this.timings[testType]) {
-                return;
-            }
-            // Remove from skippedTests if present (robust reactivity)
-            this.skippedTests = this.skippedTests.filter(t => t !== testType);
-            this.results[testType] = false;
-            // Stop timing and store only the last session duration
-            this.timings[testType].end = Date.now();
+            runCounts[test] += 1;
+            autoAdvance(test);
+        };
 
-            // Validate timing data before calculation
-            if (this.timings[testType].start && this.timings[testType].end) {
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Ensure duration is reasonable (between 0 and 10 minutes)
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
+        const onTestFailed = (testType: string) => {
+            if (!isTestName(testType)) return;
+            const test = testType;
+            skippedTests.value = skippedTests.value.filter(t => t !== test);
+            results[test] = false;
+            const timing = timings[test]!;
+            timing.end = Date.now();
+
+            if (timing.start && timing.end) {
+                const duration = (timing.end - timing.start) / 1000;
+                timing.duration = duration >= 0 && duration <= 600 ? duration : 0;
             } else {
-                this.timings[testType].duration = 0;
+                timing.duration = 0;
             }
 
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-            this.announcement = this.t('announcements.testFailed', {
-                test: this.testNameMap[testType],
-            });
-            // Clear announcement after 3 seconds for better UX
+            runCounts[test] += 1;
+            autoAdvance(test);
+            announcement.value = $t('announcements.testFailed', { test: testNameMap.value[test] });
             setTimeout(() => {
-                this.announcement = '';
+                announcement.value = '';
             }, 3000);
-        },
-        onTestSkipped(payload) {
-            // Support both old (string) and new (object) signatures for robustness
+        };
+
+        const onTestSkipped = (payload: string | { testType: string; duration?: number }) => {
             const testType = typeof payload === 'string' ? payload : payload.testType;
+            if (!isTestName(testType)) return;
+            const test = testType;
+
             const duration =
                 typeof payload === 'object' && payload.duration !== undefined
                     ? payload.duration
                     : null;
 
-            if (!this.timings[testType]) {
+            if (!skippedTests.value.includes(test)) {
+                skippedTests.value.push(test);
+            }
+
+            const timing = timings[test]!;
+
+            if (duration !== null) {
+                if (duration >= 0 && duration <= 600) {
+                    timing.duration = duration;
+                    if (timing.start !== null) {
+                        timing.end = timing.start + duration * 1000;
+                    }
+                } else {
+                    timing.duration = 0;
+                }
+            } else if (timing.end === null && timing.start !== null) {
+                timing.end = Date.now();
+                const sessionDuration = (timing.end - timing.start) / 1000;
+                timing.duration =
+                    sessionDuration >= 0 && sessionDuration <= 600 ? sessionDuration : 0;
+            } else {
+                timing.duration = 0;
+            }
+            results[test] = null;
+            runCounts[test] += 1;
+            autoAdvance(test);
+            announcement.value = $t('announcements.testSkipped', { test: testNameMap.value[test] });
+            setTimeout(() => {
+                announcement.value = '';
+            }, 3000);
+        };
+
+        // Wrapper handlers for dynamic component events to satisfy TypeScript
+        const handleTestCompleted = (payload: unknown) => {
+            if (typeof payload === 'string') {
+                onTestCompleted(payload);
+            }
+        };
+        const handleTestFailed = (payload: unknown) => {
+            if (typeof payload === 'string') {
+                onTestFailed(payload);
+            }
+        };
+        const handleTestSkipped = (payload: unknown) => {
+            if (typeof payload === 'string') {
+                onTestSkipped(payload);
+            } else if (payload && typeof payload === 'object' && 'testType' in payload) {
+                onTestSkipped(payload as { testType: string; duration?: number });
+            }
+        };
+
+        const autoAdvance = (currentTest: TestName) => {
+            if (allTestsCompleted.value) {
+                activeTest.value = 'testsCompleted';
                 return;
             }
-            if (!this.skippedTests.includes(testType)) {
-                this.skippedTests.push(testType);
-            }
-            // Use the provided duration if available, otherwise calculate as before
-            if (duration !== null) {
-                // Validate provided duration
-                if (duration >= 0 && duration <= 600) {
-                    this.timings[testType].duration = duration;
-                    this.timings[testType].end = this.timings[testType].start + duration * 1000;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else if (
-                this.timings[testType].end === null &&
-                typeof this.timings[testType].start === 'number'
-            ) {
-                this.timings[testType].end = Date.now();
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Validate calculated duration
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else {
-                this.timings[testType].duration = 0;
-            }
-            this.results[testType] = null; // Keep as pending, but filtered out of summary
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-            this.announcement = this.t('announcements.testSkipped', {
-                test: this.testNameMap[testType],
-            });
-            // Clear announcement after 3 seconds for better UX
-            setTimeout(() => {
-                this.announcement = '';
-            }, 3000);
-        },
-        autoAdvance(currentTest) {
-            const tests = [
+            const tests: TestName[] = [
                 'webcam',
                 'microphone',
                 'speakers',
@@ -500,401 +488,205 @@ export default defineComponent({
                 'battery',
             ];
             const currentIndex = tests.indexOf(currentTest);
-            // If not all tests are completed
-            if (!this.allTestsCompleted) {
-                // Try to go to the next incomplete test after the current one
-                for (let i = currentIndex + 1; i < tests.length; i++) {
-                    if (this.results[tests[i]] === null) {
-                        this.setActiveTest(tests[i]);
-                        return;
-                    }
+
+            for (let i = currentIndex + 1; i < tests.length; i++) {
+                const test = tests[i]!;
+                if (results[test] === null) {
+                    setActiveTest(test);
+                    return;
                 }
-                // If none after, look from the start up to current
-                for (let i = 0; i < currentIndex; i++) {
-                    if (this.results[tests[i]] === null) {
-                        this.setActiveTest(tests[i]);
-                        return;
-                    }
+            }
+            for (let i = 0; i < currentIndex; i++) {
+                const test = tests[i]!;
+                if (results[test] === null) {
+                    setActiveTest(test);
+                    return;
                 }
-                // If we're on the last test and there are still incomplete tests, stay on the last test
-                // (do nothing)
-            } else {
-                // All tests completed, go to testsCompleted step
-                this.activeTest = 'testsCompleted';
             }
-        },
-        handleTestsCompletedClick() {
-            if (this.allTestsCompleted) {
-                this.activeTest = 'testsCompleted';
+        };
+
+        const handleTestsCompletedClick = () => {
+            if (allTestsCompleted.value) {
+                activeTest.value = 'testsCompleted';
             }
-        },
-        resetTests() {
-            this.results = {
-                webcam: null,
-                microphone: null,
-                speakers: null,
-                keyboard: null,
-                mouse: null,
-                touch: null,
-                battery: null,
-            };
-            this.skippedTests = []; // Reset skipped tests
-            this.timings = {
-                webcam: { start: null, end: null, duration: null },
-                microphone: { start: null, end: null, duration: null },
-                speakers: { start: null, end: null, duration: null },
-                keyboard: { start: null, end: null, duration: null },
-                mouse: { start: null, end: null, duration: null },
-                touch: { start: null, end: null, duration: null },
-                battery: { start: null, end: null, duration: null },
-            };
-            // Reset shared component states
+        };
+
+        const resetTests = () => {
+            availableTests.value.forEach(test => {
+                timings[test] = { start: null, end: null, duration: null };
+                runCounts[test] = 0;
+                results[test] = null;
+            });
+            skippedTests.value = [];
             resetAllTestStates();
-            // Set active test and start timing
-            this.setActiveTest('webcam');
-        },
-        getTestStatusClass(testType) {
-            if (this.skippedTests.includes(testType)) return 'skipped';
-            if (this.results[testType] === true) return 'completed-success';
-            if (this.results[testType] === false) return 'completed-fail';
+            setActiveTest('webcam');
+            announcement.value = '';
+        };
+
+        const getTestStatusClass = (testType: TestName) => {
+            if (skippedTests.value.includes(testType)) return 'skipped';
+            if (results[testType] === true) return 'completed-success';
+            if (results[testType] === false) return 'completed-fail';
             return 'pending';
-        },
-        exportResults() {
+        };
+
+        const exportResults = () => {
             const report = {
                 timestamp: new Date().toISOString(),
-                results: this.results,
-                summary: this.summaryText,
+                results: JSON.parse(JSON.stringify(results)),
+                summary: summaryText.value,
             };
-
-            const blob = new Blob([JSON.stringify(report, null, 2)], {
-                type: 'application/json',
-            });
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `mmit-test-results-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
-        },
-        toggleExportMenu() {
-            this.showExportMenu = !this.showExportMenu;
-        },
-        togglePerformanceMonitor() {
-            this.showPerformanceMonitor = !this.showPerformanceMonitor;
-        },
-        async exportAsPDF() {
-            // Dynamic imports to reduce initial bundle size
+        };
+
+        const toggleExportMenu = () => {
+            showExportMenu.value = !showExportMenu.value;
+        };
+
+        const togglePerformanceMonitor = () => {
+            showPerformanceMonitor.value = !showPerformanceMonitor.value;
+        };
+
+        const exportAsPDF = async () => {
             const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
                 import('jspdf'),
                 import('html2canvas'),
             ]);
 
-            // Create a hidden container with app-like styling
             const container = document.createElement('div');
             container.style.cssText = `
-        position: fixed;
-        top: -9999px;
-        left: -9999px;
-        width: 800px;
-        background: #0d0d0d;
-        padding: 40px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        color: #fff;
-      `;
+                position: fixed;
+                top: -9999px;
+                left: -9999px;
+                width: 800px;
+                background: #0d0d0d;
+                padding: 40px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                color: #fff;
+            `;
 
-            // Build the HTML content
-            const completedCount = Object.values(this.results).filter(r => r !== null).length;
-            const passedCount = Object.values(this.results).filter(r => r === true).length;
-            const failedCount = Object.values(this.results).filter(r => r === false).length;
-            const totalTime = `${this.totalTimeSpent.toFixed(2)}s`;
-            const skippedCount = this.skippedTests.length;
-
-            const tests = Object.keys(this.results);
+            const completedCount = Object.values(results).filter(r => r !== null).length;
+            const passedCount = Object.values(results).filter(r => r === true).length;
+            const failedCount = Object.values(results).filter(r => r === false).length;
+            const totalTime = `${totalTimeSpent.value.toFixed(2)}s`;
+            const skippedCount = skippedTests.value.length;
+            const tests = Object.keys(results) as TestName[];
             const testRows = tests
                 .map(test => {
                     let status = '';
                     let statusClass = '';
                     let statusIcon = '';
 
-                    if (this.results[test] === true) {
-                        status = this.t('status.passed');
+                    if (results[test] === true) {
+                        status = $t('status.passed');
                         statusClass = 'status-passed';
                         statusIcon = '✓';
-                    } else if (this.results[test] === false) {
-                        status = this.t('status.failed');
+                    } else if (results[test] === false) {
+                        status = $t('status.failed');
                         statusClass = 'status-failed';
                         statusIcon = '✗';
-                    } else if (this.skippedTests.includes(test)) {
-                        status = this.t('status.skipped');
+                    } else if (skippedTests.value.includes(test)) {
+                        status = $t('status.skipped');
                         statusClass = 'status-skipped';
                         statusIcon = '↷';
                     } else {
-                        status = this.t('status.pending');
+                        status = $t('status.pending');
                         statusClass = 'status-pending';
                         statusIcon = '⏳';
                     }
 
-                    const runCount = this.runCounts[test] || 0;
+                    const runCount = runCounts[test] || 0;
                     const duration =
-                        this.timings[test] && typeof this.timings[test].duration === 'number'
-                            ? this.timings[test].duration.toFixed(2)
-                            : '';
+                        timings[test].duration !== null ? timings[test].duration!.toFixed(2) : '';
 
                     return `
-
-          <tr>
-            <td class="test-name">${this.i18nTestNameMap[test]}</td>
-            <td class="status ${statusClass}">
-              <span class="status-icon">${statusIcon}</span>
-              ${status}
-            </td>
-            <td class="run-count">${runCount}</td>
-            <td class="duration">${duration}</td>
-          </tr>
-        `;
+                    <tr>
+                        <td class="test-name">${i18nTestNameMap.value[test]}</td>
+                        <td class="status ${statusClass}">
+                            <span class="status-icon">${statusIcon}</span>
+                            ${status}
+                        </td>
+                        <td class="run-count">${runCount}</td>
+                        <td class="duration">${duration}</td>
+                    </tr>
+                `;
                 })
                 .join('');
 
             container.innerHTML = `
-        <div class="pdf-content">
-          <div class="header">
-            <h1>${this.t('app.name')} ${this.t('results.summary')}</h1>
-            <div class="accent-bar"></div>
-          </div>
-
-          <div class="summary-card">
-            <div class="summary-item">
-              <span class="label">Completed:</span>
-              <span class="value">${completedCount}/${Object.keys(this.results).length}</span>
-            </div>
-            <div class="summary-item passed">
-              <span class="label">Passed:</span>
-              <span class="value">${passedCount}</span>
-            </div>
-            ${
-                failedCount > 0
-                    ? `
-
-              <div class="summary-item failed">
-                <span class="label">Failed:</span>
-                <span class="value">${failedCount}</span>
-              </div>
-            `
-                    : ''
-            }
-            ${
-                skippedCount > 0
-                    ? `
-
-              <div class="summary-item skipped">
-                <span class="label">Skipped:</span>
-                <span class="value">${skippedCount}</span>
-              </div>
-            `
-                    : ''
-            }
-          </div>
-
-          <div class="table-container">
-            <table class="results-table">
-              <thead>
-                <tr>
-                  <th>${this.t('results.testDetails')}</th>
-                  <th>${this.t('status.status')}</th>
-                  <th>${this.t('results.runCount')}</th>
-                  <th>${this.t('results.duration')} (s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${testRows}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="summary-total-time">
-            <span class="label">Total Time:</span>
-            <span class="value">${totalTime}</span>
-          </div>
-        </div>
-
-        <style>
-          .pdf-content {
-            background: #0d0d0d;
-            color: #fff;
-            padding: 0;
-          }
-
-          .header h1 {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 0 0 8px 0;
-            color: #fff;
-          }
-
-          .accent-bar {
-            height: 6px;
-            background: linear-gradient(90deg, #ff6b00 0%, #ff8800 50%, #ff6b00 100%);
-            border-radius: 3px;
-            margin-bottom: 40px;
-          }
-
-          .summary-card {
-            background: #232326;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 32px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-          }
-
-          .summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-
-          .summary-item .label {
-            color: #e0e0e0;
-            font-size: 16px;
-          }
-
-          .summary-item .value {
-            color: #e0e0e0;
-            font-size: 16px;
-            font-weight: 500;
-          }
-
-          .summary-item.passed .value {
-            color: #28a745;
-          }
-
-          .summary-item.failed .value {
-            color: #dc3545;
-          }
-
-          .summary-item.skipped .value {
-            color: #ffc107;
-          }
-
-          .summary-total-time {
-            margin-top: 1.5rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-          }
-
-          .total-time-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.25rem;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border-radius: 8px;
-            border: 1px solid #475569;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          }
-
-          .total-time-label {
-            font-weight: 600;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            letter-spacing: 0.025em;
-          }
-
-          .total-time-value {
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-weight: 700;
-            color: #f1f5f9;
-            font-size: 1rem;
-            background: rgba(241, 245, 249, 0.1);
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid rgba(241, 245, 249, 0.2);
-          }
-
-          .table-container {
-            background: #141416;
-            border: 1px solid #333;
-            border-radius: 8px;
-            overflow: hidden;
-          }
-
-          .results-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-
-          .results-table th {
-            background: #252526;
-            color: #fff;
-            padding: 16px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #444;
-          }
-
-          .results-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #333;
-            font-size: 13px;
-          }
-
-          .results-table tr:nth-child(even) {
-            background: #1c1c1e;
-          }
-
-          .test-name {
-            color: #f0f0f0;
-            font-weight: 500;
-          }
-
-          .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-          }
-
-          .status-icon {
-            font-size: 14px;
-          }
-
-          .status-passed {
-            color: #28a745;
-          }
-
-          .status-failed {
-            color: #dc3545;
-          }
-
-          .status-skipped {
-            color: #ffc107;
-          }
-
-          .status-pending {
-            color: #ff6b00;
-          }
-
-          .run-count, .duration {
-            color: #a0a0a0;
-          }
-        </style>
-      `;
+                <div class="pdf-content">
+                    <div class="header">
+                        <h1>${$t('app.name')} ${$t('results.summary')}</h1>
+                        <div class="accent-bar"></div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <span class="label">Completed:</span>
+                            <span class="value">${completedCount}/${tests.length}</span>
+                        </div>
+                        <div class="summary-item passed">
+                            <span class="label">${$t('export.summaryLabels.passed')}</span>
+                            <span class="value">${passedCount}</span>
+                        </div>
+                        ${
+                            failedCount > 0
+                                ? `
+                            <div class="summary-item failed">
+                                <span class="label">${$t('export.summaryLabels.failed')}</span>
+                                <span class="value">${failedCount}</span>
+                            </div>
+                        `
+                                : ''
+                        }
+                        ${
+                            skippedCount > 0
+                                ? `
+                            <div class="summary-item skipped">
+                                <span class="label">${$t('export.summaryLabels.skipped')}</span>
+                                <span class="value">${skippedCount}</span>
+                            </div>
+                        `
+                                : ''
+                        }
+                    </div>
+                    <div class="table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>${$t('results.testDetails')}</th>
+                                    <th>${$t('status.status')}</th>
+                                    <th>${$t('results.runCount')}</th>
+                                    <th>${$t('results.duration')} (s)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${testRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="summary-total-time">
+                        <span class="label">Total Time:</span>
+                        <span class="value">${totalTime}</span>
+                    </div>
+                </div>
+            `;
 
             document.body.appendChild(container);
 
             try {
-                // Capture the styled element
                 const canvas = await html2canvas(container, {
-                    backgroundColor: null, // Let it be transparent
+                    backgroundColor: null,
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
                 });
 
-                // Create PDF
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'pt',
@@ -905,58 +697,49 @@ export default defineComponent({
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
 
-                // Set dark background for the entire PDF page - this will be the ONLY background
-                pdf.setFillColor(13, 13, 13); // #0d0d0d - same as app background
+                pdf.setFillColor(13, 13, 13);
                 pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-                // Calculate dimensions to fit the page
                 const imgWidth = pageWidth;
                 const imgHeight = (canvas.height / canvas.width) * imgWidth;
 
-                // Add image to PDF with no margins so it fills completely
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-                // Save the PDF
                 pdf.save('mmit-test-results.pdf');
             } catch (error) {
-                alert(this.$t('alerts.pdfGenerationError'));
+                alert($t('alerts.pdfGenerationError'));
             } finally {
-                // Clean up
                 document.body.removeChild(container);
-                this.showExportMenu = false;
+                showExportMenu.value = false;
             }
-        },
-        exportAsJSON() {
-            this.exportResults();
-            this.showExportMenu = false;
-        },
-        exportAsCSV() {
-            // Prepare CSV header with translated labels
+        };
+
+        const exportAsJSON = () => {
+            exportResults();
+            showExportMenu.value = false;
+        };
+
+        const exportAsCSV = () => {
             const header = [
-                this.t('results.testDetails'),
-                this.t('status.status'),
-                this.t('results.runCount'),
-                `${this.t('results.duration')} (s)`,
+                $t('results.testDetails'),
+                $t('status.status'),
+                $t('results.runCount'),
+                `${$t('results.duration')} (s)`,
             ];
-            const rows = [header];
-            const tests = Object.keys(this.results);
-            for (const test of tests) {
+            const rows: string[][] = [header];
+            const tests = Object.keys(results) as TestName[];
+            tests.forEach(test => {
                 let status = '';
-                if (this.results[test] === true) status = this.t('status.passed');
-                else if (this.results[test] === false) status = this.t('status.failed');
-                else status = this.t('status.pending');
-                const runCount = this.runCounts[test] || 0;
+                if (results[test] === true) status = $t('status.passed');
+                else if (results[test] === false) status = $t('status.failed');
+                else status = $t('status.pending');
+                const runCount = runCounts[test] || 0;
                 const duration =
-                    this.timings[test] && typeof this.timings[test].duration === 'number'
-                        ? this.timings[test].duration.toFixed(2)
-                        : '';
-                rows.push([this.i18nTestNameMap[test], status, runCount, duration]);
-            }
-            // Convert to CSV string
+                    timings[test].duration !== null ? timings[test].duration!.toFixed(2) : '';
+                rows.push([i18nTestNameMap.value[test], status, String(runCount), duration]);
+            });
             const csv = rows
                 .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
                 .join('\r\n');
-            // Download as file
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -964,138 +747,121 @@ export default defineComponent({
             a.download = 'mmit-test-results.csv';
             a.click();
             URL.revokeObjectURL(url);
-            this.showExportMenu = false;
-        },
-        // Handle window resize to detect mobile/desktop mode with debouncing
-        handleResize: debounce(
-            function () {
-                this.isMobile = window.innerWidth <= 768; // Standard mobile threshold for web
-                console.log(
-                    'Debounced resize - window.innerWidth:',
-                    window.innerWidth,
-                    'isMobile:',
-                    this.isMobile
-                );
+            showExportMenu.value = false;
+        };
+
+        const handleResize = debounce(
+            () => {
+                isMobile.value = window.innerWidth <= 768;
             },
             250,
             { leading: false, trailing: true }
-        ),
-    },
-    mounted() {
-        console.log('[DEBUG] App.mounted() - Component mounted to DOM', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            windowWidth: window.innerWidth,
-            windowHeight: window.innerHeight,
-            userAgent: navigator.userAgent,
+        );
+
+        // Lifecycle
+        onMounted(() => {
+            handleResize();
+            window.addEventListener('resize', handleResize);
+
+            nextTick(() => {
+                if (timings[activeTest.value as TestName]) {
+                    timings[activeTest.value as TestName].start = null;
+                    timings[activeTest.value as TestName].end = null;
+                }
+                setActiveTest(activeTest.value);
+            });
         });
 
-        // Set initial mobile state
-        this.handleResize();
-
-        window.addEventListener('resize', this.handleResize);
-
-        // Initialize the first test properly - force initialization even if activeTest is already set
-        this.$nextTick(() => {
-            console.log(
-                '[DEBUG] Initializing activeTest:',
-                this.activeTest,
-                'isMobile:',
-                this.isMobile
-            );
-            // Reset timing to ensure clean start
-            if (this.timings[this.activeTest]) {
-                this.timings[this.activeTest].start = null;
-                this.timings[this.activeTest].end = null;
+        onUnmounted(() => {
+            window.removeEventListener('resize', handleResize);
+            if (switchDebounceTimer.value) {
+                clearTimeout(switchDebounceTimer.value);
             }
-            this.setActiveTest(this.activeTest);
-        });
-    },
-    beforeUnmount() {
-        console.log('[DEBUG] App.beforeUnmount() - Component about to be destroyed', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            activeTest: this.activeTest,
-            completedTests: this.completedTestsCount,
+            if (typeof window !== 'undefined' && window.app) {
+                delete window.app;
+            }
         });
 
-        window.removeEventListener('resize', this.handleResize);
-        if (this.switchDebounceTimer) {
-            clearTimeout(this.switchDebounceTimer);
-        }
-
-        // Clean up window references
-        if (typeof window !== 'undefined' && window.app) {
-            delete window.app;
-        }
-    },
-    errorCaptured(err, vm, info) {
-        console.error('[DEBUG] App.errorCaptured() - Error captured in component hierarchy', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            error: err.message,
-            errorType: err.name,
-            componentInfo: info,
-            stack: err.stack,
-        });
-        // Return false to prevent the error from propagating further
-        return false;
-    },
-    renderTracked(e) {
-        console.log('[DEBUG] App.renderTracked() - Reactive dependency tracked during render', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            target: e.target,
-            type: e.type,
-            key: e.key,
-        });
-    },
-    renderTriggered(e) {
-        console.log('[DEBUG] App.renderTriggered() - Reactive dependency triggered re-render', {
-            timestamp: new Date().toISOString(),
-            component: 'App',
-            target: e.target,
-            type: e.type,
-            key: e.key,
-            newValue: e.newValue,
-            oldValue: e.oldValue,
-        });
+        return {
+            // State
+            isMobile,
+            showSummaryModal,
+            activeTest,
+            results,
+            skippedTests,
+            testIconMap,
+            testNameMap,
+            timings,
+            runCounts,
+            showExportMenu,
+            isSwitching,
+            showPerformanceMonitor,
+            announcement,
+            // Computed
+            availableTests,
+            currentTestIcon,
+            currentTestTitle,
+            currentTestDescription,
+            currentTestComponent,
+            allTestsCompleted,
+            completedTestsCount,
+            totalTestsCount,
+            passedTests,
+            failedTests,
+            pendingTests,
+            skippedTestsList,
+            summaryClass,
+            summaryText,
+            totalTimeSpent,
+            i18nTestNameMap,
+            currentContainerStyles,
+            // Methods
+            debouncedSetActiveTest,
+            setActiveTest,
+            onTestCompleted,
+            onTestFailed,
+            onTestSkipped,
+            handleTestCompleted,
+            handleTestFailed,
+            handleTestSkipped,
+            autoAdvance,
+            handleTestsCompletedClick,
+            resetTests,
+            getTestStatusClass,
+            exportResults,
+            toggleExportMenu,
+            togglePerformanceMonitor,
+            exportAsPDF,
+            exportAsJSON,
+            exportAsCSV,
+            handleResize,
+            t: $t,
+        };
     },
 });
 </script>
 
 <template>
-    <!-- [DEBUG] App template rendering started at: {{ new Date().toISOString() }} -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <div v-if="!isMobile" class="app-layout">
-        <!-- App Header with test title only in navbar -->
         <AppHeader :test-title="currentTestTitle" :test-icon="currentTestIcon" />
-
-        <!-- Main Content Only - Sidebars removed to avoid duplication with TestsPage.vue -->
         <main class="main-content" id="main-content">
-            <!-- Screen reader live region for announcements -->
             <div aria-live="polite" aria-atomic="true" class="visually-hidden">
                 {{ announcement }}
             </div>
-            <!-- Test Header with description only -->
             <TestHeader :test-description="currentTestDescription" :center-align="true" />
-
-            <!-- Single persistent VisualizerContainer for smooth morphing -->
             <VisualizerContainer
                 :custom-styles="currentContainerStyles"
                 :keyboard-mode="activeTest === 'keyboard'"
             >
-                <!-- Dynamic component without forced re-render -->
                 <component
                     :is="currentTestComponent"
-                    @test-completed="onTestCompleted"
-                    @test-failed="onTestFailed"
-                    @test-skipped="onTestSkipped"
+                    @test-completed="handleTestCompleted"
+                    @test-failed="handleTestFailed"
+                    @test-skipped="handleTestSkipped"
                     @start-over="resetTests"
                 />
             </VisualizerContainer>
-
-            <!-- Action Buttons Outside Container -->
             <TestActionButtons
                 v-if="activeTest !== 'testsCompleted'"
                 :actions-disabled="false"
@@ -1105,8 +871,6 @@ export default defineComponent({
                 @skip="onTestSkipped(activeTest)"
             />
         </main>
-
-        <!-- App Footer with Action Buttons -->
         <AppFooter
             :show-export-menu="showExportMenu"
             @reset-tests="resetTests"
@@ -1117,7 +881,7 @@ export default defineComponent({
         />
     </div>
     <div v-else class="mobile-layout">
-        <!-- Mobile Header -->
+        <!-- Mobile Header (same as before, just include it) -->
         <header class="mobile-header electron-app">
             <div class="mobile-header-content">
                 <div class="mobile-header-title-container">
@@ -1133,10 +897,7 @@ export default defineComponent({
                 </button>
             </div>
         </header>
-
-        <!-- Main Content -->
         <main class="mobile-main-content" id="main-content">
-            <!-- Screen reader live region for announcements -->
             <div aria-live="polite" aria-atomic="true" class="visually-hidden">
                 {{ announcement }}
             </div>
@@ -1147,15 +908,13 @@ export default defineComponent({
             >
                 <component
                     :is="currentTestComponent"
-                    @test-completed="onTestCompleted"
-                    @test-failed="onTestFailed"
-                    @test-skipped="onTestSkipped"
+                    @test-completed="handleTestCompleted"
+                    @test-failed="handleTestFailed"
+                    @test-skipped="handleTestSkipped"
                     @start-over="resetTests"
                 />
             </VisualizerContainer>
         </main>
-
-        <!-- Mobile Footer with Test Actions and Navigation -->
         <footer class="mobile-footer">
             <div class="mobile-action-buttons" v-if="activeTest !== 'testsCompleted'">
                 <button
@@ -1201,8 +960,6 @@ export default defineComponent({
                 </button>
             </nav>
         </footer>
-
-        <!-- Summary Modal -->
         <transition name="modal-fade">
             <div
                 v-if="showSummaryModal"
@@ -1229,7 +986,6 @@ export default defineComponent({
                                     >
                                 </div>
                             </div>
-
                             <div class="test-summary__results">
                                 <div v-if="pendingTests.length > 0" class="test-summary__section">
                                     <div class="test-summary__section-header">
@@ -1275,12 +1031,13 @@ export default defineComponent({
                                                     v-if="runCounts[test] > 0"
                                                     class="test-summary__count"
                                                     >{{ runCounts[test] }}x</span
-                                                ><span
+                                                >
+                                                <span
                                                     v-if="timings[test].duration !== null"
                                                     class="test-summary__time"
                                                     >{{
-                                                        timings[test].duration
-                                                            .toFixed(2)
+                                                        timings[test]
+                                                            .duration!.toFixed(2)
                                                             .padStart(5, '0')
                                                     }}s</span
                                                 >
@@ -1315,12 +1072,13 @@ export default defineComponent({
                                             <div class="test-summary__meta">
                                                 <span class="test-summary__count"
                                                     >{{ runCounts[test] }}x</span
-                                                ><span
+                                                >
+                                                <span
                                                     v-if="timings[test].duration !== null"
                                                     class="test-summary__time"
                                                     >{{
-                                                        timings[test].duration
-                                                            .toFixed(2)
+                                                        timings[test]
+                                                            .duration!.toFixed(2)
                                                             .padStart(5, '0')
                                                     }}s</span
                                                 >
@@ -1357,12 +1115,13 @@ export default defineComponent({
                                                     v-if="runCounts[test] > 0"
                                                     class="test-summary__count"
                                                     >{{ runCounts[test] }}x</span
-                                                ><span
+                                                >
+                                                <span
                                                     v-if="timings[test].duration !== null"
                                                     class="test-summary__time"
                                                     >{{
-                                                        timings[test].duration
-                                                            .toFixed(2)
+                                                        timings[test]
+                                                            .duration!.toFixed(2)
                                                             .padStart(5, '0')
                                                     }}s</span
                                                 >
@@ -1371,11 +1130,10 @@ export default defineComponent({
                                     </ul>
                                 </div>
                             </div>
-
                             <div v-if="completedTestsCount > 0" class="test-summary__total-time">
                                 <div class="test-summary__total-container">
-                                    <span class="test-summary__total-label">Total Time:</span
-                                    ><span class="test-summary__total-value"
+                                    <span class="test-summary__total-label">Total Time:</span>
+                                    <span class="test-summary__total-value"
                                         >{{ totalTimeSpent.toFixed(2) }}s</span
                                     >
                                 </div>
@@ -1385,8 +1143,6 @@ export default defineComponent({
                 </div>
             </div>
         </transition>
-
-        <!-- Performance Monitor Toggle Button -->
         <button
             class="performance-toggle-btn"
             @click="togglePerformanceMonitor"
@@ -1395,14 +1151,12 @@ export default defineComponent({
         >
             ⚡
         </button>
-
-        <!-- Performance Monitor Panel -->
         <PerformanceMonitor v-if="showPerformanceMonitor" class="performance-panel" />
     </div>
 </template>
 
 <style>
-/* Skip link for accessibility */
+/* Same CSS as before - kept unchanged */
 .skip-link {
     position: absolute;
     top: -40px;
@@ -1416,8 +1170,6 @@ export default defineComponent({
 .skip-link:focus {
     top: 0;
 }
-
-/* Visually hidden but accessible */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1429,8 +1181,6 @@ export default defineComponent({
     white-space: nowrap;
     border: 0;
 }
-
-/* Global Layout */
 .app-layout {
     display: flex;
     background-color: #0d0d0d;
@@ -1447,60 +1197,51 @@ export default defineComponent({
         sans-serif;
     position: relative;
 }
-
 .sidebar {
     width: 270px;
     flex-shrink: 0;
-    background-color: #000000; /* Pure black for maximum contrast */
-    border-right: 1px solid #404040; /* Lighter border for better definition */
+    background-color: #000000;
+    border-right: 1px solid #404040;
     display: flex;
     flex-direction: column;
     padding: 1rem;
     transition: var(--transition-width);
     z-index: 2;
 }
-
 .right-sidebar {
     border-right: none;
-    border-left: 1px solid #404040; /* Lighter border for better definition */
+    border-left: 1px solid #404040;
     left: auto;
     right: 0;
     position: relative;
-    background-color: #000000; /* Pure black for maximum contrast */
+    background-color: #000000;
 }
-
 .main-content {
     flex: 1;
     padding: 2rem;
-    padding-top: calc(2rem + var(--header-height)); /* Account for fixed header */
+    padding-top: calc(2rem + var(--header-height));
     overflow-y: auto;
     min-width: 0;
-    position: relative; /* Required for absolute positioning of action buttons */
+    position: relative;
 }
-
-/* Transition animations */
 .expand-fade-enter-active,
 .expand-fade-leave-active {
     transition: all 0.2s ease;
 }
-
 .expand-fade-enter-from,
 .expand-fade-leave-to {
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
 }
-
 .expand-fade-enter-to,
 .expand-fade-leave-from {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
-
 .app-layout > .main-content {
     margin-left: 0;
     margin-right: 0;
 }
-
 @media (min-width: 900px) {
     .app-layout {
         flex-direction: row;
@@ -1515,7 +1256,6 @@ export default defineComponent({
         left: auto;
     }
 }
-
 .sidebar-header {
     position: relative;
     margin-bottom: 2rem;
@@ -1523,7 +1263,6 @@ export default defineComponent({
     flex-shrink: 0;
     height: 56px;
 }
-
 .sidebar-header .brand-icon {
     position: absolute;
     left: 16px;
@@ -1533,7 +1272,6 @@ export default defineComponent({
     color: #ff6b00;
     display: block;
 }
-
 .sidebar-header h2 {
     position: absolute;
     left: 50%;
@@ -1541,14 +1279,13 @@ export default defineComponent({
     transform: translate(-50%, -50%);
     font-size: 1.5rem;
     font-weight: 600;
-    color: #ffffff; /* Pure white for maximum contrast */
+    color: #ffffff;
     margin: 0;
     text-align: center;
     white-space: nowrap;
     display: block;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); /* Stronger shadow for better contrast */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
-
 .test-navigation {
     flex-grow: 1;
 }
@@ -1557,7 +1294,6 @@ export default defineComponent({
     padding: 0;
     margin: 0;
 }
-
 .test-navigation__item {
     display: flex;
     align-items: center;
@@ -1573,42 +1309,35 @@ export default defineComponent({
     color: #e0e0e0;
     background: none;
 }
-
 .test-navigation__item:hover {
     background-color: #2a2a2a;
     color: #ffffff;
 }
-
 .test-navigation__item--active {
     background-color: rgba(255, 107, 0, 0.08);
     border-color: rgba(255, 107, 0, 0.5);
     color: #ff9854;
 }
-
 .test-navigation__item--disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
 .test-navigation__item--disabled:hover {
     background-color: transparent;
     color: #e0e0e0;
 }
-
 .test-navigation__icon {
     font-size: 1.2rem;
     margin-right: 0.8rem;
     width: 20px;
     text-align: center;
 }
-
 .test-navigation__name {
     color: #ffffff;
     font-weight: 500;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     flex-grow: 1;
 }
-
 .test-navigation__status {
     width: 8px;
     height: 8px;
@@ -1619,26 +1348,21 @@ export default defineComponent({
         box-shadow var(--animation-slow) ease;
     box-shadow: 0 0 6px transparent;
 }
-
 .test-navigation__status--pending {
     background-color: #555;
 }
-
 .test-navigation__status--completed-success {
     background-color: #28a745;
     box-shadow: 0 0 6px #28a745;
 }
-
 .test-navigation__status--completed-fail {
     background-color: #dc3545;
     box-shadow: 0 0 6px #dc3545;
 }
-
 .test-navigation__status--skipped {
     background-color: #ffc107;
     box-shadow: 0 0 6px #ffc107;
 }
-
 .status-indicator {
     width: 8px;
     height: 8px;
@@ -1649,26 +1373,21 @@ export default defineComponent({
         box-shadow var(--animation-slow) ease;
     box-shadow: 0 0 6px transparent;
 }
-
 .status-indicator.pending {
     background-color: #555;
 }
-
 .status-indicator.completed-success {
     background-color: #28a745;
     box-shadow: 0 0 6px #28a745;
 }
-
 .status-indicator.completed-fail {
     background-color: #dc3545;
     box-shadow: 0 0 6px #dc3545;
 }
-
 .status-indicator.skipped {
     background-color: #ffc107;
     box-shadow: 0 0 6px #ffc107;
 }
-
 .sidebar-footer {
     margin-top: 0;
     padding: 0;
@@ -1677,7 +1396,6 @@ export default defineComponent({
     flex-direction: column;
     gap: 0.75rem;
 }
-
 .detailed-summary {
     margin-bottom: 0.5rem;
     width: 100%;
@@ -1689,11 +1407,9 @@ export default defineComponent({
         0 4px 20px rgba(0, 0, 0, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-
 .summary-overview {
     margin-bottom: 1rem;
 }
-
 .completion-badge {
     display: inline-flex;
     align-items: center;
@@ -1708,7 +1424,6 @@ export default defineComponent({
     position: relative;
     overflow: hidden;
 }
-
 .completion-badge::before {
     content: '';
     position: absolute;
@@ -1719,45 +1434,38 @@ export default defineComponent({
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     transition: left 0.5s ease;
 }
-
 .completion-badge:hover::before {
     left: 100%;
 }
-
 .completion-badge.in-progress {
     background: linear-gradient(135deg, #1a5490 0%, #2563eb 100%);
     border: 1px solid #3b82f6;
     color: #dbeafe;
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
-
 .completion-badge.completed-success {
     background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
     border: 1px solid #16a34a;
     color: #dcfce7;
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
-
 .completion-badge.completed-fail {
     background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
     border: 1px solid #dc2626;
     color: #fecaca;
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
-
 .detailed-summary h4 {
     color: #fff;
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
 }
-
 .detailed-summary p {
-    color: #e0e0e0; /* Improved contrast from #a0a0a0 */
+    color: #e0e0e0;
     margin: 0 0 1rem 0;
     font-size: 0.9rem;
 }
-
 .result-list {
     margin-bottom: 0.75rem;
     background: rgba(255, 255, 255, 0.02);
@@ -1766,113 +1474,91 @@ export default defineComponent({
     border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.2s ease;
 }
-
 .result-list.unified {
     padding: 0;
     overflow: hidden;
 }
-
 .result-list:hover {
     background: rgba(255, 255, 255, 0.04);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
 .result-list.unified:hover {
     transform: none;
 }
-
 .result-list:last-child {
     margin-bottom: 0;
 }
-
 .result-section {
     padding: 0.5rem;
 }
-
 .result-section:first-child {
     padding-top: 0.75rem;
 }
-
 .result-section:last-child {
     padding-bottom: 0.75rem;
 }
-
 .result-section-header {
     display: flex;
     align-items: center;
-
     padding-bottom: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 .result-label {
     font-weight: 600;
     font-size: 0.95rem;
     letter-spacing: 0.025em;
     padding-left: 0.5rem;
 }
-
 .result-label.passed {
     color: #4ade80;
 }
-
 .result-label.failed {
     color: #f87171;
 }
-
 .result-label.pending {
     color: #60a5fa;
 }
-
 .result-label.skipped {
     color: #fbbf24;
 }
-
 .result-list ul {
     list-style: none;
     margin: 0;
     padding: 0;
 }
-
 .result-list li {
-    color: #e0e0e0; /* Improved contrast from #a0a0a0 */
+    color: #e0e0e0;
     font-size: 0.9rem;
 }
-
 .test-panel-wrapper {
-    background-color: #000000; /* Pure black for maximum contrast */
+    background-color: #000000;
     border-radius: 8px;
-    border: 1px solid #404040; /* Lighter border for better definition */
+    border: 1px solid #404040;
     box-shadow: 0 4px 25px rgba(0, 0, 0, 0.2);
 }
-
 .detailed-summary {
     width: 100%;
     padding: 1rem;
-    background-color: #1a1a1a; /* Slightly lighter for better contrast */
+    background-color: #1a1a1a;
     border-radius: 8px;
     margin-bottom: 1rem;
 }
-
 .detailed-summary h4 {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     text-align: center;
 }
-
 .detailed-summary > p {
     font-size: 0.9rem;
-    color: #e0e0e0; /* Improved contrast from #a0a0a0 */
+    color: #e0e0e0;
     text-align: center;
     margin-bottom: 1rem;
 }
-
 .sidebar-summary-top {
     margin-bottom: 1rem;
 }
-
 .summary-table {
     list-style: none;
     padding: 0;
@@ -1881,21 +1567,18 @@ export default defineComponent({
     flex-direction: column;
     gap: 0.5rem;
 }
-
 .summary-row {
     display: grid;
-    grid-template-columns: 1fr auto auto; /* Label takes remaining space, counter and timer are auto-sized */
+    grid-template-columns: 1fr auto auto;
     gap: 0.5rem;
     align-items: center;
     padding: 0.1rem;
-    min-height: 40px; /* Consistent row height */
+    min-height: 40px;
 }
-
 .summary-row:hover {
     background: rgba(255, 255, 255, 0.06);
     transform: translateX(4px);
 }
-
 .summary-name {
     grid-column: 1;
     text-align: left;
@@ -1907,16 +1590,14 @@ export default defineComponent({
     padding-left: 1.25rem;
     white-space: nowrap;
 }
-
 .summary-meta {
-    grid-column: 2 / 4; /* Spans both counter and timer columns */
+    grid-column: 2 / 4;
     display: grid;
-    grid-template-columns: 32px 48px; /* Fixed widths for perfect alignment */
+    grid-template-columns: 32px 48px;
     gap: 0.5rem;
     align-items: center;
     justify-content: end;
 }
-
 .summary-time {
     text-align: center;
     color: #94a3b8;
@@ -1926,10 +1607,9 @@ export default defineComponent({
     padding: 0.27rem;
     border-radius: 4px;
     border: 1px solid rgba(148, 163, 184, 0.2);
-    width: 48px; /* Fixed width for perfect column alignment */
+    width: 48px;
     box-sizing: border-box;
 }
-
 .summary-count {
     text-align: center;
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
@@ -1938,16 +1618,14 @@ export default defineComponent({
     font-weight: 600;
     padding: 0.17rem 0.4rem;
     border-radius: 4px;
-    width: 32px; /* Fixed width for perfect column alignment */
+    width: 32px;
     box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
     box-sizing: border-box;
 }
-
 .summary-total-time {
     margin-top: 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 .total-time-container {
     display: flex;
     justify-content: space-between;
@@ -1958,14 +1636,12 @@ export default defineComponent({
     border: 1px solid #475569;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
 .total-time-label {
     font-weight: 600;
     color: #cbd5e1;
     font-size: 0.9rem;
     letter-spacing: 0.025em;
 }
-
 .total-time-value {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-weight: 700;
@@ -1976,17 +1652,13 @@ export default defineComponent({
     border-radius: 6px;
     border: 1px solid rgba(241, 245, 249, 0.2);
 }
-
-/* Mobile Layout Styles */
 .mobile-layout {
     display: flex;
     flex-direction: column;
-
     background-color: #000;
     color: #fff;
     overflow: hidden;
 }
-
 .mobile-header {
     flex-shrink: 0;
     padding: 0.75rem 1rem;
@@ -1994,8 +1666,6 @@ export default defineComponent({
     border-bottom: 1px solid #333;
     z-index: 100;
 }
-
-/* Performance Monitor Toggle Button */
 .performance-toggle-btn {
     position: fixed;
     bottom: 20px;
@@ -2017,17 +1687,13 @@ export default defineComponent({
         transform 0.2s ease,
         box-shadow 0.2s ease;
 }
-
 .performance-toggle-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
 }
-
 .performance-toggle-btn:active {
     transform: scale(0.95);
 }
-
-/* Performance Monitor Panel */
 .performance-panel {
     position: fixed;
     bottom: 80px;
@@ -2042,22 +1708,17 @@ export default defineComponent({
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     padding: 16px;
 }
-
-/* Dark scrollbar for performance panel */
 .performance-panel::-webkit-scrollbar {
     width: 8px;
 }
-
 .performance-panel::-webkit-scrollbar-track {
     background: var(--surface-secondary, #2a2a2a);
     border-radius: 4px;
 }
-
 .performance-panel::-webkit-scrollbar-thumb {
     background: var(--border-color, #444);
     border-radius: 4px;
 }
-
 .performance-panel::-webkit-scrollbar-thumb:hover {
     background: var(--text-secondary, #666);
 }

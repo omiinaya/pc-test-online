@@ -23,7 +23,6 @@ export default {
             {
                 deviceKind: 'audiooutput',
                 deviceType: t('tests.speakers.name'),
-                permissionType: undefined, // No permissions needed for audio output
                 testName: 'speakers',
                 autoInitialize: true,
                 enableEventListeners: true,
@@ -94,7 +93,8 @@ export default {
                 audioContextReady.value = true;
             } catch (err) {
                 console.error('Audio context initialization error:', err);
-                deviceTest.errorHandling.setError(`Failed to initialize audio: ${err.message}`);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                deviceTest.errorHandling.setError(`Failed to initialize audio: ${errorMessage}`);
                 audioContextReady.value = false;
             }
         };
@@ -119,17 +119,18 @@ export default {
                 }
             } catch (err) {
                 console.error('Error switching speaker:', err);
-                deviceTest.errorHandling.setError(`Failed to switch speaker: ${err.message}`);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                deviceTest.errorHandling.setError(`Failed to switch speaker: ${errorMessage}`);
             }
         };
 
         // Track timeout resource for cleanup
-        let currentFallbackTimeoutId = null;
+        let currentFallbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
         /**
          * Play sound for specific channel
          */
-        const playSound = async (channel: string) => {
+        const playSound = async (channel: 'Left' | 'Right' | 'Both') => {
             if (isPlaying.value) return;
 
             // Start test timing on first interaction
@@ -153,12 +154,13 @@ export default {
             } catch (error) {
                 console.error('Error playing sound:', error);
                 // Handle autoplay policy violations gracefully
-                if (error.name === 'NotAllowedError' || error.message.includes('user gesture')) {
+                const err = error as Error;
+                if (err.name === 'NotAllowedError' || err.message.includes('user gesture')) {
                     deviceTest.errorHandling.setError(
                         'Please click the speaker buttons to start audio playback. Browser requires user interaction for audio.'
                     );
                 } else {
-                    deviceTest.errorHandling.setError(`Failed to play sound: ${error.message}`);
+                    deviceTest.errorHandling.setError(`Failed to play sound: ${err.message}`);
                 }
             } finally {
                 isPlaying.value = false;
@@ -170,7 +172,7 @@ export default {
          * Play musical scale for specific channel
          * Left: do re mi fa, Right: so la si do, Both: full scale
          */
-        const playChannel = async channel => {
+        const playChannel = async (channel: 'Left' | 'Right' | 'Both') => {
             console.log(`[SpeakerTest] playChannel(${channel}) starting...`);
 
             // Clear any existing fallback timeout first
@@ -205,7 +207,7 @@ export default {
                             440.0, // A4 - la
                             493.88, // B4 - si
                             523.25, // C5 - do (octave higher)
-                        ];
+                        ] as const;
 
                         let scaleFrequencies;
                         if (channel === 'Left') {
@@ -217,11 +219,9 @@ export default {
                         }
 
                         const noteDuration = 250; // 250ms per note for better clarity
-                        const noteDurationSec = noteDuration / 1000; // Convert to seconds
                         let currentNoteIndex = 0;
                         let fallbackTimeoutId: ReturnType<typeof setTimeout> | null = null; // Local variable for this Promise instance
                         let isResolved = false; // Track if Promise is already resolved
-                        const startTime = audioContext.value.currentTime + 0.1; // Start 100ms from now
 
                         const safeResolve = () => {
                             if (!isResolved) {
@@ -253,47 +253,47 @@ export default {
                             }
 
                             // Create new oscillator for each note
-                            const noteOscillator = audioContext.value.createOscillator();
-                            const noteGain = audioContext.value.createGain();
-                            const notePan = audioContext.value.createStereoPanner();
+                            const noteOscillator = audioContext.value!.createOscillator();
+                            const noteGain = audioContext.value!.createGain();
+                            const notePan = audioContext.value!.createStereoPanner();
 
                             noteOscillator.type = 'sine';
                             noteOscillator.frequency.setValueAtTime(
-                                scaleFrequencies[currentNoteIndex],
-                                audioContext.value.currentTime
+                                scaleFrequencies[currentNoteIndex]!,
+                                audioContext.value!.currentTime
                             );
 
                             // Set pan based on channel
                             if (channel === 'Left') {
-                                notePan.pan.setValueAtTime(-1, audioContext.value.currentTime);
+                                notePan.pan.setValueAtTime(-1, audioContext.value!.currentTime);
                             } else if (channel === 'Right') {
-                                notePan.pan.setValueAtTime(1, audioContext.value.currentTime);
+                                notePan.pan.setValueAtTime(1, audioContext.value!.currentTime);
                             } else {
-                                notePan.pan.setValueAtTime(0, audioContext.value.currentTime);
+                                notePan.pan.setValueAtTime(0, audioContext.value!.currentTime);
                             }
 
                             // Smooth envelope to avoid clicks
-                            noteGain.gain.setValueAtTime(0, audioContext.value.currentTime);
+                            noteGain.gain.setValueAtTime(0, audioContext.value!.currentTime);
                             noteGain.gain.linearRampToValueAtTime(
                                 0.3,
-                                audioContext.value.currentTime + 0.05
+                                audioContext.value!.currentTime + 0.05
                             );
                             noteGain.gain.linearRampToValueAtTime(
                                 0.3,
-                                audioContext.value.currentTime + noteDuration / 1000 - 0.05
+                                audioContext.value!.currentTime + noteDuration / 1000 - 0.05
                             );
                             noteGain.gain.linearRampToValueAtTime(
                                 0,
-                                audioContext.value.currentTime + noteDuration / 1000
+                                audioContext.value!.currentTime + noteDuration / 1000
                             );
 
                             // Connect and play
                             noteOscillator
                                 .connect(noteGain)
                                 .connect(notePan)
-                                .connect(audioContext.value.destination);
+                                .connect(audioContext.value!.destination);
 
-                            const startTime = audioContext.value.currentTime;
+                            const startTime = audioContext.value!.currentTime;
                             noteOscillator.start(startTime);
 
                             console.log(
@@ -552,7 +552,9 @@ export default {
                         const deviceToSelect =
                             newDevices.find(d => d.label && !d.label.includes('...')) ||
                             newDevices[0];
-                        deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
+                        if (deviceToSelect) {
+                            deviceTest.selectedDeviceId.value = deviceToSelect.deviceId;
+                        }
                     }
                 },
                 { immediate: true }
@@ -746,7 +748,7 @@ export default {
                 <StatePanel
                     state="error"
                     :title="$t('errors.device.speaker_error')"
-                    :message="currentError"
+                    :message="currentError || ''"
                     :showRetryButton="true"
                     @retry="retryTest"
                 />

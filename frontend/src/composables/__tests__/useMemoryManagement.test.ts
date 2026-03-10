@@ -56,7 +56,8 @@ describe('useMemoryManagement', () => {
     });
 
     it('should automatically cleanup on unmount', () => {
-        const { trackResource, cleanupAll, mount, unmount } = useMemoryManagement();
+        const { trackResource, cleanupAll, mount, unmount, trackedResources } =
+            useMemoryManagement();
         const mockCleanup = vi.fn();
 
         const stop = mount();

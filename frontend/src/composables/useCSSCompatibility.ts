@@ -1,5 +1,5 @@
 // CSS feature detection and progressive enhancement for cross-browser compatibility
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
 
 export interface CSSFeatureSupport {
     grid: boolean;
@@ -21,6 +21,10 @@ export interface CSSCompatibilityState {
     fallbacksApplied: string[];
     recommendations: string[];
     cssGrade: 'A' | 'B' | 'C' | 'D' | 'F';
+    supported: boolean;
+    supportedFeatures: Record<string, boolean>;
+    unsupportedFeatures: string[];
+    compatibilityIssues: string[];
 }
 
 /**
@@ -28,7 +32,7 @@ export interface CSSCompatibilityState {
  * Detects CSS feature support and applies fallbacks for better cross-browser compatibility
  */
 export function useCSSCompatibility() {
-    const state = ref<CSSCompatibilityState>({
+    const state = reactive<CSSCompatibilityState>({
         features: {
             grid: false,
             flexbox: false,
@@ -46,6 +50,10 @@ export function useCSSCompatibility() {
         fallbacksApplied: [],
         recommendations: [],
         cssGrade: 'A',
+        supported: false,
+        supportedFeatures: {},
+        unsupportedFeatures: [],
+        compatibilityIssues: [],
     });
 
     const isInitialized = ref(false);
@@ -57,21 +65,21 @@ export function useCSSCompatibility() {
         const userAgent = navigator.userAgent;
 
         if (userAgent.includes('Chrome') && !userAgent.includes('Edge')) {
-            state.value.browserName = 'Chrome';
+            state.browserName = 'Chrome';
             const match = userAgent.match(/Chrome\/(\d+)/);
-            state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            state.browserVersion = match ? parseInt(match[1] || '0') : 0;
         } else if (userAgent.includes('Firefox')) {
-            state.value.browserName = 'Firefox';
+            state.browserName = 'Firefox';
             const match = userAgent.match(/Firefox\/(\d+)/);
-            state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            state.browserVersion = match ? parseInt(match[1] || '0') : 0;
         } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-            state.value.browserName = 'Safari';
+            state.browserName = 'Safari';
             const match = userAgent.match(/Version\/(\d+)/);
-            state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            state.browserVersion = match ? parseInt(match[1] || '0') : 0;
         } else if (userAgent.includes('Edge')) {
-            state.value.browserName = 'Edge';
+            state.browserName = 'Edge';
             const match = userAgent.match(/Edge?\/(\d+)/);
-            state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            state.browserVersion = match ? parseInt(match[1] || '0') : 0;
         }
     };
 
@@ -106,7 +114,7 @@ export function useCSSCompatibility() {
      * Detect CSS feature support
      */
     const detectCSSFeatures = () => {
-        const features = state.value.features;
+        const features = state.features;
 
         // CSS Grid
         features.grid = testCSSFeature('display', 'grid');
@@ -150,7 +158,7 @@ export function useCSSCompatibility() {
         const htmlEl = document.documentElement;
 
         // Grid fallback
-        if (!state.value.features.grid) {
+        if (!state.features.grid) {
             htmlEl.classList.add('no-grid');
             fallbacks.push('CSS Grid fallback applied - using flexbox layouts');
             recommendations.push('Update to a modern browser for CSS Grid support');
@@ -159,7 +167,7 @@ export function useCSSCompatibility() {
         }
 
         // Flexbox fallback
-        if (!state.value.features.flexbox) {
+        if (!state.features.flexbox) {
             htmlEl.classList.add('no-flexbox');
             fallbacks.push('Flexbox fallback applied - using block layouts');
             recommendations.push('Update browser for flexbox support');
@@ -168,7 +176,7 @@ export function useCSSCompatibility() {
         }
 
         // Custom Properties fallback
-        if (!state.value.features.customProperties) {
+        if (!state.features.customProperties) {
             htmlEl.classList.add('no-css-vars');
             fallbacks.push('CSS variables fallback applied - using static values');
             recommendations.push('Update browser for CSS custom properties support');
@@ -177,7 +185,7 @@ export function useCSSCompatibility() {
         }
 
         // Container Queries fallback
-        if (!state.value.features.containerQueries) {
+        if (!state.features.containerQueries) {
             htmlEl.classList.add('no-container-queries');
             fallbacks.push('Container queries not supported - using media queries');
         } else {
@@ -185,7 +193,7 @@ export function useCSSCompatibility() {
         }
 
         // Aspect Ratio fallback
-        if (!state.value.features.aspectRatio) {
+        if (!state.features.aspectRatio) {
             htmlEl.classList.add('no-aspect-ratio');
             fallbacks.push('Aspect ratio fallback applied - using padding technique');
         } else {
@@ -193,7 +201,7 @@ export function useCSSCompatibility() {
         }
 
         // Backdrop Filter fallback
-        if (!state.value.features.backdropFilter) {
+        if (!state.features.backdropFilter) {
             htmlEl.classList.add('no-backdrop-filter');
             fallbacks.push('Backdrop filter fallback applied - using solid backgrounds');
         } else {
@@ -201,43 +209,41 @@ export function useCSSCompatibility() {
         }
 
         // Browser-specific classes
-        htmlEl.classList.add(`browser-${state.value.browserName.toLowerCase()}`);
-        htmlEl.classList.add(
-            `browser-${state.value.browserName.toLowerCase()}-${state.value.browserVersion}`
-        );
+        htmlEl.classList.add(`browser-${state.browserName.toLowerCase()}`);
+        htmlEl.classList.add(`browser-${state.browserName.toLowerCase()}-${state.browserVersion}`);
 
         // Safari-specific recommendations
-        if (state.value.browserName === 'Safari') {
-            if (state.value.browserVersion < 14) {
+        if (state.browserName === 'Safari') {
+            if (state.browserVersion < 14) {
                 recommendations.push('Safari 14+ recommended for modern CSS features');
             }
-            if (!state.value.features.backdropFilter) {
+            if (!state.features.backdropFilter) {
                 recommendations.push('Backdrop filters require Safari 14+ or use Chrome/Firefox');
             }
         }
 
         // Firefox-specific recommendations
-        if (state.value.browserName === 'Firefox') {
-            if (!state.value.features.containerQueries && state.value.browserVersion < 110) {
+        if (state.browserName === 'Firefox') {
+            if (!state.features.containerQueries && state.browserVersion < 110) {
                 recommendations.push('Firefox 110+ required for container queries');
             }
         }
 
         // IE/Edge Legacy warnings
-        if (state.value.browserName === 'Edge' && state.value.browserVersion < 79) {
+        if (state.browserName === 'Edge' && state.browserVersion < 79) {
             recommendations.push('Update to Chromium-based Edge for full CSS support');
             fallbacks.push('Legacy Edge detected - extensive fallbacks applied');
         }
 
-        state.value.fallbacksApplied = fallbacks;
-        state.value.recommendations = recommendations;
+        state.fallbacksApplied = fallbacks;
+        state.recommendations = recommendations;
     };
 
     /**
      * Calculate CSS compatibility grade
      */
     const calculateCSSGrade = () => {
-        const features = state.value.features;
+        const features = state.features;
         let score = 0;
         const totalFeatures = Object.keys(features).length;
 
@@ -248,11 +254,11 @@ export function useCSSCompatibility() {
 
         const percentage = (score / totalFeatures) * 100;
 
-        if (percentage >= 90) state.value.cssGrade = 'A';
-        else if (percentage >= 80) state.value.cssGrade = 'B';
-        else if (percentage >= 70) state.value.cssGrade = 'C';
-        else if (percentage >= 60) state.value.cssGrade = 'D';
-        else state.value.cssGrade = 'F';
+        if (percentage >= 90) state.cssGrade = 'A';
+        else if (percentage >= 80) state.cssGrade = 'B';
+        else if (percentage >= 70) state.cssGrade = 'C';
+        else if (percentage >= 60) state.cssGrade = 'D';
+        else state.cssGrade = 'F';
 
         return percentage;
     };
@@ -346,6 +352,16 @@ export function useCSSCompatibility() {
         calculateCSSGrade();
         injectCSSFallbacks();
 
+        // Compute derived properties
+        state.supported = Object.values(state.features).every(Boolean);
+        state.supportedFeatures = Object.fromEntries(
+            Object.entries(state.features).filter(([_, v]) => v)
+        );
+        state.unsupportedFeatures = Object.keys(state.features).filter(
+            k => !state.features[k as keyof CSSFeatureSupport]
+        );
+        state.compatibilityIssues = [...state.fallbacksApplied];
+
         isInitialized.value = true;
     };
 
@@ -353,23 +369,24 @@ export function useCSSCompatibility() {
      * Get CSS compatibility summary
      */
     const getCompatibilitySummary = () => ({
-        grade: state.value.cssGrade,
+        grade: state.cssGrade,
         score: calculateCSSGrade(),
-        browser: `${state.value.browserName} ${state.value.browserVersion}`,
-        features: { ...state.value.features },
-        fallbacksCount: state.value.fallbacksApplied.length,
-        recommendationsCount: state.value.recommendations.length,
-        hasIssues:
-            state.value.fallbacksApplied.length > 0 || state.value.recommendations.length > 0,
+        browser: `${state.browserName} ${state.browserVersion}`,
+        features: { ...state.features },
+        fallbacksCount: state.fallbacksApplied.length,
+        recommendationsCount: state.recommendations.length,
+        hasIssues: state.fallbacksApplied.length > 0 || state.recommendations.length > 0,
     });
 
-    // Auto-initialize on mount
-    onMounted(() => {
-        // Use requestAnimationFrame to ensure DOM is ready
-        requestAnimationFrame(() => {
-            initialize();
+    // Auto-initialize on mount if within a component
+    if (getCurrentInstance()) {
+        onMounted(() => {
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+                initialize();
+            });
         });
-    });
+    }
 
     return {
         // State
@@ -383,24 +400,22 @@ export function useCSSCompatibility() {
 
         // Computed getters
         get cssGrade() {
-            return state.value.cssGrade;
+            return state.cssGrade;
         },
         get features() {
-            return state.value.features;
+            return state.features;
         },
         get fallbacksApplied() {
-            return state.value.fallbacksApplied;
+            return state.fallbacksApplied;
         },
         get recommendations() {
-            return state.value.recommendations;
+            return state.recommendations;
         },
         get browserInfo() {
-            return `${state.value.browserName} ${state.value.browserVersion}`;
+            return `${state.browserName} ${state.browserVersion}`;
         },
         get hasCompatibilityIssues() {
-            return (
-                state.value.fallbacksApplied.length > 0 || state.value.recommendations.length > 0
-            );
+            return state.fallbacksApplied.length > 0 || state.recommendations.length > 0;
         },
     };
 }

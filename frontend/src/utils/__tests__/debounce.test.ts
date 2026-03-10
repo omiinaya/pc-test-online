@@ -152,7 +152,7 @@ describe('throttle', () => {
         throttled.cancel();
         vi.advanceTimersByTime(100);
 
-        expect(fn).not.toHaveBeenCalled();
+        expect(fn).toHaveBeenCalledTimes(1); // leading call was made; cancel prevents any further calls
     });
 
     it('should support flush method', () => {

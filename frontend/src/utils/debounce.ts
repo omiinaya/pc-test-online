@@ -126,13 +126,74 @@ export function throttle<T extends (...args: any[]) => any>(
     options: { leading?: boolean; trailing?: boolean } = {}
 ): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
     const { leading = true, trailing = true } = options;
+    let lastArgs: Parameters<T> | null = null;
+    let lastThis: any = null;
+    let lastCallTime: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let result: any;
 
-    return debounce(func, wait, {
-        leading,
-        trailing,
-        maxWait: wait,
-    }) as T & {
-        cancel(): void;
-        flush(): ReturnType<T> | undefined;
+    const invoke = (time: number): void => {
+        const args = lastArgs;
+        const thisArg = lastThis;
+        lastArgs = null;
+        lastThis = null;
+        lastCallTime = time;
+        if (args) {
+            result = func.apply(thisArg, args);
+        }
     };
+
+    const shouldInvoke = (time: number): boolean => {
+        if (lastCallTime === null) return leading;
+        const timeSince = time - lastCallTime;
+        return timeSince >= wait;
+    };
+
+    const throttled = function (this: any, ...args: Parameters<T>): void {
+        const time = Date.now();
+        const invokeNow = shouldInvoke(time);
+
+        lastArgs = args;
+        lastThis = this;
+
+        if (invokeNow) {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            invoke(time);
+        } else if (!timeoutId && trailing) {
+            const remaining = wait - (time - lastCallTime!);
+            timeoutId = setTimeout(() => {
+                if (lastArgs) {
+                    invoke(Date.now());
+                }
+                timeoutId = null;
+            }, remaining);
+        }
+    };
+
+    throttled.cancel = (): void => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        lastArgs = null;
+        lastThis = null;
+        timeoutId = null;
+    };
+
+    throttled.flush = (): ReturnType<T> | undefined => {
+        if (timeoutId !== null && lastArgs) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+            const res = func.apply(lastThis, lastArgs);
+            lastArgs = null;
+            lastThis = null;
+            result = res;
+            return res;
+        }
+        return result;
+    };
+
+    return throttled as T & { cancel(): void; flush(): ReturnType<T> | undefined };
 }

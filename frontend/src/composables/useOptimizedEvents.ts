@@ -1,4 +1,4 @@
-import { onUnmounted } from 'vue';
+import { onUnmounted, getCurrentInstance } from 'vue';
 import { debounce, throttle } from '../utils/debounce';
 
 export interface OptimizedEventOptions {
@@ -33,10 +33,21 @@ export function useOptimizedEvents() {
             ) as EventListenerOrEventListenerObject;
         }
 
-        target.addEventListener(type, optimizedListener, eventOptions);
+        // Conditionally include options only if there are properties
+        const hasEventOptions = Object.keys(eventOptions).length > 0;
+
+        if (hasEventOptions) {
+            target.addEventListener(type, optimizedListener, eventOptions);
+        } else {
+            target.addEventListener(type, optimizedListener);
+        }
 
         const removeListener = () => {
-            target.removeEventListener(type, optimizedListener, eventOptions);
+            if (hasEventOptions) {
+                target.removeEventListener(type, optimizedListener, eventOptions);
+            } else {
+                target.removeEventListener(type, optimizedListener);
+            }
             listeners.delete(type);
         };
 
@@ -96,10 +107,12 @@ export function useOptimizedEvents() {
         listeners.clear();
     };
 
-    // Auto-cleanup
-    onUnmounted(() => {
-        cleanupAll();
-    });
+    // Auto-cleanup if within a component
+    if (getCurrentInstance()) {
+        onUnmounted(() => {
+            cleanupAll();
+        });
+    }
 
     return {
         addOptimizedEventListener,

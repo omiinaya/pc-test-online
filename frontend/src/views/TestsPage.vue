@@ -1,1342 +1,993 @@
-<script lang="ts">
-import { defineAsyncComponent } from 'vue';
-import LoadingSpinner from '../components/LoadingSpinner.vue';
-import AsyncErrorFallback from '../components/AsyncErrorFallback.vue';
-import { resetAllTestStates } from '../composables/useTestState';
-import { useCSSCompatibility } from '../composables/useCSSCompatibility';
+<script setup lang="ts">
+import {
+    ref,
+    reactive,
+    computed,
+    onMounted,
+    onUnmounted,
+    nextTick,
+    defineAsyncComponent,
+    defineEmits,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { debounce } from '../utils/debounce';
-// Dynamic imports for PDF libraries to reduce initial bundle size
+import { resetAllTestStates } from '../composables/useTestState';
+import { useCSSCompatibility } from '../composables/useCSSCompatibility';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
+import AsyncErrorFallback from '../components/AsyncErrorFallback.vue';
+import TestHeader from '../components/TestHeader.vue';
+import VisualizerContainer from '../components/VisualizerContainer.vue';
+import TestActionButtons from '../components/TestActionButtons.vue';
+import type { TestType } from '../types';
 
-export default {
-    name: 'TestsPage',
-    components: {
-        WebcamTest: defineAsyncComponent({
-            loader: () => import('../components/WebcamTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        MicrophoneTest: defineAsyncComponent({
-            loader: () => import('../components/MicrophoneTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        SpeakerTest: defineAsyncComponent({
-            loader: () => import('../components/SpeakerTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        KeyboardTest: defineAsyncComponent({
-            loader: () => import('../components/KeyboardTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        MouseTest: defineAsyncComponent({
-            loader: () => import('../components/MouseTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TouchTest: defineAsyncComponent({
-            loader: () => import('../components/TouchTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        BatteryTest: defineAsyncComponent({
-            loader: () => import('../components/BatteryTest.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestsCompleted: defineAsyncComponent({
-            loader: () => import('../components/TestsCompleted.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        VisualizerContainer: defineAsyncComponent({
-            loader: () => import('../components/VisualizerContainer.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestActionButtons: defineAsyncComponent({
-            loader: () => import('../components/TestActionButtons.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-        TestHeader: defineAsyncComponent({
-            loader: () => import('../components/TestHeader.vue'),
-            loadingComponent: LoadingSpinner,
-            errorComponent: AsyncErrorFallback,
-            delay: 200,
-            timeout: 10000,
-        }),
-    },
-    setup() {
-        const { t } = useI18n();
-        return { t };
-    },
-    data() {
-        // Create individual reactive timer objects for better reactivity
-        const createTimer = () => ({
-            running: false,
-            startTime: null,
-            elapsed: 0,
-        });
+// Async test component definitions
+const WebcamTest = defineAsyncComponent({
+    loader: () => import('../components/WebcamTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const MicrophoneTest = defineAsyncComponent({
+    loader: () => import('../components/MicrophoneTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const SpeakerTest = defineAsyncComponent({
+    loader: () => import('../components/SpeakerTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const KeyboardTest = defineAsyncComponent({
+    loader: () => import('../components/KeyboardTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const MouseTest = defineAsyncComponent({
+    loader: () => import('../components/MouseTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TouchTest = defineAsyncComponent({
+    loader: () => import('../components/TouchTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const BatteryTest = defineAsyncComponent({
+    loader: () => import('../components/BatteryTest.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
+const TestsCompleted = defineAsyncComponent({
+    loader: () => import('../components/TestsCompleted.vue'),
+    loadingComponent: LoadingSpinner,
+    errorComponent: AsyncErrorFallback,
+    delay: 200,
+    timeout: 10000,
+});
 
-        return {
-            activeTest: 'webcam', // Start with webcam test
-            results: {
-                webcam: null, // null: pending, true: pass, false: fail
-                microphone: null,
-                speakers: null,
-                keyboard: null,
-                mouse: null,
-                touch: null,
-                battery: null,
-            },
-            skippedTests: [],
-            testIconMap: {
-                webcam: '📷',
-                microphone: '🎤',
-                speakers: '🔊',
-                keyboard: '⌨️',
-                mouse: '🖱️',
-                touch: '👆',
-                battery: '🔋',
-            },
-            testNameMap: {
-                webcam: this.$t('tests.webcam.name'),
-                microphone: this.$t('tests.microphone.name'),
-                speakers: this.$t('tests.speakers.name'),
-                keyboard: this.$t('tests.keyboard.name'),
-                mouse: this.$t('tests.mouse.name'),
-                touch: this.$t('tests.touch.name'),
-                battery: this.$t('tests.battery.name'),
-            },
-            timings: {
-                webcam: { start: null, end: null, duration: null },
-                microphone: { start: null, end: null, duration: null },
-                speakers: { start: null, end: null, duration: null },
-                keyboard: { start: null, end: null, duration: null },
-                mouse: { start: null, end: null, duration: null },
-                touch: { start: null, end: null, duration: null },
-                battery: { start: null, end: null, duration: null },
-            },
-            runCounts: {
-                webcam: 0,
-                microphone: 0,
-                speakers: 0,
-                keyboard: 0,
-                mouse: 0,
-                touch: 0,
-                battery: 0,
-            },
-            // Individual timer objects for better reactivity
-            realTimeTimerWebcam: createTimer(),
-            realTimeTimerMicrophone: createTimer(),
-            realTimeTimerSpeakers: createTimer(),
-            realTimeTimerKeyboard: createTimer(),
-            realTimeTimerMouse: createTimer(),
-            realTimeTimerTouch: createTimer(),
-            realTimeTimerBattery: createTimer(),
-            timerInterval: null,
-            timerTick: 0, // Reactive property to force computed updates
-            showExportMenu: false,
+// Types
+type TestName = 'webcam' | 'microphone' | 'speakers' | 'keyboard' | 'mouse' | 'touch' | 'battery';
+type TestResult = boolean | null;
+interface TimingInfo {
+    start: number | null;
+    end: number | null;
+    duration: number | null;
+}
+interface TimerInfo {
+    running: boolean;
+    startTime: number | null;
+    elapsed: number;
+}
+
+// i18n
+const { t } = useI18n();
+const $t = t; // alias for template
+
+// Emits
+const emit = defineEmits<{
+    'update-footer': [
+        payload: { completedTests: number; totalTests: number; showExportMenu?: boolean },
+    ];
+    'reset-tests': [];
+    'export-json': [];
+    'export-csv': [];
+}>();
+
+// Test names list
+const testNames: TestName[] = [
+    'webcam',
+    'microphone',
+    'speakers',
+    'keyboard',
+    'mouse',
+    'touch',
+    'battery',
+];
+
+// Reactive state
+const activeTest = ref<TestType>('webcam');
+const results = reactive<Record<TestName, TestResult>>({
+    webcam: null,
+    microphone: null,
+    speakers: null,
+    keyboard: null,
+    mouse: null,
+    touch: null,
+    battery: null,
+});
+const skippedTests = ref<TestName[]>([]);
+const timings = reactive<Record<TestName, TimingInfo>>({
+    webcam: { start: null, end: null, duration: null },
+    microphone: { start: null, end: null, duration: null },
+    speakers: { start: null, end: null, duration: null },
+    keyboard: { start: null, end: null, duration: null },
+    mouse: { start: null, end: null, duration: null },
+    touch: { start: null, end: null, duration: null },
+    battery: { start: null, end: null, duration: null },
+});
+const runCounts = reactive<Record<TestName, number>>({
+    webcam: 0,
+    microphone: 0,
+    speakers: 0,
+    keyboard: 0,
+    mouse: 0,
+    touch: 0,
+    battery: 0,
+});
+const timers = reactive<Record<TestName, TimerInfo>>({
+    webcam: { running: false, startTime: null, elapsed: 0 },
+    microphone: { running: false, startTime: null, elapsed: 0 },
+    speakers: { running: false, startTime: null, elapsed: 0 },
+    keyboard: { running: false, startTime: null, elapsed: 0 },
+    mouse: { running: false, startTime: null, elapsed: 0 },
+    touch: { running: false, startTime: null, elapsed: 0 },
+    battery: { running: false, startTime: null, elapsed: 0 },
+});
+const timerInterval = ref<number | null>(null);
+const timerTick = ref(0);
+const showExportMenu = ref(false);
+
+// Helper to get timer
+const getTimer = (test: TestName) => timers[test];
+
+// Computed properties
+const realTimeElapsed = computed(() => {
+    const now = Date.now();
+    void timerTick.value;
+    const result: Partial<Record<TestName, number>> = {};
+    testNames.forEach(test => {
+        const timer = timers[test];
+        if (timer.running && timer.startTime) {
+            result[test] = (now - timer.startTime) / 1000 + timer.elapsed;
+        } else {
+            result[test] = timer.elapsed;
+        }
+    });
+    return result as Record<TestName, number>;
+});
+
+const formattedRealTimeTimers = computed(() => {
+    const formatted: Record<TestName, string> = {
+        webcam: '0.00',
+        microphone: '0.00',
+        speakers: '0.00',
+        keyboard: '0.00',
+        mouse: '0.00',
+        touch: '0.00',
+        battery: '0.00',
+    };
+    testNames.forEach(test => {
+        const time = realTimeElapsed.value[test];
+        formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
+    });
+    return formatted;
+});
+
+const currentTestDescription = computed(() => {
+    const descriptionMap: Record<TestName | 'testsCompleted', string> = {
+        webcam: t('tests.webcam.description'),
+        microphone: t('tests.microphone.description'),
+        speakers: t('tests.speakers.description'),
+        keyboard: t('tests.keyboard.description'),
+        mouse: t('tests.mouse.description'),
+        touch: t('tests.touch.description'),
+        battery: t('tests.battery.description'),
+        testsCompleted: t('tests.completed.description'),
+    };
+    return descriptionMap[activeTest.value] || descriptionMap.webcam;
+});
+
+const currentTestComponent = computed(() => {
+    const componentMap: Record<TestName | 'testsCompleted', any> = {
+        webcam: WebcamTest,
+        microphone: MicrophoneTest,
+        speakers: SpeakerTest,
+        keyboard: KeyboardTest,
+        mouse: MouseTest,
+        touch: TouchTest,
+        battery: BatteryTest,
+        testsCompleted: TestsCompleted,
+    };
+    return componentMap[activeTest.value] || WebcamTest;
+});
+
+const allTestsCompleted = computed(() => {
+    return testNames.every(test => results[test] !== null || skippedTests.value.includes(test));
+});
+
+const completedTestsCount = computed(() => {
+    return testNames.filter(test => results[test] !== null || skippedTests.value.includes(test))
+        .length;
+});
+
+const totalTestsCount = computed(() => testNames.length);
+
+const passedTests = computed(() => {
+    return testNames.filter(test => results[test] === true && !skippedTests.value.includes(test));
+});
+
+const failedTests = computed(() => {
+    return testNames.filter(test => results[test] === false && !skippedTests.value.includes(test));
+});
+
+const pendingTests = computed(() => {
+    return testNames.filter(test => results[test] === null && !skippedTests.value.includes(test));
+});
+
+const skippedTestsList = computed(() => skippedTests.value);
+
+const summaryText = computed(() => {
+    const totalTests = totalTestsCount.value;
+    const completedCount = completedTestsCount.value;
+    if (!allTestsCompleted.value) {
+        return `${completedCount}/${totalTests} In Progress...`;
+    } else {
+        const failedCount = Object.values(results).filter(r => r === false).length;
+        if (failedCount > 0) {
+            return `${totalTests}/${totalTests} Completed (${failedCount} Failed)`;
+        } else {
+            return `${totalTests}/${totalTests} Completed`;
+        }
+    }
+});
+
+const totalTimeSpent = computed(() => {
+    return Object.values(timings)
+        .map(t => (typeof t.duration === 'number' ? t.duration : 0))
+        .reduce((a, b) => a + b, 0);
+});
+
+const i18nTestNameMap = computed(() => {
+    return {
+        webcam: t('tests.webcam.name'),
+        microphone: t('tests.microphone.name'),
+        speakers: t('tests.speakers.name'),
+        keyboard: t('tests.keyboard.name'),
+        mouse: t('tests.mouse.name'),
+        touch: t('tests.touch.name'),
+        battery: t('tests.battery.name'),
+    };
+});
+
+const formattedTimings = computed(() => {
+    const formatted: Partial<Record<TestName, string>> = {};
+    testNames.forEach(test => {
+        const timing = timings[test];
+        if (timing && typeof timing === 'object') {
+            if (typeof timing.duration === 'number' && timing.duration > 0) {
+                formatted[test] = `${timing.duration.toFixed(2)}s`;
+            } else if (results[test] !== null || skippedTests.value.includes(test)) {
+                formatted[test] = '0.00s';
+            } else if (timers[test].running) {
+                formatted[test] = `${formattedRealTimeTimers.value[test]}s`;
+            } else {
+                formatted[test] = '0.00s';
+            }
+        } else {
+            formatted[test] = '0.00s';
+        }
+    });
+    return formatted as Record<TestName, string>;
+});
+
+const currentContainerStyles = computed(() => {
+    const styleMap: Record<TestName | 'testsCompleted', { minHeight: string; maxWidth?: string }> =
+        {
+            webcam: { minHeight: '420px' },
+            microphone: { minHeight: '420px' },
+            speakers: { minHeight: '420px', maxWidth: '600px' },
+            keyboard: { minHeight: '420px', maxWidth: '800px' },
+            mouse: { minHeight: '420px' },
+            touch: { minHeight: '420px', maxWidth: '800px' },
+            battery: { minHeight: '420px' },
+            testsCompleted: { minHeight: '420px' },
         };
-    },
-    computed: {
-        // Real-time elapsed time for each test - optimized for reactivity
-        realTimeElapsed() {
-            const now = Date.now();
-            const elapsed: Record<string, number> = {};
-
-            const timers = [
-                { test: 'webcam', timer: this.realTimeTimerWebcam },
-                { test: 'microphone', timer: this.realTimeTimerMicrophone },
-                { test: 'speakers', timer: this.realTimeTimerSpeakers },
-                { test: 'keyboard', timer: this.realTimeTimerKeyboard },
-                { test: 'mouse', timer: this.realTimeTimerMouse },
-                { test: 'touch', timer: this.realTimeTimerTouch },
-                { test: 'battery', timer: this.realTimeTimerBattery },
-            ];
-
-            timers.forEach(({ test, timer }) => {
-                if (timer.running && timer.startTime) {
-                    elapsed[test] = (now - timer.startTime) / 1000 + timer.elapsed;
-                } else {
-                    elapsed[test] = timer.elapsed;
-                }
-            });
-
-            return elapsed;
-        },
-
-        // Formatted real-time timers with two decimal places
-        formattedRealTimeTimers() {
-            const formatted: Record<string, string> = {};
-            Object.keys(this.realTimeElapsed).forEach(test => {
-                const time = this.realTimeElapsed[test];
-                formatted[test] = time > 0 ? time.toFixed(2) : '0.00';
-            });
-
-            return formatted;
-        },
-
-        // Test header content
-        currentTestIcon() {
-            const iconMap = {
-                webcam: '📷',
-                microphone: '🎤',
-                speakers: '🔊',
-                keyboard: '⌨️',
-                mouse: '🖱️',
-                touch: '👆',
-                battery: '🔋',
-                testsCompleted: '✅',
-            };
-            return iconMap[this.activeTest] || '📷';
-        },
-        currentTestTitle() {
-            const titleMap = {
-                webcam: this.$t('tests.webcam.name'),
-                microphone: this.$t('tests.microphone.name'),
-                speakers: this.$t('tests.speakers.name'),
-                keyboard: this.$t('tests.keyboard.name'),
-                mouse: this.$t('tests.mouse.name'),
-                touch: this.$t('tests.touch.name'),
-                battery: this.$t('tests.battery.name'),
-                testsCompleted: this.$t('tests.completed.name'),
-            };
-            return titleMap[this.activeTest] || this.$t('tests.webcam.name');
-        },
-        currentTestDescription() {
-            const descriptionMap = {
-                webcam: this.$t('tests.webcam.description'),
-                microphone: this.$t('tests.microphone.description'),
-                speakers: this.$t('tests.speakers.description'),
-                keyboard: this.$t('tests.keyboard.description'),
-                mouse: this.$t('tests.mouse.description'),
-                touch: this.$t('tests.touch.description'),
-                battery: this.$t('tests.battery.description'),
-                testsCompleted: this.$t('tests.completed.description'),
-            };
-            return descriptionMap[this.activeTest] || this.$t('tests.webcam.description');
-        },
-        // Dynamic component mapping for keep-alive functionality
-        currentTestComponent() {
-            const componentMap = {
-                webcam: 'WebcamTest',
-                microphone: 'MicrophoneTest',
-                speakers: 'SpeakerTest',
-                keyboard: 'KeyboardTest',
-                mouse: 'MouseTest',
-                touch: 'TouchTest',
-                battery: 'BatteryTest',
-                testsCompleted: 'TestsCompleted',
-            };
-            return componentMap[this.activeTest] || 'WebcamTest';
-        },
-        allTestsCompleted() {
-            return Object.keys(this.results).every(
-                test => this.results[test] !== null || this.skippedTests.includes(test)
-            );
-        },
-        completedTestsCount() {
-            // Count as completed if passed, failed, or skipped
-            return Object.keys(this.results).filter(
-                test => this.results[test] !== null || this.skippedTests.includes(test)
-            ).length;
-        },
-        totalTestsCount() {
-            return Object.keys(this.results).length;
-        },
-        passedTests() {
-            return Object.keys(this.results)
-                .filter(test => this.results[test] === true && !this.skippedTests.includes(test))
-                .map(test => String(test)); // Ensure simple strings, not Proxy objects
-        },
-        failedTests() {
-            return Object.keys(this.results)
-                .filter(test => this.results[test] === false && !this.skippedTests.includes(test))
-                .map(test => String(test)); // Ensure simple strings, not Proxy objects
-        },
-        pendingTests() {
-            return Object.keys(this.results)
-                .filter(test => this.results[test] === null && !this.skippedTests.includes(test))
-                .map(test => String(test)); // Ensure simple strings, not Proxy objects
-        },
-        skippedTestsList() {
-            return this.skippedTests.map(test => String(test)); // Ensure simple strings, not Proxy objects
-        },
-        anyTestsFailed() {
-            return Object.values(this.results).some(r => r === false);
-        },
-        summaryClass() {
-            if (this.anyTestsFailed) {
-                return 'completed-fail';
-            }
-            if (this.allTestsCompleted) {
-                return 'completed-success';
-            }
-            return 'in-progress';
-        },
-        summaryText() {
-            const totalTests = Object.keys(this.results).length;
-            const completedCount = this.completedTestsCount;
-
-            if (!this.allTestsCompleted) {
-                return `${completedCount}/${totalTests} In Progress...`;
-            } else {
-                const failedCount = Object.values(this.results).filter(r => r === false).length;
-                if (failedCount > 0) {
-                    return `${totalTests}/${totalTests} Completed (${failedCount} Failed)`;
-                } else {
-                    return `${totalTests}/${totalTests} Completed`;
-                }
-            }
-        },
-        totalTimeSpent() {
-            return Object.values(this.timings)
-                .map(t => (typeof t.duration === 'number' ? t.duration : 0))
-                .reduce((a, b) => a + b, 0);
-        },
-        // Internationalized test names for sidebar and export functions
-        i18nTestNameMap() {
-            return {
-                webcam: this.$t('tests.webcam.name'),
-                microphone: this.$t('tests.microphone.name'),
-                speakers: this.$t('tests.speakers.name'),
-                keyboard: this.$t('tests.keyboard.name'),
-                mouse: this.$t('tests.mouse.name'),
-                touch: this.$t('tests.touch.name'),
-                battery: this.$t('tests.battery.name'),
-            };
-        },
-        // Format individual test timing for display
-        formattedTimings() {
-            const formatted = {};
-            Object.keys(this.timings).forEach(test => {
-                const timing = this.timings[test];
-                // Ensure timing object exists and has proper structure
-                if (timing && typeof timing === 'object') {
-                    if (typeof timing.duration === 'number' && timing.duration > 0) {
-                        formatted[test] = `${timing.duration.toFixed(2)}s`;
-                    } else if (this.results[test] !== null || this.skippedTests.includes(test)) {
-                        // Test completed but no timing data (skipped or quick completion)
-                        formatted[test] = '0.00s';
-                    } else if (this.getTimer(test)?.running) {
-                        // Test is currently running - show real-time timer
-                        formatted[test] = `${this.formattedRealTimeTimers[test]}s`;
-                    } else {
-                        // Test pending - show "0.00" initially
-                        formatted[test] = '0.00s';
-                    }
-                } else {
-                    // Fallback for invalid timing data - show "0.00"
-                    formatted[test] = '0.00s';
-                }
-            });
-
-            return formatted;
-        },
-        // Container styles for smooth morphing based on active test
-        currentContainerStyles() {
-            const styleMap = {
-                webcam: { minHeight: '420px' },
-                microphone: { minHeight: '420px' },
-                speakers: { minHeight: '420px', maxWidth: '600px' },
-                keyboard: { minHeight: '420px', maxWidth: '800px' },
-                mouse: { minHeight: '420px' },
-                touch: { minHeight: '420px', maxWidth: '800px' },
-                battery: { minHeight: '420px' },
-                testsCompleted: { minHeight: '420px' },
-            };
-            return styleMap[this.activeTest] || { minHeight: '420px' };
-        },
-    },
-    methods: {
-        // Safe access to test name mapping with comprehensive error handling
-        getTestName(test) {
-            // Validate that i18nTestNameMap exists and is an object
-            if (!this.i18nTestNameMap || typeof this.i18nTestNameMap !== 'object') {
-                console.warn('i18nTestNameMap is not properly defined, using fallback mapping');
-                const fallbackMap = {
-                    webcam: this.$t('tests.webcam.name'),
-                    microphone: this.$t('tests.microphone.name'),
-                    speakers: this.$t('tests.speakers.name'),
-                    keyboard: this.$t('tests.keyboard.name'),
-                    mouse: this.$t('tests.mouse.name'),
-                    touch: this.$t('tests.touch.name'),
-                    battery: this.$t('tests.battery.name'),
-                };
-                return fallbackMap[test] || this.getSafeFallback(test);
-            }
-
-            // Validate that test parameter is a valid primitive
-            if (
-                test === null ||
-                test === undefined ||
-                (typeof test !== 'string' && typeof test !== 'number')
-            ) {
-                console.warn(`Invalid test parameter: ${typeof test}`, test);
-                return this.getSafeFallback(test);
-            }
-
-            // Get the name from the map, ensuring it's a string
-            const name = this.i18nTestNameMap[test];
-
-            // Return the mapped name if it's a valid string, otherwise fallback
-            if (typeof name === 'string' && name.trim().length > 0) {
-                return name;
-            }
-
-            return this.getSafeFallback(test);
-        },
-
-        // Helper method to provide safe fallback values
-        getSafeFallback(test) {
-            // Handle Vue Proxy objects and complex types safely
-            let testStr = 'unknown';
-
-            try {
-                if (test === null || test === undefined) {
-                    testStr = 'unknown';
-                } else if (typeof test === 'string') {
-                    testStr = test;
-                } else if (typeof test === 'number') {
-                    testStr = test.toString();
-                } else if (typeof test === 'object') {
-                    // Handle Vue Proxy objects - try to access underlying value
-                    if (test.__v_skip) {
-                        // This is likely a Vue reactive object, try to get raw value
-                        testStr = 'reactive-object';
-                    } else {
-                        // Try to stringify or get a meaningful representation
-                        testStr = JSON.stringify(test).slice(0, 50);
-                    }
-                } else {
-                    // Fallback for other types
-                    testStr = String(test);
-                }
-            } catch (error) {
-                // If any conversion fails, use a safe fallback
-                console.warn('Error converting test to string:', error);
-                testStr = 'conversion-error';
-            }
-
-            // Return a meaningful fallback that won't cause conversion issues
-            if (
-                testStr === 'unknown' ||
-                testStr === 'null' ||
-                testStr === 'undefined' ||
-                testStr === 'reactive-object' ||
-                testStr === 'conversion-error'
-            ) {
-                return this.$t('errors.unknownTest');
-            }
-
-            // Use translation for the test name based on the test key
-            const translationMap = {
-                webcam: this.$t('tests.webcam.name'),
-                microphone: this.$t('tests.microphone.name'),
-                speakers: this.$t('tests.speakers.name'),
-                keyboard: this.$t('tests.keyboard.name'),
-                mouse: this.$t('tests.mouse.name'),
-                touch: this.$t('tests.touch.name'),
-                battery: this.$t('tests.battery.name'),
-            };
-
-            return translationMap[testStr] || testStr.charAt(0).toUpperCase() + testStr.slice(1);
-        },
-
-        // Debounced test switching to prevent rapid component changes and lag
-        debouncedSetActiveTest: debounce(function (testType) {
-            console.log(`Switching from ${this.activeTest} to ${testType}`);
-            this.setActiveTest(testType);
-        }, 200),
-
-        setActiveTest(testType) {
-            // Stop timer for previous active test if it was running
-            if (this.activeTest && this.activeTest !== testType) {
-                this.stopTimer(this.activeTest);
-            }
-
-            // Only start timing if we're switching to a new test or the test hasn't started timing yet
-            if (this.timings[testType]) {
-                if (this.activeTest !== testType || this.timings[testType].start === null) {
-                    this.timings[testType].start = Date.now();
-                    this.timings[testType].end = null;
-                    // Start real-time timer for this test
-                    this.startTimer(testType);
-                }
-            }
-            this.activeTest = testType;
-        },
-        onTestCompleted(testType) {
-            if (!this.timings[testType]) {
-                return;
-            }
-            // Stop real-time timer
-            this.stopTimer(testType);
-
-            // Remove from skippedTests if present (robust reactivity)
-            this.skippedTests = this.skippedTests.filter(t => t !== testType);
-            this.results[testType] = true;
-            // Stop timing and store only the last session duration
-            this.timings[testType].end = Date.now();
-
-            // Validate timing data before calculation
-            if (
-                this.timings[testType] &&
-                this.timings[testType].start &&
-                this.timings[testType].end
-            ) {
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Ensure duration is reasonable (between 0 and 10 minutes)
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else if (this.timings[testType]) {
-                this.timings[testType].duration = 0;
-            }
-
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-            this.emitProgressUpdate();
-        },
-        onTestFailed(testType) {
-            if (!this.timings[testType]) {
-                return;
-            }
-            // Stop real-time timer
-            this.stopTimer(testType);
-
-            // Remove from skippedTests if present (robust reactivity)
-            this.skippedTests = this.skippedTests.filter(t => t !== testType);
-            this.results[testType] = false;
-            // Stop timing and store only the last session duration
-            this.timings[testType].end = Date.now();
-
-            // Validate timing data before calculation
-            if (
-                this.timings[testType] &&
-                this.timings[testType].start &&
-                this.timings[testType].end
-            ) {
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Ensure duration is reasonable (between 0 and 10 minutes)
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else if (this.timings[testType]) {
-                this.timings[testType].duration = 0;
-            }
-
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-            this.emitProgressUpdate();
-        },
-        onTestSkipped(payload) {
-            // Support both old (string) and new (object) signatures for robustness
-            const testType = typeof payload === 'string' ? payload : payload.testType;
-            const duration =
-                typeof payload === 'object' && payload.duration !== undefined
-                    ? payload.duration
-                    : null;
-
-            if (!this.timings[testType]) {
-                return;
-            }
-            // Stop real-time timer
-            this.stopTimer(testType);
-
-            if (!this.skippedTests.includes(testType)) {
-                this.skippedTests.push(testType);
-            }
-            // Use the provided duration if available, otherwise calculate as before
-            if (duration !== null) {
-                // Validate provided duration
-                if (duration >= 0 && duration <= 600) {
-                    this.timings[testType].duration = duration;
-                    this.timings[testType].end = this.timings[testType].start + duration * 1000;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else if (
-                this.timings[testType] &&
-                this.timings[testType].end === null &&
-                typeof this.timings[testType].start === 'number'
-            ) {
-                this.timings[testType].end = Date.now();
-                const sessionDuration =
-                    (this.timings[testType].end - this.timings[testType].start) / 1000;
-                // Validate calculated duration
-                if (sessionDuration >= 0 && sessionDuration <= 600) {
-                    this.timings[testType].duration = sessionDuration;
-                } else {
-                    this.timings[testType].duration = 0;
-                }
-            } else if (this.timings[testType]) {
-                this.timings[testType].duration = 0;
-            }
-            this.results[testType] = null; // Keep as pending, but filtered out of summary
-            this.runCounts[testType] += 1;
-            this.autoAdvance(testType);
-        },
-        autoAdvance(currentTest) {
-            const tests = [
-                'webcam',
-                'microphone',
-                'speakers',
-                'keyboard',
-                'mouse',
-                'touch',
-                'battery',
-            ];
-            const currentIndex = tests.indexOf(currentTest);
-            // If not all tests are completed
-            if (!this.allTestsCompleted) {
-                // Try to go to the next incomplete test after the current one
-                for (let i = currentIndex + 1; i < tests.length; i++) {
-                    if (this.results[tests[i]] === null) {
-                        this.setActiveTest(tests[i]);
-                        return;
-                    }
-                }
-                // If none after, look from the start up to current
-                for (let i = 0; i < currentIndex; i++) {
-                    if (this.results[tests[i]] === null) {
-                        this.setActiveTest(tests[i]);
-                        return;
-                    }
-                }
-                // If we're on the last test and there are still incomplete tests, stay on the last test
-                // (do nothing)
-            } else {
-                // All tests completed, go to testsCompleted step
-                this.activeTest = 'testsCompleted';
-            }
-        },
-        handleTestsCompletedClick() {
-            if (this.allTestsCompleted) {
-                this.activeTest = 'testsCompleted';
-            }
-        },
-        // Helper method to get timer by test type
-        getTimer(testType) {
-            switch (testType) {
-                case 'webcam':
-                    return this.realTimeTimerWebcam;
-                case 'microphone':
-                    return this.realTimeTimerMicrophone;
-                case 'speakers':
-                    return this.realTimeTimerSpeakers;
-                case 'keyboard':
-                    return this.realTimeTimerKeyboard;
-                case 'mouse':
-                    return this.realTimeTimerMouse;
-                case 'touch':
-                    return this.realTimeTimerTouch;
-                case 'battery':
-                    return this.realTimeTimerBattery;
-                default:
-                    return null;
-            }
-        },
-
-        resetTests() {
-            // Stop all running timers
-            const testTypes = [
-                'webcam',
-                'microphone',
-                'speakers',
-                'keyboard',
-                'mouse',
-                'touch',
-                'battery',
-            ];
-            testTypes.forEach(test => {
-                this.stopTimer(test);
-            });
-
-            this.results = {
-                webcam: null,
-                microphone: null,
-                speakers: null,
-                keyboard: null,
-                mouse: null,
-                touch: null,
-                battery: null,
-            };
-            this.skippedTests = []; // Reset skipped tests
-            this.timings = {
-                webcam: { start: null, end: null, duration: null },
-                microphone: { start: null, end: null, duration: null },
-                speakers: { start: null, end: null, duration: null },
-                keyboard: { start: null, end: null, duration: null },
-                mouse: { start: null, end: null, duration: null },
-                touch: { start: null, end: null, duration: null },
-                battery: { start: null, end: null, duration: null },
-            };
-            // Reset individual real-time timers
-            const resetTimer = timer => {
-                timer.running = false;
-                timer.startTime = null;
-                timer.elapsed = 0;
-            };
-
-            resetTimer(this.realTimeTimerWebcam);
-            resetTimer(this.realTimeTimerMicrophone);
-            resetTimer(this.realTimeTimerSpeakers);
-            resetTimer(this.realTimeTimerKeyboard);
-            resetTimer(this.realTimeTimerMouse);
-            resetTimer(this.realTimeTimerTouch);
-            resetTimer(this.realTimeTimerBattery);
-
-            // Reset shared component states
-            resetAllTestStates();
-            // Set active test and start timing
-            this.setActiveTest('webcam');
-
-            // Emit reset event for AppFooter
-            this.$emit('reset-tests');
-            this.emitProgressUpdate();
-        },
-
-        // Timer management methods
-        startTimer(testType) {
-            const timer = this.getTimer(testType);
-            if (!timer) return;
-
-            // Stop any existing timer for this test
-            this.stopTimer(testType);
-
-            // Update individual timer properties directly for better reactivity
-            timer.running = true;
-            timer.startTime = Date.now();
-
-            console.log(`Timer started for ${testType}, running: ${timer.running}`);
-
-            // Start update interval if not already running
-            if (!this.timerInterval) {
-                this.timerInterval = setInterval(() => {
-                    // Force computed properties to update by modifying a reactive property
-                    // This ensures realTimeElapsed and formattedRealTimeTimers recompute
-                    this.timerTick = Date.now();
-                }, 100); // Update every 100ms for smooth animation
-            }
-        },
-
-        stopTimer(testType) {
-            const timer = this.getTimer(testType);
-            if (!timer) return;
-
-            if (timer.running) {
-                // Calculate and store elapsed time
-                const elapsed = (Date.now() - timer.startTime) / 1000;
-
-                // Update individual properties for better reactivity
-                timer.elapsed += elapsed;
-                timer.running = false;
-                timer.startTime = null;
-
-                // console.log(`Timer stopped for ${testType}, total elapsed: ${timer.elapsed.toFixed(2)}s`);
-            }
-
-            // Clean up interval if no timers are running
-            this.cleanupTimerInterval();
-        },
-
-        cleanupTimerInterval() {
-            const testTypes = [
-                'webcam',
-                'microphone',
-                'speakers',
-                'keyboard',
-                'mouse',
-                'touch',
-                'battery',
-            ];
-            const anyTimerRunning = testTypes.some(test => {
-                const timer = this.getTimer(test);
-                return timer && timer.running;
-            });
-
-            if (!anyTimerRunning && this.timerInterval) {
-                clearInterval(this.timerInterval);
-                this.timerInterval = null;
-                // console.log('Timer interval cleaned up');
-            }
-        },
-        getTestStatusClass(testType) {
-            if (this.skippedTests.includes(testType)) return 'skipped';
-            if (this.results[testType] === true) return 'completed-success';
-            if (this.results[testType] === false) return 'completed-fail';
-            return 'pending';
-        },
-        emitProgressUpdate() {
-            this.$emit('update-footer', {
-                completedTests: this.completedTestsCount,
-                totalTests: this.totalTestsCount,
-            });
-        },
-        exportResults() {
-            const report = {
-                timestamp: new Date().toISOString(),
-                results: this.results,
-                summary: this.summaryText,
-            };
-
-            const blob = new Blob([JSON.stringify(report, null, 2)], {
-                type: 'application/json',
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `mmit-test-results-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        },
-        toggleExportMenu() {
-            this.showExportMenu = !this.showExportMenu;
-            // Emit event to parent component for AppFooter synchronization
-            this.$emit('update-footer', { showExportMenu: this.showExportMenu });
-        },
-        async exportAsPDF() {
-            // Dynamic imports to reduce initial bundle size
-            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-                import('jspdf'),
-                import('html2canvas'),
-            ]);
-
-            // Create a hidden container with app-like styling
-            const container = document.createElement('div');
-            container.style.cssText = `
-        position: fixed;
-        top: -9999px;
-        left: -9999px;
-        width: 800px;
-        background: #0d0d0d;
-        padding: 40px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        color: #fff;
-      `;
-
-            // Build the HTML content
-            const completedCount = Object.values(this.results).filter(r => r !== null).length;
-            const passedCount = Object.values(this.results).filter(r => r === true).length;
-            const failedCount = Object.values(this.results).filter(r => r === false).length;
-            const totalTime = `${this.totalTimeSpent.toFixed(2)}s`;
-            const skippedCount = this.skippedTests.length;
-
-            const tests = Object.keys(this.results);
-            const testRows = tests
-                .map(test => {
-                    let status = '';
-                    let statusClass = '';
-                    let statusIcon = '';
-
-                    if (this.results[test] === true) {
-                        status = this.$t('status.passed');
-                        statusClass = 'status-passed';
-                        statusIcon = '✓';
-                    } else if (this.results[test] === false) {
-                        status = this.$t('status.failed');
-                        statusClass = 'status-failed';
-                        statusIcon = '✗';
-                    } else if (this.skippedTests.includes(test)) {
-                        status = this.$t('status.skipped');
-                        statusClass = 'status-skipped';
-                        statusIcon = '↷';
-                    } else {
-                        status = this.$t('status.pending');
-                        statusClass = 'status-pending';
-                        statusIcon = '⏳';
-                    }
-
-                    const runCount = this.runCounts[test] || 0;
-                    const duration =
-                        this.timings[test] && typeof this.timings[test].duration === 'number'
-                            ? this.timings[test].duration.toFixed(2)
-                            : '';
-
-                    return `
-          <tr>
-            <td class="test-name">${this.i18nTestNameMap[test]}</td>
-            <td class="status ${statusClass}">
-              <span class="status-icon">${statusIcon}</span>
-              ${status}
-            </td>
-            <td class="run-count">${runCount}</td>
-            <td class="duration">${duration}</td>
-          </tr>
-        `;
-                })
-                .join('');
-
-            container.innerHTML = `
-        <div class="pdf-content">
-          <div class="header">
-            <h1>${this.$t('app.name')} ${this.$t('results.summary')}</h1>
-            <div class="accent-bar"></div>
-          </div>
-          
-          <div class="summary-card">
-            <div class="summary-item">
-              <span class="label">Completed:</span>
-              <span class="value">${completedCount}/${Object.keys(this.results).length}</span>
-            </div>
-            <div class="summary-item passed">
-              <span class="label">${this.$t('export.summaryLabels.passed')}</span>
-              <span class="value">${passedCount}</span>
-            </div>
-          ${
-              failedCount > 0
-                  ? `
-            <div class="summary-item failed">
-              <span class="label">${this.$t('export.summaryLabels.failed')}</span>
-              <span class="value">${passedCount}</span>
-            </div>
-          `
-                  : ''
-          }
-          ${
-              skippedCount > 0
-                  ? `
-            <div class="summary-item skipped">
-              <span class="label">${this.$t('export.summaryLabels.skipped')}</span>
-              <span class="value">${skippedCount}</span>
-            </div>
-          `
-                  : ''
-          }
-          </div>
-          
-          <div class="table-container">
-            <table class="results-table">
-              <thead>
-                <tr>
-                  <th>${this.$t('results.testDetails')}</th>
-                  <th>${this.$t('status.status')}</th>
-                  <th>${this.$t('results.runCount')}</th>
-                  <th>${this.$t('results.duration')} (s)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${testRows}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="summary-total-time">
-            <span class="label">Total Time:</span>
-            <span class="value">${totalTime}</span>
-          </div>
-        </div>
-        
-        <style>
-          .pdf-content {
-            background: #0d0d0d;
-            color: #fff;
-            padding: 0;
-          }
-          
-          .header h1 {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 0 0 8px 0;
-            color: #fff;
-          }
-          
-          .accent-bar {
-            height: 6px;
-            background: linear-gradient(90deg, #ff6b00 0%, #ff8800 50%, #ff6b00 100%);
-            border-radius: 3px;
-            margin-bottom: 40px;
-          }
-          
-          .summary-card {
-            background: #232326;
-            border: 1px solid #404040;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 32px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-          }
-          
-          .summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-          
-          .summary-item .label {
-            color: #e0e0e0;
-            font-size: 16px;
-          }
-          
-          .summary-item .value {
-            color: #e0e0e0;
-            font-size: 16px;
-            font-weight: 500;
-          }
-          
-          .summary-item.passed .value {
-            color: #28a745;
-          }
-          
-          .summary-item.failed .value {
-            color: #dc3545;
-          }
-
-          .summary-item.skipped .value {
-            color: #ffc107;
-          }
-
-          .summary-total-time {
-            margin-top: 1.5rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-          }
-
-          .total-time-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.25rem;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border-radius: 8px;
-            border: 1px solid #475569;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          }
-
-          .total-time-label {
-            font-weight: 600;
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            letter-spacing: 0.025em;
-          }
-
-          .total-time-value {
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-weight: 700;
-            color: #f1f5f9;
-            font-size: 1rem;
-            background: rgba(241, 245, 249, 0.1);
-            padding: 0.375rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid rgba(241, 245, 249, 0.2);
-          }
-          
-          .table-container {
-            background: #141416;
-            border: 1px solid #333;
-            border-radius: 8px;
-            overflow: hidden;
-          }
-          
-          .results-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          
-          .results-table th {
-            background: #252526;
-            color: #fff;
-            padding: 16px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #444;
-          }
-          
-          .results-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #333;
-            font-size: 13px;
-          }
-          
-          .results-table tr:nth-child(even) {
-            background: #1c1c1e;
-          }
-          
-          .test-name {
-            color: #f0f0f0;
-            font-weight: 500;
-          }
-          
-          .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-          }
-          
-          .status-icon {
-            font-size: 14px;
-          }
-          
-          .status-passed {
-            color: #28a745;
-          }
-          
-          .status-failed {
-            color: #dc3545;
-          }
-          
-          .status-skipped {
-            color: #ffc107;
-          }
-          
-          .status-pending {
-            color: #ff6b00;
-          }
-          
-          .run-count, .duration {
-            color: #a0a0a0;
-          }
-        </style>
-      `;
-
-            document.body.appendChild(container);
-
-            try {
-                // Capture the styled element
-                const canvas = await html2canvas(container, {
-                    backgroundColor: null, // Let it be transparent
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                });
-
-                // Create PDF
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'pt',
-                    format: 'a4',
-                });
-
-                const imgData = canvas.toDataURL('image/png');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-
-                // Set dark background for the entire PDF page - this will be the ONLY background
-                pdf.setFillColor(13, 13, 13); // #0d0d0d - same as app background
-                pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-
-                // Calculate dimensions to fit the page
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height / canvas.width) * imgWidth;
-
-                // Add image to PDF with no margins so it fills completely
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-                // Save the PDF
-                pdf.save('mmit-test-results.pdf');
-            } catch (error) {
-                alert(this.$t('alerts.pdfGenerationError'));
-            } finally {
-                // Clean up
-                document.body.removeChild(container);
-                this.showExportMenu = false;
-            }
-        },
-        exportAsJSON() {
-            this.exportResults();
-            this.showExportMenu = false;
-            // Emit event for AppFooter
-            this.$emit('export-json');
-        },
-        // Check if a test has timing data to display with comprehensive error handling
-        hasTimingData(test) {
-            try {
-                // Ensure test parameter is a valid primitive
-                if (
-                    test === null ||
-                    test === undefined ||
-                    (typeof test !== 'string' && typeof test !== 'number')
-                ) {
-                    return false;
-                }
-
-                // Safely access the timing value
-                const timingValue = this.formattedTimings[test];
-
-                // Handle cases where timing value might be undefined, null, or non-string
-                // Allow "0.00s" to be displayed for pending tests and real-time timers
-                const result = typeof timingValue === 'string' && timingValue !== '';
-
-                // Always return true if there's a running timer to ensure real-time updates show
-                const timer = this.getTimer(test);
-                if (timer && timer.running) {
-                    return true;
-                }
-
-                return result;
-            } catch (error) {
-                console.warn('Error checking timing data for test:', test, error);
-                return false;
-            }
-        },
-
-        exportAsCSV() {
-            // Emit event for AppFooter
-            this.$emit('export-csv');
-
-            // Prepare CSV header with translated labels
-            const header = [
-                this.$t('results.testDetails'),
-                this.$t('status.status'),
-                this.$t('results.runCount'),
-                `${this.$t('results.duration')} (s)`,
-            ];
-            const rows = [header];
-            const tests = Object.keys(this.results);
-            for (const test of tests) {
-                let status = '';
-                if (this.results[test] === true) status = this.$t('status.passed');
-                else if (this.results[test] === false) status = this.$t('status.failed');
-                else status = this.$t('status.pending');
-                const runCount = this.runCounts[test] || 0;
-                const duration =
-                    this.timings[test] && typeof this.timings[test].duration === 'number'
-                        ? this.timings[test].duration.toFixed(2)
-                        : '';
-                rows.push([this.i18nTestNameMap[test], status, runCount, duration]);
-            }
-            // Convert to CSV string
-            const csv = rows
-                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-                .join('\r\n');
-            // Download as file
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'mmit-test-results.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-            this.showExportMenu = false;
-        },
-        // Global event listener methods
-        setupGlobalEventListeners() {
-            // Listen for AppFooter events
-            window.addEventListener('app-footer-reset-tests', this.handleResetFromFooter);
-            window.addEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
-            window.addEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
-            window.addEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
-            window.addEventListener(
-                'app-footer-close-export-menu',
-                this.handleCloseExportMenuFromFooter
-            );
-        },
-        cleanupGlobalEventListeners() {
-            // Remove AppFooter event listeners
-            window.removeEventListener('app-footer-reset-tests', this.handleResetFromFooter);
-            window.removeEventListener('app-footer-export-pdf', this.handleExportPdfFromFooter);
-            window.removeEventListener('app-footer-export-json', this.handleExportJsonFromFooter);
-            window.removeEventListener('app-footer-export-csv', this.handleExportCsvFromFooter);
-            window.removeEventListener(
-                'app-footer-close-export-menu',
-                this.handleCloseExportMenuFromFooter
-            );
-        },
-        handleResetFromFooter() {
-            this.resetTests();
-        },
-        handleExportPdfFromFooter() {
-            this.exportAsPDF();
-        },
-        handleExportJsonFromFooter() {
-            this.exportAsJSON();
-        },
-        handleExportCsvFromFooter() {
-            this.exportAsCSV();
-        },
-        handleCloseExportMenuFromFooter() {
-            this.showExportMenu = false;
-        },
-    },
-    mounted() {
-        // Detect Electron environment and add platform classes
-        const isElectron =
-            window.electronAPI ||
-            window.electron ||
-            navigator.userAgent.toLowerCase().indexOf('electron') > -1 ||
-            (typeof process !== 'undefined' && process?.type === 'renderer') ||
-            window.process?.type === 'renderer';
-
-        if (isElectron) {
-            document.body.classList.add('electron-app');
-            if (window.electronAPI?.platform) {
-                document.body.classList.add(`platform-${window.electronAPI.platform}`);
-            }
+    return styleMap[activeTest.value] || { minHeight: '420px' };
+});
+
+// Global event listener handlers
+const handleResetFromFooter = () => {
+    resetTests();
+};
+
+const handleExportPdfFromFooter = () => {
+    exportAsPDF();
+};
+
+const handleExportJsonFromFooter = () => {
+    exportAsJSON();
+};
+
+const handleExportCsvFromFooter = () => {
+    exportAsCSV();
+};
+
+const handleCloseExportMenuFromFooter = () => {
+    showExportMenu.value = false;
+};
+
+const setupGlobalEventListeners = () => {
+    window.addEventListener('app-footer-reset-tests', handleResetFromFooter);
+    window.addEventListener('app-footer-export-pdf', handleExportPdfFromFooter);
+    window.addEventListener('app-footer-export-json', handleExportJsonFromFooter);
+    window.addEventListener('app-footer-export-csv', handleExportCsvFromFooter);
+    window.addEventListener('app-footer-close-export-menu', handleCloseExportMenuFromFooter);
+};
+
+const cleanupGlobalEventListeners = () => {
+    window.removeEventListener('app-footer-reset-tests', handleResetFromFooter);
+    window.removeEventListener('app-footer-export-pdf', handleExportPdfFromFooter);
+    window.removeEventListener('app-footer-export-json', handleExportJsonFromFooter);
+    window.removeEventListener('app-footer-export-csv', handleExportCsvFromFooter);
+    window.removeEventListener('app-footer-close-export-menu', handleCloseExportMenuFromFooter);
+};
+
+// Debounced active test setter
+const setActiveTest = (testType: TestType) => {
+    if (activeTest.value && activeTest.value !== testType) {
+        if (activeTest.value !== 'testsCompleted') {
+            stopTimer(activeTest.value as TestName);
         }
+    }
+    // Only access timings if testType is a TestName (not 'testsCompleted')
+    if (testType !== 'testsCompleted' && timings[testType]) {
+        if (activeTest.value !== testType || timings[testType].start === null) {
+            timings[testType].start = Date.now();
+            timings[testType].end = null;
+            startTimer(testType);
+        }
+    }
+    activeTest.value = testType;
+};
 
-        console.log('TestsPage mounted - isElectron:', isElectron, 'activeTest:', this.activeTest);
+const debouncedSetActiveTest = debounce(setActiveTest, 200);
 
-        // Initialize the first test properly with proper timing
-        this.$nextTick(() => {
-            console.log('Initializing first test:', this.activeTest);
-            // Reset timing to ensure clean start
-            if (this.timings[this.activeTest]) {
-                this.timings[this.activeTest].start = null;
-                this.timings[this.activeTest].end = null;
+// Test handlers
+const onTestCompleted = (testType: TestName) => {
+    if (!timings[testType]) return;
+    stopTimer(testType);
+
+    skippedTests.value = skippedTests.value.filter(t => t !== testType);
+    results[testType] = true;
+    timings[testType].end = Date.now();
+
+    const timing = timings[testType];
+    if (timing.start !== null && timing.end !== null) {
+        const sessionDuration = (timing.end - timing.start) / 1000;
+        if (sessionDuration >= 0 && sessionDuration <= 600) {
+            timing.duration = sessionDuration;
+        } else {
+            timing.duration = 0;
+        }
+    } else {
+        timing.duration = 0;
+    }
+
+    runCounts[testType] += 1;
+    autoAdvance(testType);
+    emitProgressUpdate();
+};
+
+const onTestFailed = (testType: TestName) => {
+    if (!timings[testType]) return;
+    stopTimer(testType);
+
+    skippedTests.value = skippedTests.value.filter(t => t !== testType);
+    results[testType] = false;
+    timings[testType].end = Date.now();
+
+    const timing = timings[testType];
+    if (timing.start !== null && timing.end !== null) {
+        const sessionDuration = (timing.end - timing.start) / 1000;
+        if (sessionDuration >= 0 && sessionDuration <= 600) {
+            timing.duration = sessionDuration;
+        } else {
+            timing.duration = 0;
+        }
+    } else {
+        timing.duration = 0;
+    }
+
+    runCounts[testType] += 1;
+    autoAdvance(testType);
+    emitProgressUpdate();
+};
+const onTestSkipped = (payload: TestType | { testType: TestType; duration?: number }) => {
+    // Extract raw test type
+    let rawTestType: TestType;
+    if (typeof payload === 'string') {
+        rawTestType = payload as TestType;
+    } else {
+        rawTestType = payload.testType;
+    }
+
+    // Only process if it's a TestName (exclude 'testsCompleted')
+    if (rawTestType === 'testsCompleted') {
+        return;
+    }
+
+    const testType: TestName = rawTestType;
+    const duration = typeof payload === 'object' && 'duration' in payload ? payload.duration : null;
+
+    if (!timings[testType]) return;
+    stopTimer(testType);
+
+    if (!skippedTests.value.includes(testType)) {
+        skippedTests.value.push(testType);
+    }
+
+    const timing = timings[testType];
+    if (duration !== null) {
+        if (duration >= 0 && duration <= 600) {
+            timing.duration = duration;
+            if (timing.start !== null) {
+                timing.end = timing.start + duration * 1000;
             }
-            this.setActiveTest(this.activeTest);
+        } else {
+            timing.duration = 0;
+        }
+    } else if (timing.end === null && timing.start !== null) {
+        timing.end = Date.now();
+        const sessionDuration = (timing.end - timing.start) / 1000;
+        if (sessionDuration >= 0 && sessionDuration <= 600) {
+            timing.duration = sessionDuration;
+        } else {
+            timing.duration = 0;
+        }
+    } else {
+        timing.duration = 0;
+    }
+    results[testType] = null;
+    runCounts[testType] += 1;
+    autoAdvance(testType);
+};
+
+const autoAdvance = (currentTest: TestName) => {
+    if (allTestsCompleted.value) {
+        activeTest.value = 'testsCompleted' as TestType;
+        return;
+    }
+    const tests: TestName[] = [
+        'webcam',
+        'microphone',
+        'speakers',
+        'keyboard',
+        'mouse',
+        'touch',
+        'battery',
+    ];
+    const currentIndex = tests.indexOf(currentTest);
+    // Look for next incomplete test after current
+    for (let i = currentIndex + 1; i < tests.length; i++) {
+        const test = tests[i] as TestName;
+        if (results[test] === null) {
+            setActiveTest(test);
+            return;
+        }
+    }
+    // Wrap around
+    for (let i = 0; i < currentIndex; i++) {
+        const test = tests[i] as TestName;
+        if (results[test] === null) {
+            setActiveTest(test);
+            return;
+        }
+    }
+};
+
+const handleTestsCompletedClick = () => {
+    if (allTestsCompleted.value) {
+        activeTest.value = 'testsCompleted' as TestType;
+    }
+};
+
+// Timer methods
+const startTimer = (testType: TestName) => {
+    const timer = timers[testType];
+    if (!timer) return;
+
+    if (!timerInterval.value) {
+        timerInterval.value = window.setInterval(() => {
+            timerTick.value = Date.now();
+        }, 100);
+    }
+};
+
+const stopTimer = (testType: TestName) => {
+    const timer = timers[testType];
+    if (!timer || !timer.running) return;
+
+    const now = Date.now();
+    const elapsed = (now - timer.startTime!) / 1000;
+    timer.elapsed += elapsed;
+    timer.running = false;
+    timer.startTime = null;
+
+    cleanupTimerInterval();
+};
+
+const cleanupTimerInterval = () => {
+    const anyRunning = testNames.some(test => timers[test].running);
+    if (!anyRunning && timerInterval.value) {
+        clearInterval(timerInterval.value);
+        timerInterval.value = null;
+    }
+};
+
+const getTestStatusClass = (testType: TestName) => {
+    if (skippedTests.value.includes(testType)) return 'skipped';
+    if (results[testType] === true) return 'completed-success';
+    if (results[testType] === false) return 'completed-fail';
+    return 'pending';
+};
+
+const emitProgressUpdate = () => {
+    emit('update-footer', {
+        completedTests: completedTestsCount.value,
+        totalTests: totalTestsCount.value,
+    });
+};
+
+// Export functions
+const exportResults = () => {
+    const report = {
+        timestamp: new Date().toISOString(),
+        results: JSON.parse(JSON.stringify(results)),
+        summary: summaryText.value,
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mmit-test-results-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+const exportAsPDF = async () => {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+    ]);
+
+    const container = document.createElement('div');
+    container.style.cssText = `
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    width: 800px;
+    background: #0d0d0d;
+    padding: 40px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #fff;
+  `;
+
+    const completedCount = Object.values(results).filter(r => r !== null).length;
+    const passedCount = Object.values(results).filter(r => r === true).length;
+    const failedCount = Object.values(results).filter(r => r === false).length;
+    const totalTime = `${totalTimeSpent.value.toFixed(2)}s`;
+    const skippedCount = skippedTests.value.length;
+
+    const testRows = testNames
+        .map(test => {
+            let status = '';
+            let statusClass = '';
+            let statusIcon = '';
+
+            if (results[test] === true) {
+                status = t('status.passed');
+                statusClass = 'status-passed';
+                statusIcon = '✓';
+            } else if (results[test] === false) {
+                status = t('status.failed');
+                statusClass = 'status-failed';
+                statusIcon = '✗';
+            } else if (skippedTests.value.includes(test)) {
+                status = t('status.skipped');
+                statusClass = 'status-skipped';
+                statusIcon = '↷';
+            } else {
+                status = t('status.pending');
+                statusClass = 'status-pending';
+                statusIcon = '⏳';
+            }
+
+            const runCount = runCounts[test] || 0;
+            const duration =
+                typeof timings[test].duration === 'number'
+                    ? timings[test].duration!.toFixed(2)
+                    : '';
+
+            return `
+        <tr>
+          <td class="test-name">${i18nTestNameMap.value[test]}</td>
+          <td class="status ${statusClass}">
+            <span class="status-icon">${statusIcon}</span>
+            ${status}
+          </td>
+          <td class="run-count">${runCount}</td>
+          <td class="duration">${duration}</td>
+        </tr>
+      `;
+        })
+        .join('');
+
+    container.innerHTML = `
+    <div class="pdf-content">
+      <div class="header">
+        <h1>${t('app.name')} ${t('results.summary')}</h1>
+        <div class="accent-bar"></div>
+      </div>
+      
+      <div class="summary-card">
+        <div class="summary-item">
+          <span class="label">Completed:</span>
+          <span class="value">${completedCount}/${testNames.length}</span>
+        </div>
+        <div class="summary-item passed">
+          <span class="label">${t('export.summaryLabels.passed')}</span>
+          <span class="value">${passedCount}</span>
+        </div>
+        ${
+            failedCount > 0
+                ? `
+        <div class="summary-item failed">
+          <span class="label">${t('export.summaryLabels.failed')}</span>
+          <span class="value">${failedCount}</span>
+        </div>
+        `
+                : ''
+        }
+        ${
+            skippedCount > 0
+                ? `
+        <div class="summary-item skipped">
+          <span class="label">${t('export.summaryLabels.skipped')}</span>
+          <span class="value">${skippedCount}</span>
+        </div>
+        `
+                : ''
+        }
+      </div>
+      
+      <div class="table-container">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>${t('results.testDetails')}</th>
+              <th>${t('status.status')}</th>
+              <th>${t('results.runCount')}</th>
+              <th>${t('results.duration')} (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${testRows}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="summary-total-time">
+        <span class="label">Total Time:</span>
+        <span class="value">${totalTime}</span>
+      </div>
+    </div>
+    
+    <style>
+      .pdf-content { background: #0d0d0d; color: #fff; padding: 0; }
+      .header h1 { font-size: 36px; font-weight: bold; margin: 0 0 8px 0; color: #fff; }
+      .accent-bar { height: 6px; background: linear-gradient(90deg, #ff6b00 0%, #ff8800 50%, #ff6b00 100%); border-radius: 3px; margin-bottom: 40px; }
+      .summary-card { background: #232326; border: 1px solid #404040; border-radius: 8px; padding: 24px; margin-bottom: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .summary-item { display: flex; justify-content: space-between; align-items: center; }
+      .summary-item .label { color: #e0e0e0; font-size: 16px; }
+      .summary-item .value { color: #e0e0e0; font-size: 16px; font-weight: 500; }
+      .summary-item.passed .value { color: #28a745; }
+      .summary-item.failed .value { color: #dc3545; }
+      .summary-item.skipped .value { color: #ffc107; }
+      .summary-total-time { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+      .table-container { background: #141416; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+      .results-table { width: 100%; border-collapse: collapse; }
+      .results-table th { background: #252526; color: #fff; padding: 16px; text-align: left; font-weight: bold; font-size: 14px; border-bottom: 1px solid #444; }
+      .results-table td { padding: 12px 16px; border-bottom: 1px solid #333; font-size: 13px; }
+      .results-table tr:nth-child(even) { background: #1c1c1e; }
+      .test-name { color: #f0f0f0; font-weight: 500; }
+      .status { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+      .status-icon { font-size: 14px; }
+      .status-passed { color: #28a745; }
+      .status-failed { color: #dc3545; }
+      .status-skipped { color: #ffc107; }
+      .status-pending { color: #ff6b00; }
+      .run-count, .duration { color: #a0a0a0; }
+    </style>
+  `;
+
+    document.body.appendChild(container);
+
+    try {
+        const canvas = await html2canvas(container, {
+            backgroundColor: null,
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
         });
 
-        // Initialize CSS compatibility system
-        const cssCompat = useCSSCompatibility();
-        cssCompat.initialize();
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'pt',
+            format: 'a4',
+        });
 
-        // Set up global event listeners for AppFooter actions
-        this.setupGlobalEventListeners();
-        // Emit initial progress
-        this.emitProgressUpdate();
-    },
-    beforeUnmount() {
-        // Clean up any pending debounce timers to prevent memory leaks
-        if (this.debouncedSetActiveTest && this.debouncedSetActiveTest.cancel) {
-            this.debouncedSetActiveTest.cancel();
-        }
+        const imgData = canvas.toDataURL('image/png');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
 
-        // Clean up timer interval
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.timerInterval = null;
-        }
+        pdf.setFillColor(13, 13, 13);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-        // Clean up global event listeners
-        this.cleanupGlobalEventListeners();
-    },
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height / canvas.width) * imgWidth;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save('mmit-test-results.pdf');
+    } catch (error) {
+        alert(t('alerts.pdfGenerationError'));
+    } finally {
+        document.body.removeChild(container);
+        showExportMenu.value = false;
+    }
 };
+
+const exportAsJSON = () => {
+    exportResults();
+    showExportMenu.value = false;
+    emit('export-json');
+};
+
+const hasTimingData = (test: unknown): boolean => {
+    try {
+        if (
+            test === null ||
+            test === undefined ||
+            (typeof test !== 'string' && typeof test !== 'number')
+        ) {
+            return false;
+        }
+        const testStr = String(test) as TestName;
+        const timingValue = formattedTimings.value[testStr];
+        const result = typeof timingValue === 'string' && timingValue !== '';
+        const timer = getTimer(testStr);
+        if (timer?.running) {
+            return true;
+        }
+        return result;
+    } catch (error) {
+        console.warn('Error checking timing data for test:', test, error);
+        return false;
+    }
+};
+
+const exportAsCSV = () => {
+    emit('export-csv');
+
+    const header = [
+        t('results.testDetails'),
+        t('status.status'),
+        t('results.runCount'),
+        `${t('results.duration')} (s)`,
+    ];
+    const rows: string[][] = [header];
+    testNames.forEach(test => {
+        let status = '';
+        if (results[test] === true) status = t('status.passed');
+        else if (results[test] === false) status = t('status.failed');
+        else status = t('status.pending');
+        const runCount = runCounts[test] || 0;
+        const duration =
+            typeof timings[test].duration === 'number' ? timings[test].duration!.toFixed(2) : '';
+        rows.push([i18nTestNameMap.value[test], status, String(runCount), duration]);
+    });
+    const csv = rows
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mmit-test-results.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showExportMenu.value = false;
+};
+
+// getTestName function with robust fallback
+const getTestName = (test: unknown): string => {
+    const map = i18nTestNameMap.value;
+    if (!map || typeof map !== 'object') {
+        console.warn('i18nTestNameMap is not properly defined, using fallback mapping');
+        const fallbackMap: Record<TestName, string> = {
+            webcam: t('tests.webcam.name'),
+            microphone: t('tests.microphone.name'),
+            speakers: t('tests.speakers.name'),
+            keyboard: t('tests.keyboard.name'),
+            mouse: t('tests.mouse.name'),
+            touch: t('tests.touch.name'),
+            battery: t('tests.battery.name'),
+        };
+        const testKey = test as TestName | null;
+        if (testKey === null) {
+            return getSafeFallback(test);
+        }
+        return fallbackMap[testKey] || getSafeFallback(test);
+    }
+
+    if (
+        test === null ||
+        test === undefined ||
+        (typeof test !== 'string' && typeof test !== 'number')
+    ) {
+        console.warn(`Invalid test parameter: ${typeof test}`, test);
+        return getSafeFallback(test);
+    }
+
+    const testStr = String(test) as TestName;
+    const name = map[testStr];
+    if (typeof name === 'string' && name.trim().length > 0) {
+        return name;
+    }
+
+    return getSafeFallback(test);
+};
+
+const getSafeFallback = (test: unknown): string => {
+    let testStr = 'unknown';
+    try {
+        if (test === null || test === undefined) {
+            testStr = 'unknown';
+        } else if (typeof test === 'string') {
+            testStr = test;
+        } else if (typeof test === 'number') {
+            testStr = test.toString();
+        } else if (typeof test === 'object') {
+            if ((test as any).__v_skip) {
+                testStr = 'reactive-object';
+            } else {
+                testStr = JSON.stringify(test).slice(0, 50);
+            }
+        } else {
+            testStr = String(test);
+        }
+    } catch (error) {
+        console.warn('Error converting test to string:', error);
+        testStr = 'conversion-error';
+    }
+
+    if (['unknown', 'null', 'undefined', 'reactive-object', 'conversion-error'].includes(testStr)) {
+        return t('errors.unknownTest');
+    }
+
+    const translationMap: Record<TestName, string> = {
+        webcam: t('tests.webcam.name'),
+        microphone: t('tests.microphone.name'),
+        speakers: t('tests.speakers.name'),
+        keyboard: t('tests.keyboard.name'),
+        mouse: t('tests.mouse.name'),
+        touch: t('tests.touch.name'),
+        battery: t('tests.battery.name'),
+    };
+
+    return (
+        translationMap[testStr as TestName] || testStr.charAt(0).toUpperCase() + testStr.slice(1)
+    );
+};
+
+const resetTests = () => {
+    testNames.forEach(test => {
+        stopTimer(test);
+    });
+
+    testNames.forEach(test => {
+        results[test] = null;
+        timings[test] = { start: null, end: null, duration: null };
+        timers[test].running = false;
+        timers[test].startTime = null;
+        timers[test].elapsed = 0;
+        runCounts[test] = 0;
+    });
+
+    skippedTests.value = [];
+
+    resetAllTestStates();
+
+    setActiveTest('webcam');
+
+    emit('reset-tests');
+    emitProgressUpdate();
+};
+
+// Electron detection
+const isElectron = (): boolean => {
+    const win = window as any;
+    return !!(
+        win.electronAPI ||
+        win.electron ||
+        navigator.userAgent.toLowerCase().includes('electron') ||
+        (typeof process !== 'undefined' && (process as any)?.type === 'renderer') ||
+        (win.process as any)?.type === 'renderer'
+    );
+};
+
+// Lifecycle hooks
+onMounted(() => {
+    if (isElectron()) {
+        document.body.classList.add('electron-app');
+        if ((window as any).electronAPI?.platform) {
+            document.body.classList.add(`platform-${(window as any).electronAPI.platform}`);
+        }
+    }
+
+    console.log('TestsPage mounted - isElectron:', isElectron(), 'activeTest:', activeTest.value);
+
+    nextTick(() => {
+        console.log('Initializing first test:', activeTest.value);
+        if (activeTest.value !== 'testsCompleted' && timings[activeTest.value]) {
+            timings[activeTest.value].start = null;
+            timings[activeTest.value].end = null;
+        }
+        setActiveTest(activeTest.value);
+    });
+
+    const cssCompat = useCSSCompatibility();
+    cssCompat.initialize();
+
+    setupGlobalEventListeners();
+    emitProgressUpdate();
+});
+
+onUnmounted(() => {
+    if (debouncedSetActiveTest && typeof (debouncedSetActiveTest as any).cancel === 'function') {
+        (debouncedSetActiveTest as any).cancel();
+    }
+
+    if (timerInterval.value) {
+        clearInterval(timerInterval.value);
+        timerInterval.value = null;
+    }
+
+    cleanupGlobalEventListeners();
+});
 </script>
 
 <template>
@@ -2104,7 +1755,7 @@ export default {
 }
 
 .result-section:last-child {
-    padding-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
 }
 
 .result-section-header {
