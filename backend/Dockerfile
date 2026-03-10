@@ -2,13 +2,13 @@
 # Uses Node.js alpine with non-root user
 
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
 # Runtime stage
-FROM node:20-alpine
+FROM node:25-alpine
 WORKDIR /app
 
 # Create non-root user (node user already exists in base image with UID 1001)
