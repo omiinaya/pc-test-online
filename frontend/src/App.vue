@@ -838,6 +838,13 @@ export default defineComponent({
             t: $t,
         };
     },
+    components: {
+        PerformanceMonitor,
+        VisualizerContainer,
+        TestActionButtons,
+        TestHeader,
+        AppFooter,
+    },
 });
 </script>
 

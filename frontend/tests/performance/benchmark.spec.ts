@@ -65,9 +65,9 @@ function measurePerformance<T>(
  * Helper function to get current memory usage in MB
  */
 function getMemoryUsage(): number {
-    // @ts-ignore - performance.memory is Chrome-specific API
+    // @ts-expect-error - performance.memory is Chrome-specific API
     if (performance.memory) {
-        // @ts-ignore - performance.memory is Chrome-specific API
+        // @ts-expect-error - performance.memory is Chrome-specific API
         return performance.memory.usedJSHeapSize / (1024 * 1024);
     }
     return 0;
@@ -395,13 +395,13 @@ describe('Performance Benchmark Suite', () => {
             }, waitTime);
 
             debouncedFn();
-            // @ts-ignore - cancel method is added to the debounced function
+            // @ts-expect-error - cancel method is added to the debounced function
             debouncedFn.cancel();
 
             const { duration } = measurePerformance(
                 'Debounce cancel',
                 () => {
-                    // @ts-ignore - cancel method is added to the debounced function
+                    // @ts-expect-error - cancel method is added to the debounced function
                     debouncedFn.cancel();
                     return callCount;
                 },

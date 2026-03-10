@@ -53,16 +53,13 @@
   },
   "lint-staged": {
     "*.{js,cjs,mjs}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "*.{ts,tsx,vue}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "*.{json,md}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "husky": {

@@ -62,6 +62,15 @@ app.use(
                 workerSrc: ["'self'", 'blob:'],
             },
         },
+        // HSTS: enforce HTTPS in production (1 year)
+        hsts:
+            process.env.NODE_ENV === 'production'
+                ? {
+                      maxAge: 31536000,
+                      includeSubDomains: true,
+                      preload: true,
+                  }
+                : false,
     })
 );
 
