@@ -191,9 +191,20 @@ Currently, no other external scripts are used in the application. All applicatio
 - Served from the same origin
 - Subject to normal CSP restrictions
 
+### Current Status (AdSense)
+
+- [x] **SRI** – N/A (AdSense script is dynamic; SRI would cause frequent breakage)
+- [x] **Self-hosted** – Not permitted by Google TOS
+- [x] **HTTPS** – Yes (`https://pagead2.googlesyndication.com/...`)
+- [x] **Necessary** – Yes, for revenue (non-critical to core functionality)
+- [ ] **Audited** – Trusted vendor; protection relies on CSP and HTTPS
+- [x] **CSP** – Configured in backend (`helmet`) to allow the AdSense origin
+- [x] **crossorigin** – Attribute present (`crossorigin="anonymous"`)
+- [ ] **integrity** – Not added (due to dynamic nature)
+
 ### Future External Script Policy
 
-If adding new external scripts, follow this checklist:
+When adding new external scripts, complete this checklist:
 
 - [ ] Is SRI supported? (script has stable hash)
 - [ ] Can script be self-hosted? (license allows)
