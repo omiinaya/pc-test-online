@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Running pre-commit checks..."
+
+# Run Semgrep (using locally installed semgrep if available, else skip)
+if npx semgrep --version >/dev/null 2>&1; then
+  echo "🔍 Running Semgrep..."
+  npx semgrep --config=auto --error || {
+    echo "❌ Semgrep found issues. Fix them or use 'git commit --no-verify' to skip."
+    exit 1
+  }
+else
+  echo "⚠️  semgrep not installed, skipping. Install with 'pip install semgrep' or use pre-commit framework."
+fi
+
+# Run lint-staged for code quality (if configured)
+if [ -f package.json ] && grep -q "lint-staged" package.json; then
+  echo "🎨 Running lint-staged"
+  npx lint-staged || {
+    echo "❌ Lint-staged failed."
+    exit 1
+  }
+fi
+
+echo "✅ Pre-commit checks passed"

@@ -40,6 +40,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.3",
     "prettier": "^3.1.0",
     "wait-on": "^7.2.0"
   },
@@ -48,5 +50,24 @@
     "jspdf": "^3.0.1",
     "pino": "^10.3.0",
     "vite": "^7.0.2"
+  },
+  "lint-staged": {
+    "*.{js,cjs,mjs}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{ts,tsx,vue}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

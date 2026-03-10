@@ -1,0 +1,39 @@
+name: Security Scan
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: '0 0 * * 1' # Weekly on Monday
+
+jobs:
+    semgrep:
+        name: Semgrep Scan
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Run Semgrep
+              uses: returntocorp/semgrep-action@v1
+              with:
+                  config: >-
+                      p/security-audit
+                      p/owasp-top-ten
+                      p/cwe-top-25
+                      p/typescript
+                  # Generate SARIF for GitHub code scanning
+                  generateSarif: '1'
+
+            - name: Upload SARIF file
+              uses: github/codeql-action/upload-sarif@v3
+              if: always()
+              with:
+                  sarif_file: semgrep.sarif
+
+            - name: Print findings summary
+              if: always()
+              run: |
+                  echo "Semgrep scan completed. Check the SARIF upload for details."
+                  echo "See https://github.com/returntocorp/semgrep-action for configuration options."
