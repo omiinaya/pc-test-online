@@ -395,13 +395,11 @@ describe('Performance Benchmark Suite', () => {
             }, waitTime);
 
             debouncedFn();
-            // @ts-expect-error - cancel method is added to the debounced function
             debouncedFn.cancel();
 
             const { duration } = measurePerformance(
                 'Debounce cancel',
                 () => {
-                    // @ts-expect-error - cancel method is added to the debounced function
                     debouncedFn.cancel();
                     return callCount;
                 },

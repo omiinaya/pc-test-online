@@ -24,6 +24,9 @@ export async function getCSRFToken(): Promise<string> {
             throw new Error(`Failed to fetch CSRF token: ${response.status}`);
         }
         const data = await response.json();
+        if (!data.csrfToken) {
+            throw new Error('CSRF token missing in response');
+        }
         cachedCSRFToken = data.csrfToken;
         return cachedCSRFToken!;
     } catch (error) {

@@ -110,3 +110,19 @@ export function installGlobalErrorHandlers(): void {
         reportError(message, 'unhandledrejection');
     });
 }
+
+/**
+ * Install performance reporting on pagehide and visibilitychange.
+ * The provided metrics are sent when the page is hidden.
+ */
+export function installPerformanceReporter(metrics: Record<string, number>): void {
+    const send = () => {
+        reportPerformance(metrics);
+    };
+    window.addEventListener('pagehide', send);
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            send();
+        }
+    });
+}
