@@ -31,6 +31,7 @@ export function useDeviceEnumeration(
     const hasDevices: ComputedRef<boolean> = computed(() => availableDevices.value.length > 0);
 
     const enumerateDevices = async (): Promise<void> => {
+        console.log(`[useDeviceEnumeration:${deviceType}] enumerateDevices() called`);
         loadingDevices.value = true;
         deviceLoadingStart.value = Date.now();
         enumerationError.value = null;
@@ -45,6 +46,9 @@ export function useDeviceEnumeration(
         }, 5000);
 
         try {
+            console.log(
+                `[useDeviceEnumeration:${deviceType}] Calling webrtcCompat.enumerateDevices()...`
+            );
             // Use compatibility layer instead of direct API access
             const devices = await Promise.race([
                 webrtcCompat.enumerateDevices(),
@@ -58,8 +62,14 @@ export function useDeviceEnumeration(
                 enumerationTimeout = null;
             }
 
+            console.log(
+                `[useDeviceEnumeration:${deviceType}] Got ${devices.length} devices from webrtcCompat`
+            );
             const filteredDevices = devices.filter(
                 (device: DeviceInfo) => device.kind === deviceKind
+            );
+            console.log(
+                `[useDeviceEnumeration:${deviceType}] Filtered to ${filteredDevices.length} ${deviceKind} devices`
             );
 
             availableDevices.value = filteredDevices;
@@ -85,13 +95,17 @@ export function useDeviceEnumeration(
                 loadingDevices.value = false;
             }
         } catch (err: unknown) {
+            console.error(
+                `[useDeviceEnumeration:${deviceType}] Caught error during enumeration:`,
+                err
+            );
             if (enumerationTimeout) {
                 clearTimeout(enumerationTimeout);
                 enumerationTimeout = null;
             }
 
             const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-            console.error(`${deviceType}: Error enumerating devices:`, err);
+            console.error(`[useDeviceEnumeration:${deviceType}] Error enumerating devices:`, err);
             loadingDevices.value = false;
             enumerationError.value = `Failed to enumerate ${deviceType.toLowerCase()}s: ${errorMessage}`;
         }

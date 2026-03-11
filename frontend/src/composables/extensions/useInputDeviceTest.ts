@@ -52,7 +52,7 @@ export function useInputDeviceTest(
             deviceKind: undefined as unknown as DeviceKind, // Input devices don't use standard device enumeration
             permissionType: undefined as unknown as PermissionName, // Input devices don't require permissions
         },
-        emit as (event: string, ...args: unknown[]) => void // Cast to match base composable signature
+        emit as (...args: [string, ...unknown[]]) => void // Cast to match base composable signature
     );
 
     // Input-specific state

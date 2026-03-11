@@ -14,7 +14,7 @@ export interface UseMediaDeviceTestOptions extends UseBaseDeviceTestOptions {
  */
 export function useMediaDeviceTest(
     options: UseMediaDeviceTestOptions = {},
-    emit?: (...args: any[]) => void
+    emit?: (...args: [string, ...unknown[]]) => void
 ) {
     const { enableDeviceDetectionDelay = true, detectionDelayMs = 2000, ...baseOptions } = options;
 

@@ -21,7 +21,28 @@ export default defineComponent({
         void props;
         const { t } = useI18n();
 
+        // Comprehensive environment diagnostics
+        console.log('[WebcamTest] ============ SETUP START ============');
+        console.log('[WebcamTest] Environment diagnostics:');
+        console.log('[WebcamTest] - location.protocol:', location.protocol);
+        console.log('[WebcamTest] - window.isSecureContext:', window.isSecureContext);
+        console.log('[WebcamTest] - navigator.mediaDevices exists:', !!navigator.mediaDevices);
+        if (navigator.mediaDevices) {
+            console.log(
+                '[WebcamTest] - navigator.mediaDevices.getUserMedia exists:',
+                !!navigator.mediaDevices.getUserMedia
+            );
+            console.log(
+                '[WebcamTest] - navigator.mediaDevices.enumerateDevices exists:',
+                !!navigator.mediaDevices.enumerateDevices
+            );
+        }
+        console.log('[WebcamTest] - User Agent:', navigator.userAgent);
+        console.log('[WebcamTest] - Screen size:', window.screen.width, 'x', window.screen.height);
+        console.log('[WebcamTest] - Language:', navigator.language);
+
         // Use the media device test composable for all core functionality
+        console.log('[WebcamTest] Creating useMediaDeviceTest composable...');
         const deviceTest = useMediaDeviceTest(
             {
                 deviceKind: 'videoinput',
@@ -35,9 +56,12 @@ export default defineComponent({
             },
             emit
         );
+        console.log('[WebcamTest] useMediaDeviceTest composable created');
 
         // Use memory management for tracking resources
+        console.log('[WebcamTest] Creating useMemoryManagement...');
         const memoryManager = useMemoryManagement();
+        console.log('[WebcamTest] useMemoryManagement created');
 
         // Template refs
         const videoElement = ref<HTMLVideoElement | null>(null);
@@ -45,7 +69,7 @@ export default defineComponent({
 
         // Component state (from data)
         const snapshotTaken = ref(false);
-        const skipTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+        const skipTimer = ref<number | null>(null);
         const skipped = ref(false);
         const skipTimerResourceId = ref<number | null>(null);
         const videoEventResourceIds = ref<number[]>([]);
@@ -53,6 +77,20 @@ export default defineComponent({
 
         // Computed (from computed: currentVideoWidth)
         const currentVideoWidth = computed(() => videoWidthDisplay.value);
+
+        // Add a global error handler to catch any unhandled errors
+        const globalErrorHandler = (err: ErrorEvent) => {
+            console.error('[WebcamTest] Global error caught:', err.error || err.message);
+            console.error('[WebcamTest] Global error stack:', err.error?.stack || err.stack);
+        };
+        window.addEventListener('error', globalErrorHandler);
+
+        // Unhandled rejection handler
+        const unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
+            console.error('[WebcamTest] Unhandled promise rejection:', event.reason);
+            console.error('[WebcamTest] Unhandled rejection stack:', event.reason?.stack);
+        };
+        window.addEventListener('unhandledrejection', unhandledRejectionHandler);
 
         // Compatibility warnings (from existing computed)
         const webrtcCompat = computed(
@@ -70,6 +108,112 @@ export default defineComponent({
             return compat.getBrowserInfo().recommendedBrowser;
         });
         const showCompatibilityWarnings = computed(() => compatibilityWarnings.value.length > 0);
+
+        // Lifecycle hooks with detailed logging
+        onMounted(() => {
+            console.log('[WebcamTest] onMounted() called');
+            console.log('[WebcamTest] Current deviceTest state:');
+            console.log('[WebcamTest] - isInitialized:', deviceTest.isInitialized.value);
+            console.log('[WebcamTest] - currentState:', deviceTest.currentState.value);
+            console.log('[WebcamTest] - hasDevices:', deviceTest.hasDevices.value);
+            console.log('[WebcamTest] - hasPermission:', deviceTest.hasPermission.value);
+            console.log('[WebcamTest] - needsPermission:', deviceTest.needsPermission.value);
+            console.log('[WebcamTest] - permissionBlocked:', deviceTest.permissionBlocked.value);
+            console.log('[WebcamTest] - hasError:', deviceTest.hasError.value);
+            if (deviceTest.hasError.value) {
+                console.error('[WebcamTest] - currentError:', deviceTest.currentError.value);
+            }
+            console.log('[WebcamTest] - showNoDevicesState:', deviceTest.showNoDevicesState.value);
+            console.log('[WebcamTest] - hasActiveStream:', deviceTest.hasActiveStream.value);
+            console.log('[WebcamTest] - statePanelConfig:', deviceTest.statePanelConfig.value);
+            console.log('[WebcamTest] - showTestContent:', deviceTest.showTestContent.value);
+            console.log('[WebcamTest] - availableDevices:', deviceTest.availableDevices.value);
+        });
+
+        onUnmounted(() => {
+            console.log('[WebcamTest] onUnmounted() called - cleaning up');
+            window.removeEventListener('error', globalErrorHandler);
+            window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
+            // Additional cleanup if needed
+        });
+
+        // Watch for critical state changes and log them
+        watch(
+            () => deviceTest.currentState.value,
+            (newState, oldState) => {
+                console.log(`[WebcamTest] currentState changed: ${oldState} -> ${newState}`);
+                console.log('[WebcamTest] Associated state values:');
+                console.log('[WebcamTest] - isLoading:', deviceTest.isLoading.value);
+                console.log('[WebcamTest] - hasError:', deviceTest.hasError.value);
+                console.log('[WebcamTest] - needsPermission:', deviceTest.needsPermission.value);
+                console.log(
+                    '[WebcamTest] - showNoDevicesState:',
+                    deviceTest.showNoDevicesState.value
+                );
+                console.log('[WebcamTest] - hasActiveStream:', deviceTest.hasActiveStream.value);
+                if (deviceTest.currentError.value) {
+                    console.error('[WebcamTest] - currentError:', deviceTest.currentError.value);
+                }
+            }
+        );
+
+        watch(
+            () => deviceTest.hasError.value,
+            hasError => {
+                if (hasError) {
+                    console.error(
+                        '[WebcamTest] hasError became true! Current error:',
+                        deviceTest.currentError.value
+                    );
+                }
+            }
+        );
+
+        watch(
+            () => deviceTest.needsPermission.value,
+            needsPerm => {
+                console.log(`[WebcamTest] needsPermission changed to: ${needsPerm}`);
+            }
+        );
+
+        watch(
+            () => deviceTest.showNoDevicesState.value,
+            showNoDevices => {
+                console.log(`[WebcamTest] showNoDevicesState changed to: ${showNoDevices}`);
+            }
+        );
+
+        watch(
+            () => deviceTest.hasActiveStream.value,
+            hasStream => {
+                console.log(`[WebcamTest] hasActiveStream changed to: ${hasStream}`);
+                if (hasStream && deviceTest.stream.value) {
+                    const videoTracks = deviceTest.stream.value.getVideoTracks();
+                    console.log(
+                        `[WebcamTest] Active stream has ${videoTracks.length} video tracks`
+                    );
+                    videoTracks.forEach((track, i) => {
+                        const settings = track.getSettings();
+                        console.log(
+                            `[WebcamTest] Track ${i}: ${settings.width}x${settings.height}, label:`,
+                            track.label
+                        );
+                    });
+                }
+            }
+        );
+
+        // Watch for device enumeration results
+        watch(
+            () => deviceTest.availableDevices.value,
+            devices => {
+                console.log(
+                    `[WebcamTest] availableDevices changed - count: ${devices.length}`,
+                    devices
+                );
+            },
+            { deep: true }
+        );
 
         // Methods
 
@@ -112,7 +256,7 @@ export default defineComponent({
         }
 
         function startCameraDetectTimer() {
-            if (skipTimer.value) clearTimeout(skipTimer.value as any);
+            if (skipTimer.value) clearTimeout(skipTimer.value);
             if (skipTimerResourceId.value !== null) {
                 memoryManager.untrackResource(skipTimerResourceId.value);
                 skipTimerResourceId.value = null;
@@ -121,13 +265,13 @@ export default defineComponent({
                 if (!deviceTest.hasDevices.value) {
                     // Timer completed and no cameras found - handled by composable
                 }
-            }, 3000) as any;
+            }, 3000);
 
             try {
                 skipTimerResourceId.value = memoryManager.trackResource(
                     () => {
                         if (skipTimer.value) {
-                            clearTimeout(skipTimer.value as any);
+                            clearTimeout(skipTimer.value);
                             skipTimer.value = null;
                         }
                     },
@@ -350,6 +494,9 @@ export default defineComponent({
                     setTimeout(checkFrame, 1000);
                 }
             };
+
+            // Start the first check after a short delay
+            setTimeout(checkFrame, 1000);
         }
 
         async function forceRecreateStream() {
@@ -415,7 +562,7 @@ export default defineComponent({
         function startOver() {
             snapshotTaken.value = false;
             skipped.value = false;
-            if (skipTimer.value) clearTimeout(skipTimer.value as any);
+            if (skipTimer.value) clearTimeout(skipTimer.value);
             if (skipTimerResourceId.value !== null) {
                 memoryManager.untrackResource(skipTimerResourceId.value);
                 skipTimerResourceId.value = null;

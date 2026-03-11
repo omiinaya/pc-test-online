@@ -18,17 +18,38 @@ export function useMediaPermissions(
     deviceType: DeviceType,
     permissionName: PermissionName
 ): UseMediaPermissionsReturn {
+    console.log(`[useMediaPermissions:${deviceType}] >>> CONSTRUCTOR ENTRY <<<`);
     console.log(`[useMediaPermissions:${deviceType}] Initializing for permission:`, permissionName);
+    console.log(
+        `[useMediaPermissions:${deviceType}] navigator.mediaDevices:`,
+        navigator.mediaDevices
+    );
+    console.log(
+        `[useMediaPermissions:${deviceType}] navigator.permissions:`,
+        navigator.permissions
+    );
 
     const permissionGranted: Ref<boolean> = ref(false);
     const permissionDenied: Ref<boolean> = ref(false);
     const checkingPermission: Ref<boolean> = ref(true);
 
     const initializePermissions = async (): Promise<void> => {
-        console.log(`[useMediaPermissions:${deviceType}] initializePermissions() called`);
+        console.log(`[useMediaPermissions:${deviceType}] >>> initializePermissions CALLED <<<`);
         // Check for basic device support
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             console.error(`[useMediaPermissions:${deviceType}] getUserMedia not supported`);
+            console.error(
+                `[useMediaPermissions:${deviceType}] navigator.mediaDevices:`,
+                navigator.mediaDevices
+            );
+            console.error(
+                `[useMediaPermissions:${deviceType}] location.protocol:`,
+                location.protocol
+            );
+            console.error(
+                `[useMediaPermissions:${deviceType}] isSecureContext:`,
+                window.isSecureContext
+            );
             throw new Error(`${deviceType} is not supported in this browser.`);
         }
 

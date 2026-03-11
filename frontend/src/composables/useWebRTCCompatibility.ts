@@ -84,6 +84,7 @@ export interface WebRTCCompatibilityReturn {
  * Provides graceful fallbacks and compatibility warnings for media APIs
  */
 export function useWebRTCCompatibility() {
+    console.log('[useWebRTCCompatibility] >>> CONSTRUCTOR ENTRY <<<');
     const state = ref<WebRTCCompatibilityState>({
         isSupported: false,
         capabilities: {
@@ -105,26 +106,45 @@ export function useWebRTCCompatibility() {
      * Detect browser and version
      */
     const detectBrowser = () => {
+        console.log('[useWebRTCCompatibility] detectBrowser() called');
         const userAgent = navigator.userAgent;
+        console.log('[useWebRTCCompatibility] User Agent:', userAgent);
 
         if (userAgent.includes('Chrome') && !userAgent.includes('Edge')) {
             state.value.browserName = 'Chrome';
             const match = userAgent.match(/Chrome\/(\d+)/);
             state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            console.log(
+                '[useWebRTCCompatibility] Detected Chrome version:',
+                state.value.browserVersion
+            );
         } else if (userAgent.includes('Firefox')) {
             state.value.browserName = 'Firefox';
             const match = userAgent.match(/Firefox\/(\d+)/);
             state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            console.log(
+                '[useWebRTCCompatibility] Detected Firefox version:',
+                state.value.browserVersion
+            );
         } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
             state.value.browserName = 'Safari';
             const match = userAgent.match(/Version\/(\d+)/);
             state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            console.log(
+                '[useWebRTCCompatibility] Detected Safari version:',
+                state.value.browserVersion
+            );
         } else if (userAgent.includes('Edge')) {
             state.value.browserName = 'Edge';
             const match = userAgent.match(/Edge?\/(\d+)/);
             state.value.browserVersion = match ? parseInt(match[1] || '0') : 0;
+            console.log(
+                '[useWebRTCCompatibility] Detected Edge version:',
+                state.value.browserVersion
+            );
         } else {
             state.value.browserName = 'Unknown';
+            console.log('[useWebRTCCompatibility] Unknown browser');
         }
     };
 
@@ -132,6 +152,7 @@ export function useWebRTCCompatibility() {
      * Check WebRTC and Media API capabilities
      */
     const checkCapabilities = () => {
+        console.log('[useWebRTCCompatibility] checkCapabilities() called');
         const capabilities = state.value.capabilities;
         const warnings = state.value.compatibilityWarnings;
 
@@ -143,16 +164,26 @@ export function useWebRTCCompatibility() {
             nav.mozGetUserMedia ||
             nav.msGetUserMedia
         );
+        console.log('[useWebRTCCompatibility] getUserMedia support:', capabilities.getUserMedia);
 
         // Check getDisplayMedia support (screen sharing)
         capabilities.getDisplayMedia = !!navigator.mediaDevices?.getDisplayMedia;
+        console.log(
+            '[useWebRTCCompatibility] getDisplayMedia support:',
+            capabilities.getDisplayMedia
+        );
 
         // Check enumerateDevices support
         capabilities.enumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
+        console.log(
+            '[useWebRTCCompatibility] enumerateDevices support:',
+            capabilities.enumerateDevices
+        );
 
         // Check MediaRecorder support
         const win = window as WindowWithWebRTC;
         capabilities.mediaRecorder = !!win.MediaRecorder;
+        console.log('[useWebRTCCompatibility] MediaRecorder support:', capabilities.mediaRecorder);
 
         // Check RTCPeerConnection support
         capabilities.webRTC = !!(
@@ -160,9 +191,11 @@ export function useWebRTCCompatibility() {
             win.webkitRTCPeerConnection ||
             win.mozRTCPeerConnection
         );
+        console.log('[useWebRTCCompatibility] webRTC support:', capabilities.webRTC);
 
         // Check AudioContext support
         capabilities.audioContext = !!(win.AudioContext || win.webkitAudioContext);
+        console.log('[useWebRTCCompatibility] audioContext support:', capabilities.audioContext);
 
         // Generate compatibility warnings
         if (!capabilities.getUserMedia) {
@@ -215,7 +248,12 @@ export function useWebRTCCompatibility() {
      * Get user media with cross-browser compatibility
      */
     const getUserMedia = async (constraints: MediaStreamConstraints): Promise<MediaStream> => {
+        console.log(
+            '[useWebRTCCompatibility] getUserMedia() called with constraints:',
+            constraints
+        );
         if (!state.value.capabilities.getUserMedia) {
+            console.error('[useWebRTCCompatibility] getUserMedia not supported in this browser');
             throw new Error('getUserMedia not supported in this browser');
         }
 
@@ -224,7 +262,12 @@ export function useWebRTCCompatibility() {
 
             // Modern API for browsers
             if (navigator.mediaDevices?.getUserMedia) {
-                return await navigator.mediaDevices.getUserMedia(constraints);
+                console.log(
+                    '[useWebRTCCompatibility] Using standard navigator.mediaDevices.getUserMedia'
+                );
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                console.log('[useWebRTCCompatibility] getUserMedia() succeeded, stream:', stream);
+                return stream;
             }
 
             // Legacy APIs with Promise wrapper
@@ -233,6 +276,7 @@ export function useWebRTCCompatibility() {
                 nav.webkitGetUserMedia || nav.mozGetUserMedia || nav.msGetUserMedia;
 
             if (legacyGetUserMedia) {
+                console.log('[useWebRTCCompatibility] Using legacy getUserMedia API');
                 return new Promise((resolve, reject) => {
                     legacyGetUserMedia.call(navigator, constraints, resolve, reject);
                 });
@@ -240,7 +284,15 @@ export function useWebRTCCompatibility() {
 
             throw new Error('No getUserMedia implementation found');
         } catch (error) {
-            console.error('getUserMedia error:', error);
+            console.error('[useWebRTCCompatibility] getUserMedia error:', error);
+            console.error(
+                '[useWebRTCCompatibility] Error name:',
+                error instanceof Error ? error.name : 'N/A'
+            );
+            console.error(
+                '[useWebRTCCompatibility] Error message:',
+                error instanceof Error ? error.message : String(error)
+            );
 
             // Provide helpful error messages
             if (error instanceof Error) {
@@ -268,7 +320,11 @@ export function useWebRTCCompatibility() {
      * Enhanced to handle audio output device enumeration limitations
      */
     const enumerateDevices = async (): Promise<DeviceInfo[]> => {
+        console.log('[useWebRTCCompatibility] enumerateDevices() called');
         if (!state.value.capabilities.enumerateDevices) {
+            console.warn(
+                '[useWebRTCCompatibility] enumerateDevices not supported, returning mock devices'
+            );
             // Return mock device list for unsupported browsers
             return [
                 {
@@ -287,11 +343,18 @@ export function useWebRTCCompatibility() {
         }
 
         try {
+            console.log(
+                '[useWebRTCCompatibility] Calling navigator.mediaDevices.enumerateDevices()...'
+            );
             const devices = await navigator.mediaDevices.enumerateDevices();
+            console.log(
+                '[useWebRTCCompatibility] enumerateDevices() succeeded, raw device count:',
+                devices.length
+            );
 
             // Debug log to see what devices are actually enumerated
             console.log(
-                'DEBUG: Enumerated devices:',
+                '[useWebRTCCompatibility] Enumerated devices:',
                 devices.map(d => ({
                     kind: d.kind,
                     label: d.label,
@@ -335,7 +398,15 @@ export function useWebRTCCompatibility() {
 
             return processedDevices;
         } catch (error) {
-            console.error('enumerateDevices error:', error);
+            console.error('[useWebRTCCompatibility] enumerateDevices() failed with error:', error);
+            console.error(
+                '[useWebRTCCompatibility] Error name:',
+                error instanceof Error ? error.name : 'N/A'
+            );
+            console.error(
+                '[useWebRTCCompatibility] Error message:',
+                error instanceof Error ? error.message : String(error)
+            );
             throw new Error('Failed to enumerate media devices');
         }
     };
