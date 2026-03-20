@@ -268,29 +268,49 @@ export default {
         /**
          * Cleanup function
          */
-        const cleanup = () => {
+        const cleanup = async () => {
+            console.log('[MicrophoneTest] cleanup() called');
             stopVisualization();
 
             // Untrack and clean up audio context
             if (audioContextResourceId.value !== null) {
                 memoryManager.untrackResource(audioContextResourceId.value);
                 audioContextResourceId.value = null;
+                console.log('[MicrophoneTest] Untracked audio context resource');
             }
 
             // Untrack and clean up analyser
             if (analyserResourceId.value !== null) {
                 memoryManager.untrackResource(analyserResourceId.value);
                 analyserResourceId.value = null;
+                console.log('[MicrophoneTest] Untracked analyser resource');
             }
 
             if (audioContext.value) {
-                audioContext.value.close();
+                console.log(
+                    '[MicrophoneTest] Closing AudioContext, state:',
+                    audioContext.value.state
+                );
+                // Check if AudioContext is already closed
+                if (audioContext.value.state === 'closed') {
+                    console.warn('[MicrophoneTest] AudioContext already closed, skipping close()');
+                } else {
+                    try {
+                        await audioContext.value.close();
+                        console.log('[MicrophoneTest] AudioContext closed successfully');
+                    } catch (err) {
+                        console.error('[MicrophoneTest] Error closing AudioContext:', err);
+                    }
+                }
                 audioContext.value = null;
+            } else {
+                console.log('[MicrophoneTest] No AudioContext to close');
             }
 
             analyser.value = null;
             dataArray.value = null;
             volumeLevel.value = 0;
+            console.log('[MicrophoneTest] cleanup() complete');
         };
 
         // Watch for test readiness to automatically get stream
