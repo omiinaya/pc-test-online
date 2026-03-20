@@ -238,7 +238,7 @@ export default {
                             scaleFrequencies = fullScaleFrequencies;
                         }
 
-                        const noteDuration = 250; // 250ms per note for better clarity
+                        const noteDuration = 400; // 250ms per note for better clarity
                         let currentNoteIndex = 0;
                         let fallbackTimeoutId: ReturnType<typeof setTimeout> | null = null; // Local variable for this Promise instance
                         let isResolved = false; // Track if Promise is already resolved
