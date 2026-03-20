@@ -79,11 +79,20 @@ export default {
                 }
 
                 // Set the audio output device if one is selected and context supports it
-                if (deviceTest.selectedDeviceId.value && (audioContext.value as any).setSinkId) {
+                if (
+                    deviceTest.selectedDeviceId.value &&
+                    (
+                        audioContext.value as AudioContext & {
+                            setSinkId?: (id: string) => Promise<void>;
+                        }
+                    ).setSinkId
+                ) {
                     try {
-                        await (audioContext.value as any).setSinkId(
-                            deviceTest.selectedDeviceId.value
-                        );
+                        await (
+                            audioContext.value as AudioContext & {
+                                setSinkId?: (id: string) => Promise<void>;
+                            }
+                        ).setSinkId(deviceTest.selectedDeviceId.value);
                     } catch (sinkError) {
                         console.warn('Failed to set sink ID:', sinkError);
                         // Continue without setting sink ID - most browsers will use default
@@ -109,9 +118,20 @@ export default {
                 deviceTest.selectedDeviceId.value = deviceId;
 
                 // Only update sink ID if audio context exists and supports it
-                if (audioContext.value && (audioContext.value as any).setSinkId) {
+                if (
+                    audioContext.value &&
+                    (
+                        audioContext.value as AudioContext & {
+                            setSinkId?: (id: string) => Promise<void>;
+                        }
+                    ).setSinkId
+                ) {
                     try {
-                        await (audioContext.value as any).setSinkId(deviceId);
+                        await (
+                            audioContext.value as AudioContext & {
+                                setSinkId?: (id: string) => Promise<void>;
+                            }
+                        ).setSinkId(deviceId);
                     } catch (sinkError) {
                         console.warn('Failed to set sink ID:', sinkError);
                         // Continue without setting sink ID - browser will use default
@@ -246,9 +266,15 @@ export default {
                             );
 
                             if (currentNoteIndex >= scaleFrequencies.length) {
-                                console.log('[SpeakerTest] All notes completed! Cleaning up...');
-                                stopSound(false);
-                                safeResolve();
+                                console.log(
+                                    '[SpeakerTest] All notes completed! Scheduling final cleanup...'
+                                );
+                                // Use setTimeout to allow last note to fully complete before cleanup
+                                // This prevents cutting off the final note
+                                setTimeout(() => {
+                                    stopSound(false);
+                                    safeResolve();
+                                }, 150);
                                 return;
                             }
 
