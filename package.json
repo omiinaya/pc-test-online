@@ -34,22 +34,22 @@
     "format:backend": "cd backend && npm run format"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.1.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-promise": "^7.2.1",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.3",
-    "prettier": "^3.1.0",
-    "wait-on": "^7.2.0"
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "wait-on": "^9.0.4"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
-    "jspdf": "^3.0.1",
-    "pino": "^10.3.0",
-    "vite": "^7.0.2"
+    "jspdf": "^4.2.1",
+    "pino": "^10.3.1",
+    "vite": "^8.0.1"
   },
   "lint-staged": {
     "*.{js,cjs,mjs}": [
