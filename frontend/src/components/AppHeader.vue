@@ -1,11 +1,11 @@
 <script lang="ts">
 import { useI18n } from 'vue-i18n';
-import AvatarDropdown from './AvatarDropdown.vue';
+import LanguageSwitcher from './LanguageSwitcher.vue';
 
 export default {
     name: 'AppHeader',
     components: {
-        AvatarDropdown,
+        LanguageSwitcher,
     },
     props: {
         testTitle: {
@@ -50,7 +50,7 @@ export default {
 
             <div class="header-right">
                 <div class="status-indicator-group">
-                    <AvatarDropdown class="avatar-dropdown-wrapper" />
+                    <LanguageSwitcher class="language-switcher-wrapper" />
                     <a
                         href="https://github.com/omiinaya/pc-test-online"
                         target="_blank"
@@ -245,7 +245,7 @@ export default {
     gap: 0.75rem;
 }
 
-.avatar-dropdown-wrapper {
+.language-switcher-wrapper {
     display: flex;
     align-items: center;
 }
@@ -312,8 +312,8 @@ export default {
     opacity: 1;
 }
 
-/* Avatar Dropdown styling to match header design */
-.avatar-dropdown-wrapper :deep(.avatar-dropdown__trigger) {
+/* Language Switcher styling to match header design - now round like GitHub button */
+.language-switcher-wrapper :deep(.language-switcher__trigger) {
     background: transparent;
     border: 2px solid var(--text-tertiary);
     color: var(--text-tertiary);
@@ -326,12 +326,23 @@ export default {
     justify-content: center;
 }
 
-.avatar-dropdown-wrapper :deep(.avatar-dropdown__trigger:hover) {
+.language-switcher-wrapper :deep(.language-switcher__trigger:hover) {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border-color: var(--text-primary);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+.language-switcher-wrapper :deep(.language-switcher__flag) {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transform: translateY(0.5px); /* Fine-tune emoji vertical alignment */
+    color: var(--text-primary); /* Make globe icon white */
+    filter: brightness(0) invert(1); /* Ensure it's white regardless of emoji color */
 }
 
 /* Mobile responsiveness */
@@ -410,10 +421,15 @@ export default {
         justify-content: center;
     }
 
-    .avatar-dropdown-wrapper :deep(.avatar-dropdown__trigger) {
+    .language-switcher-wrapper :deep(.language-switcher__trigger) {
         width: 32px;
         height: 32px;
         padding: 0;
+    }
+
+    .language-switcher-wrapper :deep(.language-switcher__flag) {
+        font-size: 1.1rem;
+        transform: translateY(0.25px); /* Slightly less adjustment on mobile */
     }
 }
 
@@ -433,10 +449,15 @@ export default {
         justify-content: center;
     }
 
-    .avatar-dropdown-wrapper :deep(.avatar-dropdown__trigger) {
+    .language-switcher-wrapper :deep(.language-switcher__trigger) {
         width: 32px;
         height: 32px;
         padding: 0;
+    }
+
+    .language-switcher-wrapper :deep(.language-switcher__flag) {
+        font-size: 1.1rem;
+        transform: translateY(0.25px); /* Slightly less adjustment on mobile */
     }
 }
 

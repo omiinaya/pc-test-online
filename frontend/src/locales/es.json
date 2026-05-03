@@ -139,18 +139,7 @@
     "maximize": "Maximizar",
     "fullscreen": "Pantalla Completa",
     "exitFullscreen": "Salir de Pantalla Completa",
-    "view_source_code": "Ver Código Fuente en GitHub",
-    "account": "Cuenta",
-    "logout": "Cerrar Sesión",
-    "password": "Contraseña",
-    "twoFactorAuth": "Autenticación de Dos Factores",
-    "back": "Atrás",
-    "selectLanguage": "Seleccionar Idioma",
-    "selectTheme": "Seleccionar Tema",
-    "loggedOut": "Has cerrado sesión exitosamente.",
-    "comingSoon": "Próximamente",
-    "comingSoonMessage": "Esta función aún no está disponible.",
-    "userMenu": "Menú de Usuario"
+    "view_source_code": "Ver Código Fuente en GitHub"
   },
 
   "permissions": {

@@ -142,18 +142,7 @@
     "maximize": "Maximize",
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit Fullscreen",
-    "view_source_code": "View Source Code on GitHub",
-    "account": "Account",
-    "logout": "Logout",
-    "password": "Password",
-    "twoFactorAuth": "Two-Factor Authentication",
-    "back": "Back",
-    "selectLanguage": "Select Language",
-    "selectTheme": "Select Theme",
-    "loggedOut": "You have been logged out successfully.",
-    "comingSoon": "Coming Soon",
-    "comingSoonMessage": "This feature is not available yet.",
-    "userMenu": "User Menu"
+    "view_source_code": "View Source Code on GitHub"
   },
 
   "permissions": {
