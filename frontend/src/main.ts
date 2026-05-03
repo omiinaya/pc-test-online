@@ -2,6 +2,7 @@ import { createApp, type App } from 'vue';
 import router from './router';
 import AppLayout from './AppLayout.vue';
 import i18n, { initLocale } from './i18n';
+import { useTheme } from './composables/useTheme';
 import { installGlobalErrorHandlers, reportPerformance } from './utils/telemetry';
 
 // Debug identifier for tracking execution flow
@@ -14,6 +15,7 @@ console.log(
 
 // Import shared styles
 import './styles/variables.css';
+import './styles/theme.css';
 import './styles/utilities.css';
 import './styles/components/Button.css';
 
@@ -22,6 +24,11 @@ console.log(`[${DEBUG_ID}] All imports completed successfully at ${new Date().to
 // Initialize locale
 console.log(`[${DEBUG_ID}] Initializing locale at ${new Date().toISOString()}`);
 initLocale();
+
+// Initialize theme
+console.log(`[${DEBUG_ID}] Initializing theme at ${new Date().toISOString()}`);
+const { initTheme } = useTheme();
+initTheme();
 
 console.log(`[${DEBUG_ID}] Creating Vue app at ${new Date().toISOString()}`);
 const app: App = createApp(AppLayout);
@@ -171,9 +178,9 @@ window.addEventListener('load', () => {
     }
 
     // Memory usage (Chrome only)
-    // @ts-expect-error Performance.memory is non-standard
+    // @ts-expect-error Performance.memory is a non-standard Chrome API
     if (performance.memory) {
-        // @ts-expect-error
+        // @ts-expect-error Performance.memory is a non-standard Chrome API
         metrics.memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
     }
 

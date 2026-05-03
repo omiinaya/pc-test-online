@@ -110,8 +110,9 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null> = ref(null)):
     const setCanvasStyle = (styles: Partial<CanvasStyle>): void => {
         if (!context.value) return;
 
+        const ctx = context.value as unknown as Record<string, unknown>;
         Object.entries(styles).forEach(([property, value]) => {
-            (context.value as any)[property] = value;
+            ctx[property] = value;
         });
     };
 

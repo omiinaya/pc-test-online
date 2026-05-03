@@ -165,11 +165,11 @@ describe('Vue Component Prop Types', () => {
 describe('Component Event Types', () => {
     it('should validate component event types', () => {
         const mockEvents = {
-            'start-test': (testType: TestType) => {},
+            'start-test': (_testType: TestType) => {},
             'stop-test': () => {},
-            'test-completed': (result: TestResult) => {},
-            'test-failed': (error: Error) => {},
-            'device-selected': (device: DeviceInfo) => {},
+            'test-completed': (_result: TestResult) => {},
+            'test-failed': (_error: Error) => {},
+            'device-selected': (_device: DeviceInfo) => {},
         };
 
         expect(typeof mockEvents['start-test']).toBe('function');

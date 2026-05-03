@@ -160,7 +160,7 @@ export const changeLocale = (locale: SupportedLocale): boolean => {
         if (typeof localeValue === 'object' && 'value' in localeValue) {
             localeValue.value = locale;
         } else {
-            (i18n.global as any).locale = locale;
+            (i18n.global as unknown as { locale: string }).locale = locale;
         }
         // Save to localStorage for persistence
         localStorage.setItem('userLocale', locale);
@@ -175,13 +175,13 @@ export const getCurrentLocale = (): SupportedLocale => {
     if (typeof localeValue === 'object' && 'value' in localeValue) {
         return localeValue.value as SupportedLocale;
     }
-    return (i18n.global as any).locale as SupportedLocale;
+    return (i18n.global as unknown as { locale: SupportedLocale }).locale;
 };
 
 // Helper function to translate with fallback
 export const tWithFallback = (key: string, fallback: string): string => {
     try {
-        const t = i18n.global.t as any;
+        const t = i18n.global.t as (key: string) => string;
         const translated = t(key);
         return translated !== key ? translated : fallback;
     } catch {
@@ -192,8 +192,8 @@ export const tWithFallback = (key: string, fallback: string): string => {
 // Type-safe translation function
 export const translate = (key: string, params?: Record<string, unknown>): string => {
     try {
-        const t = i18n.global.t as any;
-        return t(key, params) as string;
+        const t = i18n.global.t as (key: string, params?: Record<string, unknown>) => string;
+        return t(key, params);
     } catch {
         return key;
     }
@@ -212,10 +212,11 @@ export const initLocale = (): void => {
             localeValue.value = browserLocale;
         }
     } else {
+        const globalWithLocale = i18n.global as unknown as { locale: SupportedLocale };
         if (savedLocale && availableLocales[savedLocale]) {
-            (i18n.global as any).locale = savedLocale;
+            globalWithLocale.locale = savedLocale;
         } else if (availableLocales[browserLocale]) {
-            (i18n.global as any).locale = browserLocale;
+            globalWithLocale.locale = browserLocale;
         }
     }
     // Default to English if no suitable locale found

@@ -3,11 +3,11 @@ import { usePerformance } from '../usePerformance';
 
 // Mock web-vitals
 vi.mock('web-vitals', () => ({
-    getCLS: vi.fn(cb => {}),
-    getFID: vi.fn(cb => {}),
-    getFCP: vi.fn(cb => {}),
-    getLCP: vi.fn(cb => {}),
-    getTTFB: vi.fn(cb => {}),
+    getCLS: vi.fn(_cb => {}),
+    getFID: vi.fn(_cb => {}),
+    getFCP: vi.fn(_cb => {}),
+    getLCP: vi.fn(_cb => {}),
+    getTTFB: vi.fn(_cb => {}),
 }));
 
 // Mock performance API
@@ -42,8 +42,8 @@ const createMockPerformance = () => ({
 beforeEach(() => {
     vi.clearAllMocks();
     const mockPerf = createMockPerformance();
-    (window as any).performance = mockPerf;
-    (window as any).PerformanceObserver = class PerformanceObserver {
+    (window as unknown as Record<string, unknown>).performance = mockPerf;
+    (window as unknown as Record<string, unknown>).PerformanceObserver = class {
         observe() {}
         disconnect() {}
     };
@@ -103,7 +103,7 @@ describe('usePerformance', () => {
         });
 
         it('should set WebVitals support based on PerformanceObserver after startMonitoring', () => {
-            (window as any).PerformanceObserver = class PerformanceObserver {};
+            (window as unknown as Record<string, unknown>).PerformanceObserver = class {};
             const perf = usePerformance();
             expect(perf.capabilities.value.supportsWebVitals).toBe(false); // before start
             perf.startMonitoring();
@@ -111,7 +111,12 @@ describe('usePerformance', () => {
         });
 
         it('should set MemoryAPI support if performance.memory exists after startMonitoring', () => {
-            (window as any).performance.memory = createMockPerformance().memory;
+            (
+                (window as unknown as Record<string, unknown>).performance as Record<
+                    string,
+                    unknown
+                >
+            ).memory = createMockPerformance().memory;
             const perf = usePerformance();
             expect(perf.capabilities.value.supportsMemoryAPI).toBe(false); // before start
             perf.startMonitoring();
@@ -134,7 +139,7 @@ describe('usePerformance', () => {
             // Safari 13 with no WebVitals support
             Object.defineProperty(navigator, 'userAgent', { value: 'Safari/13.0' });
             // Ensure PerformanceObserver is not available
-            delete (window as any).PerformanceObserver;
+            delete (window as unknown as Record<string, unknown>).PerformanceObserver;
             const perf = usePerformance();
             perf.startMonitoring();
             expect(perf.metrics.value.compatibilityIssues).toContain(
@@ -168,7 +173,7 @@ describe('usePerformance', () => {
         });
 
         it('should compute browserSupportsFullMonitoring correctly after startMonitoring', () => {
-            (window as any).PerformanceObserver = class {};
+            (window as unknown as Record<string, unknown>).PerformanceObserver = class {};
             const perf = usePerformance();
             expect(perf.browserSupportsFullMonitoring).toBe(false); // before start
             perf.startMonitoring();
@@ -213,10 +218,11 @@ describe('usePerformance', () => {
 
     describe('trackBundleSize', () => {
         it('should process resource entries without throwing', () => {
-            const mockPerf = (window as any).performance;
+            const mockPerf = (window as unknown as Record<string, unknown>)
+                .performance as ReturnType<typeof createMockPerformance>;
             mockPerf.getEntriesByType.mockReturnValue([
-                { name: 'index.js', duration: 100 } as any,
-                { name: 'main.js', duration: 200 } as any,
+                { name: 'index.js', duration: 100 } as unknown as PerformanceEntry,
+                { name: 'main.js', duration: 200 } as unknown as PerformanceEntry,
             ]);
             const perf = usePerformance();
             expect(() => {
@@ -227,14 +233,15 @@ describe('usePerformance', () => {
 
     describe('trackMemoryUsage', () => {
         it('should return memory usage metrics object when memory available', () => {
-            const mockPerf = (window as any).performance;
+            const mockPerf = (window as unknown as Record<string, unknown>)
+                .performance as ReturnType<typeof createMockPerformance>;
             mockPerf.memory = createMockPerformance().memory;
             // Mock some historical entries
-            mockPerf.getEntriesByType.mockImplementation((type: string) => {
-                if (type === 'measure') {
+            mockPerf.getEntriesByType.mockImplementation((_type: string) => {
+                if (_type === 'measure') {
                     return [
-                        { name: 'memory-40', startTime: 100 } as any,
-                        { name: 'memory-30', startTime: 200 } as any,
+                        { name: 'memory-40', startTime: 100 } as unknown as PerformanceEntry,
+                        { name: 'memory-30', startTime: 200 } as unknown as PerformanceEntry,
                     ];
                 }
                 return [];
@@ -254,7 +261,12 @@ describe('usePerformance', () => {
         });
 
         it('should return zeroed metrics when memory not available', () => {
-            delete (window as any).performance.memory;
+            delete (
+                (window as unknown as Record<string, unknown>).performance as Record<
+                    string,
+                    unknown
+                >
+            ).memory;
             const perf = usePerformance();
             const memory = perf.trackMemoryUsage();
             expect(memory.currentUsage).toBe(0);
@@ -266,7 +278,8 @@ describe('usePerformance', () => {
         });
 
         it('should calculate usage percentage correctly', () => {
-            const mockPerf = (window as any).performance;
+            const mockPerf = (window as unknown as Record<string, unknown>)
+                .performance as ReturnType<typeof createMockPerformance>;
             mockPerf.memory = createMockPerformance().memory;
             const perf = usePerformance();
             perf.startMonitoring();

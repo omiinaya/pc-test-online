@@ -37,6 +37,10 @@ interface SafeArea {
     right: number;
 }
 
+interface TouchCleanupElement extends HTMLElement {
+    _touchCleanup?: (() => void) | undefined;
+}
+
 export default {
     name: 'TouchTest',
     components: {
@@ -778,7 +782,7 @@ export default {
                     );
 
                     // Store cleanup function for later use (custom property)
-                    (challengeArea as any)._touchCleanup = removeListener;
+                    (challengeArea as TouchCleanupElement)._touchCleanup = removeListener;
                 }
 
                 // Add mouse leave handler for drag reset
@@ -805,10 +809,12 @@ export default {
         onUnmounted(() => {
             lifecycle.cleanup(() => {
                 // Clean up unified touch listeners
-                const challengeArea = document.querySelector('.touch-container') as any;
-                if (challengeArea && (challengeArea as any)._touchCleanup) {
-                    (challengeArea as any)._touchCleanup();
-                    delete (challengeArea as any)._touchCleanup;
+                const challengeArea = document.querySelector(
+                    '.touch-container'
+                ) as TouchCleanupElement | null;
+                if (challengeArea && challengeArea._touchCleanup) {
+                    challengeArea._touchCleanup();
+                    delete challengeArea._touchCleanup;
                 }
 
                 // Clean up all timers to prevent memory leaks

@@ -1,21 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ref, reactive, computed } from 'vue';
+import { ref, computed } from 'vue';
+
+interface MockTrack {
+    kind: string;
+    stop(): void;
+}
 
 // Mock MediaStream globally
 beforeEach(() => {
     global.MediaStream = class MediaStream {
-        private _tracks: any[] = [];
-        constructor(tracks?: any[]) {
+        private _tracks: MockTrack[] = [];
+        constructor(tracks?: MockTrack[]) {
             this._tracks = tracks || [];
         }
         getTracks() {
             return this._tracks;
         }
         getVideoTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'video');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'video');
         }
         getAudioTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'audio');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'audio');
         }
     };
 });
@@ -24,7 +29,7 @@ beforeEach(() => {
 vi.mock('../../useDeviceEnumeration', () => ({
     useDeviceEnumeration: vi.fn(() => ({
         availableDevices: ref([
-            { deviceId: 'test', kind: 'audioinput', label: 'Test Microphone' } as any,
+            { deviceId: 'test', kind: 'audioinput', label: 'Test Microphone', groupId: 'group-1' },
         ]),
         selectedDeviceId: ref('test'),
         loadingDevices: ref(false),
@@ -128,10 +133,10 @@ import { useMediaDeviceTest } from '../useMediaDeviceTest';
 
 describe('useMediaDeviceTest', () => {
     const defaultOptions = {
-        deviceType: 'microphone' as any,
-        testName: 'microphone' as any,
-        permissionType: 'microphone' as any,
-        deviceKind: 'audioinput' as any,
+        deviceType: 'microphone' as const,
+        testName: 'microphone' as const,
+        permissionType: 'microphone' as const,
+        deviceKind: 'audioinput' as const,
     };
 
     it('should extend base device test with media-specific features', () => {
@@ -191,7 +196,7 @@ describe('useMediaDeviceTest', () => {
         it('should return false if no deviceEnumeration', async () => {
             const state = useMediaDeviceTest({
                 ...defaultOptions,
-                deviceKind: undefined as any, // This causes deviceEnumeration to be null
+                deviceKind: undefined as unknown as string, // This causes deviceEnumeration to be null
             });
             const result = await state.switchDevice('some-id');
             expect(result).toBe(false);

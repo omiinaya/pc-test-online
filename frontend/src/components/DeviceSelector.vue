@@ -1,9 +1,12 @@
 <script lang="ts">
+import type { PropType } from 'vue';
+import type { DeviceInfo } from '../types';
+
 export default {
     name: 'DeviceSelector',
     props: {
         devices: {
-            type: Array as () => any[], // Could be more specific with device interface
+            type: Array as PropType<DeviceInfo[]>,
             required: true,
         },
         selectedDeviceId: {

@@ -44,7 +44,7 @@ describe('debounce', () => {
     });
 
     it('should preserve this context', () => {
-        const fn = vi.fn(function (this: any) {
+        const fn = vi.fn(function (this: { value: number }) {
             return this.value;
         });
         const context = { value: 42 };

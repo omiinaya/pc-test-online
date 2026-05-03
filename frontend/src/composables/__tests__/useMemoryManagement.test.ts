@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMemoryManagement } from '../useMemoryManagement';
 
 describe('useMemoryManagement', () => {
@@ -56,12 +56,11 @@ describe('useMemoryManagement', () => {
     });
 
     it('should automatically cleanup on unmount', () => {
-        const { trackResource, cleanupAll, mount, unmount, trackedResources } =
-            useMemoryManagement();
+        const { trackResource, mount, unmount, trackedResources } = useMemoryManagement();
         const mockCleanup = vi.fn();
 
         const stop = mount();
-        const resourceId = trackResource(mockCleanup, 'animationFrame', 'RAF');
+        trackResource(mockCleanup, 'animationFrame', 'RAF');
         expect(trackedResources.value).toHaveLength(1);
 
         unmount();

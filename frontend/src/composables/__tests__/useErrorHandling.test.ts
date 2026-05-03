@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useErrorHandling } from '../useErrorHandling';
 
 describe('useErrorHandling', () => {
@@ -72,7 +72,7 @@ describe('useErrorHandling', () => {
     describe('handleError', () => {
         it('should handle known error names and set appropriate message', () => {
             const notAllowedError = new Error('User denied');
-            (notAllowedError as any).name = 'NotAllowedError';
+            notAllowedError.name = 'NotAllowedError';
             errorHandling.handleError(notAllowedError, 'microphone');
             expect(errorHandling.error.value).toBe(
                 'microphone access was denied. Please enable microphone permissions in your browser settings.'
@@ -81,7 +81,7 @@ describe('useErrorHandling', () => {
 
         it('should handle NotFoundError', () => {
             const notFoundError = new Error('No device');
-            (notFoundError as any).name = 'NotFoundError';
+            notFoundError.name = 'NotFoundError';
             errorHandling.handleError(notFoundError, 'camera');
             expect(errorHandling.error.value).toBe('No camera devices found on your system.');
         });
@@ -109,7 +109,7 @@ describe('useErrorHandling', () => {
 
         it('should handle NotFoundError', () => {
             const notFoundError = new Error('No device');
-            (notFoundError as any).name = 'NotFoundError';
+            notFoundError.name = 'NotFoundError';
             errorHandling.handleError(notFoundError, 'camera');
             expect(errorHandling.error.value).toBe('No camera devices found on your system.');
         });

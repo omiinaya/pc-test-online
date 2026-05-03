@@ -101,7 +101,7 @@ describe('useStatePanelConfigs', () => {
 
         it('should return a generic error config for unknown errors', () => {
             const error = new Error('Something else');
-            (error as any).name = 'UnknownError';
+            error.name = 'UnknownError';
             const cfg = configs.getErrorConfig(error);
             expect(cfg).not.toBeNull();
             expect(cfg!.state).toBe('error');

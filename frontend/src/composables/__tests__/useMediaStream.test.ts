@@ -1,21 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useMediaStream } from '../useMediaStream';
 
+interface MockTrack {
+    kind: string;
+    stop(): void;
+}
+
 // Mock MediaStream and tracks globally
 beforeEach(() => {
     global.MediaStream = class MediaStream {
-        private _tracks: any[] = [];
-        constructor(tracks?: any[]) {
+        private _tracks: MockTrack[] = [];
+        constructor(tracks?: MockTrack[]) {
             this._tracks = tracks || [];
         }
         getTracks() {
             return this._tracks;
         }
         getVideoTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'video');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'video');
         }
         getAudioTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'audio');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'audio');
         }
     };
     global.MediaStreamTrack = class MediaStreamTrack {
@@ -82,7 +87,9 @@ describe('useMediaStream', () => {
             const media = useMediaStream();
             // Force getUserMedia to reject
             const { webrtcCompat } = media;
-            (webrtcCompat.getUserMedia as any).mockRejectedValueOnce(new Error('NotAllowed'));
+            (webrtcCompat.getUserMedia as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+                new Error('NotAllowed')
+            );
 
             await expect(media.createStream({ audio: true })).rejects.toThrow('NotAllowed');
             expect(media.error.value).toBe('NotAllowed');
@@ -94,7 +101,7 @@ describe('useMediaStream', () => {
             const media = useMediaStream();
             await media.createStream({ audio: true });
             const stream = media.stream.value;
-            const stopSpies: any[] = [];
+            const stopSpies: Array<ReturnType<typeof vi.spyOn>> = [];
             stream!.getTracks().forEach(track => {
                 stopSpies.push(vi.spyOn(track, 'stop'));
             });

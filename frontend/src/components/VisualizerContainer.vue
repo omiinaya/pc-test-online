@@ -43,7 +43,7 @@ export default {
             default: '',
         },
         customStyles: {
-            type: Object as () => Record<string, any>,
+            type: Object as () => Record<string, string | number>,
             default: () => ({}),
         },
         keyboardMode: {
@@ -52,7 +52,7 @@ export default {
         },
     },
     computed: {
-        containerStyle(): Record<string, any> {
+        containerStyle(): Record<string, string | number> {
             const baseStyles = {
                 backgroundColor: this.backgroundColor,
                 borderColor: this.borderColor,

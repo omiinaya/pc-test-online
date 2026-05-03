@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Debounce and Throttle utilities for performance optimization
-// These use `any` internally to preserve `this` context for any function signature
 
 export interface DebounceOptions {
     leading?: boolean;
@@ -8,15 +6,14 @@ export interface DebounceOptions {
     maxWait?: number;
 }
 
-export function debounce<T extends (...args: any[]) => any>(
-    func: T,
+export function debounce<Args extends unknown[], R>(
+    func: (...args: Args) => R,
     wait: number,
     options: DebounceOptions = {}
-): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
+): ((...args: Args) => void) & { cancel(): void; flush(): R | undefined } {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let lastArgs: Parameters<T> | null = null;
-    let lastThis: any = null;
-    let result: any;
+    let pending: (() => R) | null = null;
+    let result: R | undefined;
     let lastCallTime: number | null = null;
     let lastInvokeTime = 0;
 
@@ -34,22 +31,18 @@ export function debounce<T extends (...args: any[]) => any>(
     };
 
     const invokeFunc = (time: number): void => {
-        const args = lastArgs;
-        const thisArg = lastThis;
-
-        lastArgs = null;
-        lastThis = null;
+        const currentPending = pending;
+        pending = null;
         lastInvokeTime = time;
         lastCallTime = null;
-
-        if (args) {
-            result = func.apply(thisArg, args);
+        if (currentPending) {
+            result = currentPending();
         }
     };
 
     const trailingEdge = (time: number): void => {
         timeoutId = null;
-        if (trailing && lastArgs) {
+        if (trailing && pending) {
             invokeFunc(time);
         }
     };
@@ -74,12 +67,11 @@ export function debounce<T extends (...args: any[]) => any>(
         timeoutId = setTimeout(timerExpired, remainingWait);
     };
 
-    const debounced = function (this: any, ...args: Parameters<T>): void {
+    const debounced = function (this: unknown, ...args: Args): void {
         const time = Date.now();
         const isInvoking = shouldInvoke(time);
 
-        lastArgs = args;
-        lastThis = this;
+        pending = () => func.apply(this, args);
         lastCallTime = time;
 
         if (isInvoking) {
@@ -100,46 +92,42 @@ export function debounce<T extends (...args: any[]) => any>(
         if (timeoutId !== null) {
             clearTimeout(timeoutId);
         }
-        lastArgs = null;
-        lastThis = null;
+        pending = null;
         lastCallTime = null;
         lastInvokeTime = 0;
         timeoutId = null;
     };
 
-    debounced.flush = (): ReturnType<T> | undefined => {
+    debounced.flush = (): R | undefined => {
         if (timeoutId !== null) {
             trailingEdge(Date.now());
         }
         return result;
     };
 
-    return debounced as T & {
+    return debounced as ((...args: Args) => void) & {
         cancel(): void;
-        flush(): ReturnType<T> | undefined;
+        flush(): R | undefined;
     };
 }
 
-export function throttle<T extends (...args: any[]) => any>(
-    func: T,
+export function throttle<Args extends unknown[], R>(
+    func: (...args: Args) => R,
     wait: number,
     options: { leading?: boolean; trailing?: boolean } = {}
-): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
+): ((...args: Args) => void) & { cancel(): void; flush(): R | undefined } {
     const { leading = true, trailing = true } = options;
-    let lastArgs: Parameters<T> | null = null;
-    let lastThis: any = null;
+    let pending: (() => R) | null = null;
     let lastCallTime: number | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let result: any;
+    let result: R | undefined;
 
     const invoke = (time: number): void => {
-        const args = lastArgs;
-        const thisArg = lastThis;
-        lastArgs = null;
-        lastThis = null;
+        const currentPending = pending;
+        pending = null;
         lastCallTime = time;
-        if (args) {
-            result = func.apply(thisArg, args);
+        if (currentPending) {
+            result = currentPending();
         }
     };
 
@@ -149,12 +137,11 @@ export function throttle<T extends (...args: any[]) => any>(
         return timeSince >= wait;
     };
 
-    const throttled = function (this: any, ...args: Parameters<T>): void {
+    const throttled = function (this: unknown, ...args: Args): void {
         const time = Date.now();
         const invokeNow = shouldInvoke(time);
 
-        lastArgs = args;
-        lastThis = this;
+        pending = () => func.apply(this, args);
 
         if (invokeNow) {
             if (timeoutId) {
@@ -165,7 +152,7 @@ export function throttle<T extends (...args: any[]) => any>(
         } else if (!timeoutId && trailing) {
             const remaining = wait - (time - lastCallTime!);
             timeoutId = setTimeout(() => {
-                if (lastArgs) {
+                if (pending) {
                     invoke(Date.now());
                 }
                 timeoutId = null;
@@ -177,23 +164,24 @@ export function throttle<T extends (...args: any[]) => any>(
         if (timeoutId) {
             clearTimeout(timeoutId);
         }
-        lastArgs = null;
-        lastThis = null;
+        pending = null;
         timeoutId = null;
     };
 
-    throttled.flush = (): ReturnType<T> | undefined => {
-        if (timeoutId !== null && lastArgs) {
+    throttled.flush = (): R | undefined => {
+        if (timeoutId !== null && pending) {
             clearTimeout(timeoutId);
             timeoutId = null;
-            const res = func.apply(lastThis, lastArgs);
-            lastArgs = null;
-            lastThis = null;
+            const res = pending();
+            pending = null;
             result = res;
             return res;
         }
         return result;
     };
 
-    return throttled as T & { cancel(): void; flush(): ReturnType<T> | undefined };
+    return throttled as ((...args: Args) => void) & {
+        cancel(): void;
+        flush(): R | undefined;
+    };
 }

@@ -1,22 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ref, reactive, computed } from 'vue';
+import { ref, computed } from 'vue';
+
+interface MockTrack {
+    kind: string;
+    stop(): void;
+}
 
 // Enhanced MediaStream mock with necessary methods
 beforeEach(() => {
     // Mock MediaStream globally
     global.MediaStream = class MediaStream {
-        private _tracks: any[] = [];
-        constructor(tracks?: any[]) {
+        private _tracks: MockTrack[] = [];
+        constructor(tracks?: MockTrack[]) {
             this._tracks = tracks || [];
         }
         getTracks() {
             return this._tracks;
         }
         getVideoTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'video');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'video');
         }
         getAudioTracks() {
-            return this._tracks.filter((t: any) => t.kind === 'audio');
+            return this._tracks.filter((t: MockTrack) => t.kind === 'audio');
         }
     };
     // Mock MediaStreamTrack if needed
@@ -39,7 +44,7 @@ beforeEach(() => {
 vi.mock('../../useDeviceEnumeration', () => ({
     useDeviceEnumeration: vi.fn(() => ({
         availableDevices: ref([
-            { deviceId: 'test', kind: 'audioinput', label: 'Test Microphone' } as any,
+            { deviceId: 'test', kind: 'audioinput', label: 'Test Microphone', groupId: 'group-1' },
         ]),
         selectedDeviceId: ref('test'),
         loadingDevices: ref(false),
@@ -78,7 +83,7 @@ vi.mock('../../useMediaStream', () => {
                 stream,
                 loading: ref(false),
                 error: ref(null),
-                createStream: vi.fn().mockImplementation(async constraints => {
+                createStream: vi.fn().mockImplementation(async _constraints => {
                     const s = new MediaStream();
                     stream.value = s;
                     return s;
@@ -134,10 +139,10 @@ import { useBaseDeviceTest } from '../useBaseDeviceTest';
 
 describe('useBaseDeviceTest', () => {
     const defaultOptions = {
-        deviceType: 'microphone' as any,
-        testName: 'microphone' as any,
-        permissionType: 'microphone' as any,
-        deviceKind: 'audioinput' as any,
+        deviceType: 'microphone' as const,
+        testName: 'microphone' as const,
+        permissionType: 'microphone' as const,
+        deviceKind: 'audioinput' as const,
     };
 
     it('should initialize with correct default state', () => {

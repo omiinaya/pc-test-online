@@ -15,6 +15,12 @@ export interface MemoryMetrics {
     leaksDetected: number;
 }
 
+interface PerformanceWithMemory extends Performance {
+    memory?: {
+        usedJSHeapSize: number;
+    };
+}
+
 export function useMemoryManagement() {
     const trackedResources: Ref<MemoryResource[]> = ref([]);
     let resourceId = 0;
@@ -113,9 +119,9 @@ export function useMemoryManagement() {
 
     // Get current memory usage
     const getMemoryUsage = (): number => {
-        if ('memory' in performance) {
-            const memory = (performance as any).memory;
-            return Math.round(memory.usedJSHeapSize / 1024 / 1024); // MB
+        const perf = performance as PerformanceWithMemory;
+        if (perf.memory) {
+            return Math.round(perf.memory.usedJSHeapSize / 1024 / 1024); // MB
         }
         return 0;
     };

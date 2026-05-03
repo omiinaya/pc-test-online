@@ -103,7 +103,9 @@ export default {
             } else if (e.deltaY > 0) {
                 scrollDirection.value = 'down';
             }
-            clearTimeout(scrollTimeout.value as any);
+            if (scrollTimeout.value !== null) {
+                clearTimeout(scrollTimeout.value);
+            }
             scrollTimeout.value = setTimeout(() => {
                 scrollActive.value = false;
                 scrollDirection.value = null;

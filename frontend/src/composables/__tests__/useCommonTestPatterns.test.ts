@@ -3,11 +3,9 @@ import { useCommonTestPatterns, useTestTimers } from '../useCommonTestPatterns';
 
 describe('useCommonTestPatterns', () => {
     let patterns: ReturnType<typeof useCommonTestPatterns>;
-    let timers: ReturnType<typeof useTestTimers>;
 
     beforeEach(() => {
         patterns = useCommonTestPatterns();
-        timers = useTestTimers();
     });
 
     describe('initial state', () => {

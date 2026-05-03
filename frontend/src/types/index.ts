@@ -402,7 +402,7 @@ export interface UseAudioVisualizationReturn {
 
 // Missing types that were being imported
 export type EasingFunction = (t: number) => number;
-export type TestEmitCallback = (event: string, data?: any) => void;
+export type TestEmitCallback = (event: string, data?: unknown) => void;
 export type AudioContextType = AudioContext;
 
 // ==================== PROMISE TYPES ====================

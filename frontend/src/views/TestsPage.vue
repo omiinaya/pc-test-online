@@ -8,6 +8,7 @@ import {
     nextTick,
     defineAsyncComponent,
     defineEmits,
+    type Component,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { debounce } from '../utils/debounce';
@@ -211,7 +212,7 @@ const currentTestDescription = computed(() => {
 });
 
 const currentTestComponent = computed(() => {
-    const componentMap: Record<TestName | 'testsCompleted', any> = {
+    const componentMap: Record<TestName | 'testsCompleted', Component> = {
         webcam: WebcamTest,
         microphone: MicrophoneTest,
         speakers: SpeakerTest,
@@ -880,8 +881,9 @@ const getSafeFallback = (test: unknown): string => {
             testStr = test;
         } else if (typeof test === 'number') {
             testStr = test.toString();
-        } else if (typeof test === 'object') {
-            if ((test as any).__v_skip) {
+        } else if (typeof test === 'object' && test !== null) {
+            const obj = test as Record<string, unknown>;
+            if (obj.__v_skip === true) {
                 testStr = 'reactive-object';
             } else {
                 testStr = JSON.stringify(test).slice(0, 50);
@@ -938,14 +940,21 @@ const resetTests = () => {
 };
 
 // Electron detection
+interface ElectronWindow extends Window {
+    electronAPI?: { platform?: string };
+    electron?: unknown;
+    process?: { type?: string };
+}
+
 const isElectron = (): boolean => {
-    const win = window as any;
+    const win = window as ElectronWindow;
+    const proc = typeof process !== 'undefined' ? (process as Record<string, unknown>) : undefined;
     return !!(
         win.electronAPI ||
         win.electron ||
         navigator.userAgent.toLowerCase().includes('electron') ||
-        (typeof process !== 'undefined' && (process as any)?.type === 'renderer') ||
-        (win.process as any)?.type === 'renderer'
+        proc?.type === 'renderer' ||
+        win.process?.type === 'renderer'
     );
 };
 
@@ -953,8 +962,9 @@ const isElectron = (): boolean => {
 onMounted(() => {
     if (isElectron()) {
         document.body.classList.add('electron-app');
-        if ((window as any).electronAPI?.platform) {
-            document.body.classList.add(`platform-${(window as any).electronAPI.platform}`);
+        const win = window as ElectronWindow;
+        if (win.electronAPI?.platform) {
+            document.body.classList.add(`platform-${win.electronAPI.platform}`);
         }
     }
 
@@ -977,8 +987,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (debouncedSetActiveTest && typeof (debouncedSetActiveTest as any).cancel === 'function') {
-        (debouncedSetActiveTest as any).cancel();
+    if (debouncedSetActiveTest && typeof debouncedSetActiveTest.cancel === 'function') {
+        debouncedSetActiveTest.cancel();
     }
 
     if (timerInterval.value) {
