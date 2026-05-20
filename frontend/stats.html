@@ -1022,39 +1022,39 @@ var drawChart = (function (exports) {
   	const scan = (input, options) => {
   	  const opts = options || {};
 
-  	  const length = input.length - 1;
-  	  const scanToEnd = opts.parts === true || opts.scanToEnd === true;
-  	  const slashes = [];
-  	  const tokens = [];
-  	  const parts = [];
+  \t  const maxLen = input.length - 1;
+  \t  const scanToEnd = opts.parts === true || opts.scanToEnd === true;
+  \t  const slashes = [];
+  \t  const tokens = [];
+  \t  const parts = [];
 
-  	  let str = input;
-  	  let index = -1;
-  	  let start = 0;
-  	  let lastIndex = 0;
-  	  let isBrace = false;
-  	  let isBracket = false;
-  	  let isGlob = false;
-  	  let isExtglob = false;
-  	  let isGlobstar = false;
-  	  let braceEscaped = false;
-  	  let backslashes = false;
-  	  let negated = false;
-  	  let negatedExtglob = false;
-  	  let finished = false;
-  	  let braces = 0;
-  	  let prev;
-  	  let code;
-  	  let token = { value: '', depth: 0, isGlob: false };
+  \t  let str = input;
+  \t  let index = -1;
+  \t  let start = 0;
+  \t  let lastIndex = 0;
+  \t  let isBrace = false;
+  \t  let isBracket = false;
+  \t  let isGlob = false;
+  \t  let isExtglob = false;
+  \t  let isGlobstar = false;
+  \t  let braceEscaped = false;
+  \t  let backslashes = false;
+  \t  let negated = false;
+  \t  let negatedExtglob = false;
+  \t  let finished = false;
+  \t  let braces = 0;
+  \t  let prev;
+  \t  let code;
+  \t  let token = { value: '', depth: 0, isGlob: false };
 
-  	  const eos = () => index >= length;
-  	  const peek = () => str.charCodeAt(index + 1);
-  	  const advance = () => {
-  	    prev = code;
-  	    return str.charCodeAt(++index);
-  	  };
+  \t  const eos = () => index >= maxLen;
+  \t  const peek = () => str.charCodeAt(index + 1);
+  \t  const advance = () => {
+  \t    prev = code;
+  \t    return str.charCodeAt(++index);
+  \t  };
 
-  	  while (index < length) {
+  \t  while (index < maxLen) {
   	    code = advance();
   	    let next;
 
