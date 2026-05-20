@@ -545,8 +545,6 @@ export default {
                 if (deviceTest.availableDevices.value.length === 0) {
                     // console.log('DEBUG: No audio output devices enumerated, but default output may still work');
                     // console.log('DEBUG: Device detection delay state:', deviceTest.deviceDetectionDelay?.shouldShowNoDevices.value);
-                } else {
-                    // console.log('DEBUG: Found', deviceTest.availableDevices.value.length, 'audio output devices');
                 }
             } catch (error) {
                 console.error('Error handling device enumeration:', error);
@@ -641,6 +639,8 @@ export default {
                         clickable: !isPlaying,
                     }"
                     @click="!isPlaying && playSound('Left')"
+                    @keydown.enter.prevent="!isPlaying && playSound('Left')"
+                    @keydown.space.prevent="!isPlaying && playSound('Left')"
                     :tabindex="!isPlaying ? 0 : -1"
                     :aria-disabled="isPlaying"
                     role="button"
@@ -673,6 +673,8 @@ export default {
                         clickable: !isPlaying,
                     }"
                     @click="!isPlaying && playSound('Both')"
+                    @keydown.enter.prevent="!isPlaying && playSound('Both')"
+                    @keydown.space.prevent="!isPlaying && playSound('Both')"
                     :tabindex="!isPlaying ? 0 : -1"
                     :aria-disabled="isPlaying"
                     role="button"
@@ -720,6 +722,8 @@ export default {
                         clickable: !isPlaying,
                     }"
                     @click="!isPlaying && playSound('Right')"
+                    @keydown.enter.prevent="!isPlaying && playSound('Right')"
+                    @keydown.space.prevent="!isPlaying && playSound('Right')"
                     :tabindex="!isPlaying ? 0 : -1"
                     :aria-disabled="isPlaying"
                     role="button"
