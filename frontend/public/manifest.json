@@ -23,12 +23,6 @@
       "type": "image/png"
     }
   ],
-  "permissions": [
-    "camera",
-    "microphone",
-    "storage"
-  ],
-  "features": [
-    "CrossOriginIsolated"
-  ]
+  "permissions": ["camera", "microphone", "storage"],
+  "features": ["CrossOriginIsolated"]
 }

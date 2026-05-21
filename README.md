@@ -101,7 +101,6 @@ mmit-testing-app/
 2. Open your browser to `http://localhost:5173`
 3. Follow the step-by-step testing process
 
-
 ## Testing Process
 
 The application guides users through a 3-step testing process:
@@ -151,7 +150,6 @@ The backend provides several API endpoints:
 
 - `NODE_ENV` - Set to 'production' for production builds
 - `PORT` - Backend server port (default: 3000)
-
 
 ## Troubleshooting
 
