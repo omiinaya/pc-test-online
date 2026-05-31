@@ -487,9 +487,8 @@ process.on('uncaughtException', error => {
     console.error('FATAL ERROR - Uncaught Exception:', error.message);
     console.error(error.stack);
 
-    // Throw the error to be handled by the error handling middleware
-    // This allows proper cleanup and graceful shutdown
-    throw error;
+    // Exit with non-zero code after logging (throwing inside handler causes infinite loop)
+    process.exit(1);
 });
 
 // Handle unhandled rejections
