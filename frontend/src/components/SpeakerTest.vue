@@ -362,15 +362,15 @@ export default {
                             }, noteDuration);
 
                             // Track the timeout for memory management
+                            // CRITICAL: capture the timeout ID by VALUE so old cleanups
+                            // don't clearTimeout the NEW timeout when untrackResource is called
+                            const capturedTimeoutId = testTimeout.value;
                             if (timeoutResourceId.value !== null) {
                                 memoryManager.untrackResource(timeoutResourceId.value);
                             }
                             timeoutResourceId.value = memoryManager.trackResource(
                                 () => {
-                                    if (testTimeout.value) {
-                                        clearTimeout(testTimeout.value);
-                                        testTimeout.value = null;
-                                    }
+                                    clearTimeout(capturedTimeoutId);
                                 },
                                 'timeout',
                                 'Next note scheduling timeout'
