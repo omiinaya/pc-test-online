@@ -48,7 +48,7 @@ export interface DeviceTestState {
 export interface DeviceTestMethods {
     initializeTest: () => Promise<void>;
     requestPermission: () => Promise<boolean>;
-    getDeviceStream: (constraints?: MediaStreamConstraints | null) => Promise<MediaStream | null>;
+    getDeviceStream: (constraints?: MediaStreamConstraints | null, forceRecreate?: boolean) => Promise<MediaStream | null>;
     switchDevice: (deviceId: string) => Promise<void>;
     completeTest: (additionalData?: Record<string, unknown>) => void;
     failTest: (reason?: string, additionalData?: Record<string, unknown>) => void;

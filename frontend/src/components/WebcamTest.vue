@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, watch, nextTick } from 'vue';
+import { defineComponent, ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import StatePanel from './StatePanel.vue';
 import DeviceSelector from './DeviceSelector.vue';
 import { useMediaDeviceTest } from '../composables/extensions/useMediaDeviceTest';
@@ -65,23 +65,12 @@ export default defineComponent({
 
         // Template refs
         const videoElement = ref<HTMLVideoElement | null>(null);
-        const snapshotCanvas = ref<HTMLCanvasElement | null>(null);
 
-        // Component state (from data)
-        const snapshotTaken = ref(false);
-        const skipTimer = ref<number | null>(null);
-        const skipped = ref(false);
-        const skipTimerResourceId = ref<number | null>(null);
-        const videoEventResourceIds = ref<number[]>([]);
-        const videoWidthDisplay = ref(0);
-
-        // Computed (from computed: currentVideoWidth)
-        const currentVideoWidth = computed(() => videoWidthDisplay.value);
-
-        // Add a global error handler to catch any unhandled errors
+        // Track frame check timers for cleanup on unmount
+        const frameCheckTimerIds = ref<ReturnType<typeof setTimeout>[]>([]);
         const globalErrorHandler = (err: ErrorEvent) => {
             console.error('[WebcamTest] Global error caught:', err.error || err.message);
-            console.error('[WebcamTest] Global error stack:', err.error?.stack || err.stack);
+            console.error('[WebcamTest] Global error stack:', (err.error as Error)?.stack || err.message);
         };
         window.addEventListener('error', globalErrorHandler);
 
@@ -134,7 +123,11 @@ export default defineComponent({
             console.log('[WebcamTest] onUnmounted() called - cleaning up');
             window.removeEventListener('error', globalErrorHandler);
             window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
-            // Additional cleanup if needed
+            // Clean up tracked event listeners (video element handlers)
+            memoryManager.cleanupType('event');
+            // Cancel any in-flight frame check timers
+            frameCheckTimerIds.value.forEach(id => clearTimeout(id));
+            frameCheckTimerIds.value = [];
         });
 
         // Watch for critical state changes and log them
@@ -216,74 +209,6 @@ export default defineComponent({
         );
 
         // Methods
-
-        function logStateValues(source: string) {
-            console.log(`[WebcamTest] State values from ${source}:`);
-            console.log(`[WebcamTest] - isLoading: ${deviceTest.isLoading.value}`);
-            console.log(`[WebcamTest] - hasError: ${deviceTest.hasError.value}`);
-            console.log(`[WebcamTest] - needsPermission: ${deviceTest.needsPermission.value}`);
-            console.log(
-                `[WebcamTest] - showNoDevicesState: ${deviceTest.showNoDevicesState.value}`
-            );
-            console.log(`[WebcamTest] - hasActiveStream: ${deviceTest.hasActiveStream.value}`);
-            console.log(`[WebcamTest] - hasPermission: ${deviceTest.hasPermission.value}`);
-            console.log(`[WebcamTest] - hasDevices: ${deviceTest.hasDevices.value}`);
-            console.log(`[WebcamTest] - currentState: ${deviceTest.currentState.value}`);
-            console.log(
-                `[WebcamTest] - blurred class should apply: ${(deviceTest.isLoading.value || deviceTest.hasError.value || deviceTest.needsPermission.value || deviceTest.showNoDevicesState.value) && !deviceTest.hasActiveStream.value}`
-            );
-            updateVideoWidth();
-        }
-
-        function updateVideoWidth() {
-            if (videoElement.value) {
-                videoWidthDisplay.value = videoElement.value.videoWidth;
-            } else {
-                videoWidthDisplay.value = 0;
-            }
-        }
-
-        function takeSnapshot() {
-            if (!videoElement.value || !snapshotCanvas.value) return;
-            const video = videoElement.value;
-            const canvas = snapshotCanvas.value;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            snapshotTaken.value = true;
-        }
-
-        function startCameraDetectTimer() {
-            if (skipTimer.value) clearTimeout(skipTimer.value);
-            if (skipTimerResourceId.value !== null) {
-                memoryManager.untrackResource(skipTimerResourceId.value);
-                skipTimerResourceId.value = null;
-            }
-            skipTimer.value = setTimeout(() => {
-                if (!deviceTest.hasDevices.value) {
-                    // Timer completed and no cameras found - handled by composable
-                }
-            }, 3000);
-
-            try {
-                skipTimerResourceId.value = memoryManager.trackResource(
-                    () => {
-                        if (skipTimer.value) {
-                            clearTimeout(skipTimer.value);
-                            skipTimer.value = null;
-                        }
-                    },
-                    'timeout',
-                    'Camera detection timer'
-                );
-            } catch (error) {
-                console.warn(
-                    '[WebcamTest] Memory tracking failed for timer - using manual cleanup'
-                );
-            }
-        }
 
         function setupCamera() {
             console.log('[WebcamTest] setupCamera() called');
@@ -402,38 +327,42 @@ export default defineComponent({
                     });
                 }
 
-                video.play().catch(err => {
-                    console.error('[WebcamTest] Error auto-playing video:', err);
-                });
+                // Only call play() on loadedmetadata — the first event with dimension info
+                if (eventType === 'loadedmetadata') {
+                    video.play().catch(err => {
+                        console.error('[WebcamTest] Error auto-playing video:', err);
+                    });
+                }
             };
 
-            // Use manual event listeners with memory tracking
+            // Clean up any stale listeners from previous setupCamera calls
+            console.log('[WebcamTest] Cleaning up old video event listeners...');
+            memoryManager.cleanupType('event');
+
+            // Add fresh event listeners with memory tracking
             const addTrackedListener = (
-                element: HTMLElement,
                 event: string,
                 handler: EventListener
             ) => {
                 console.log(`[WebcamTest] Adding ${event} listener`);
-                element.addEventListener(event, handler);
+                video.addEventListener(event, handler);
                 try {
-                    const resourceId = memoryManager.trackResource(
-                        () => element.removeEventListener(event, handler),
+                    memoryManager.trackResource(
+                        () => video.removeEventListener(event, handler),
                         'event',
                         `Video ${event} listener`
                     );
-                    videoEventResourceIds.value.push(resourceId);
                 } catch (trackError) {
                     console.warn(
                         '[WebcamTest] Memory tracking failed for',
                         event,
                         '- using manual cleanup'
                     );
-                    videoEventResourceIds.value.push(-1);
                 }
             };
-            addTrackedListener(video, 'loadedmetadata', () => onVideoReady('loadedmetadata'));
-            addTrackedListener(video, 'canplay', () => onVideoReady('canplay'));
-            addTrackedListener(video, 'loadeddata', () => onVideoReady('loadeddata'));
+            addTrackedListener('loadedmetadata', () => onVideoReady('loadedmetadata'));
+            addTrackedListener('canplay', () => onVideoReady('canplay'));
+            addTrackedListener('loadeddata', () => onVideoReady('loadeddata'));
 
             console.log('[WebcamTest] Calling video.play()');
             video
@@ -444,7 +373,6 @@ export default defineComponent({
                     console.log('[WebcamTest] video.readyState after play():', video.readyState);
                     console.log('[WebcamTest] video.videoWidth after play():', video.videoWidth);
                     console.log('[WebcamTest] video.videoHeight after play():', video.videoHeight);
-                    logStateValues('after play() success');
                     startVideoFrameCheck(video);
                 })
                 .catch(err => {
@@ -491,12 +419,14 @@ export default defineComponent({
                 lastCurrentTime = currentTime;
 
                 if (checkCount < 10) {
-                    setTimeout(checkFrame, 1000);
+                    const timerId = setTimeout(checkFrame, 1000);
+                    frameCheckTimerIds.value.push(timerId);
                 }
             };
 
             // Start the first check after a short delay
-            setTimeout(checkFrame, 1000);
+            const timerId = setTimeout(checkFrame, 1000);
+            frameCheckTimerIds.value.push(timerId);
         }
 
         async function forceRecreateStream() {
@@ -518,9 +448,9 @@ export default defineComponent({
                 videoElement.value.srcObject = null;
             }
 
-            console.log('[WebcamTest] Creating new stream with high resolution constraints');
+            console.log('[WebcamTest] Creating new stream via composable compatibility layer');
             try {
-                const constraints = {
+                const constraints: MediaStreamConstraints = {
                     video: {
                         width: { min: 640, ideal: 1920 },
                         height: { min: 480, ideal: 1080 },
@@ -528,31 +458,31 @@ export default defineComponent({
                 };
                 console.log('[WebcamTest] Using constraints:', constraints);
 
-                const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Route through the composable for cross-browser compatibility + memory tracking
+                const newStream = await deviceTest.getDeviceStream(constraints);
                 console.log('[WebcamTest] Got new stream:', newStream);
 
-                const videoTracks = newStream.getVideoTracks();
-                videoTracks.forEach((track, i) => {
-                    const settings = track.getSettings();
-                    console.log(
-                        `[WebcamTest] New track ${i}: ${settings.width}x${settings.height}`
-                    );
-                });
+                if (newStream) {
+                    const videoTracks = newStream.getVideoTracks();
+                    videoTracks.forEach((track, i) => {
+                        const settings = track.getSettings();
+                        console.log(
+                            `[WebcamTest] New track ${i}: ${settings.width}x${settings.height}`
+                        );
+                    });
 
-                // Update the stream in the composable
-                deviceTest.stream.value = newStream;
-
-                if (videoElement.value) {
-                    console.log('[WebcamTest] Assigning new stream to video element');
-                    videoElement.value.srcObject = newStream;
-                    await videoElement.value.play();
-                    console.log('[WebcamTest] Video playing with new stream');
-                    console.log(
-                        '[WebcamTest] Video dimensions:',
-                        videoElement.value.videoWidth,
-                        'x',
-                        videoElement.value.videoHeight
-                    );
+                    if (videoElement.value) {
+                        console.log('[WebcamTest] Assigning new stream to video element');
+                        videoElement.value.srcObject = newStream;
+                        await videoElement.value.play();
+                        console.log('[WebcamTest] Video playing with new stream');
+                        console.log(
+                            '[WebcamTest] Video dimensions:',
+                            videoElement.value.videoWidth,
+                            'x',
+                            videoElement.value.videoHeight
+                        );
+                    }
                 }
             } catch (err) {
                 console.error('[WebcamTest] Error recreating stream:', err);
@@ -560,13 +490,6 @@ export default defineComponent({
         }
 
         function startOver() {
-            snapshotTaken.value = false;
-            skipped.value = false;
-            if (skipTimer.value) clearTimeout(skipTimer.value);
-            if (skipTimerResourceId.value !== null) {
-                memoryManager.untrackResource(skipTimerResourceId.value);
-                skipTimerResourceId.value = null;
-            }
             deviceTest.resetTest();
         }
 
@@ -580,8 +503,6 @@ export default defineComponent({
                 console.log('[WebcamTest] videoElement ref:', videoElement.value);
 
                 await nextTick();
-                updateVideoWidth();
-                logStateValues('stream watcher');
 
                 if (newStream && deviceTest.hasPermission.value) {
                     if (videoElement.value) {
@@ -632,24 +553,12 @@ export default defineComponent({
             compatibilityWarnings,
             recommendedBrowser,
             showCompatibilityWarnings,
-            currentVideoWidth,
             // Memory manager
             memoryManager,
             // Refs (for template)
             videoElement,
-            snapshotCanvas,
-            // State
-            snapshotTaken,
-            skipTimer,
-            skipped,
-            skipTimerResourceId,
-            videoEventResourceIds,
-            videoWidthDisplay,
+            frameCheckTimerIds,
             // Methods
-            logStateValues,
-            updateVideoWidth,
-            takeSnapshot,
-            startCameraDetectTimer,
             setupCamera,
             startVideoFrameCheck,
             forceRecreateStream,
@@ -676,11 +585,6 @@ export default defineComponent({
                 }"
                 :aria-label="$t('device_testing.webcam.camera_preview')"
                 :title="$t('device_testing.webcam.live_feed')"
-                @loadedmetadata="console.log('[WebcamTest] Video loadedmetadata event fired')"
-                @canplay="console.log('[WebcamTest] Video canplay event fired')"
-                @loadeddata="console.log('[WebcamTest] Video loadeddata event fired')"
-                @play="console.log('[WebcamTest] Video play event fired')"
-                @error="console.log('[WebcamTest] Video error event fired', $event)"
             ></video>
 
             <!-- State Panel Overlays inside video -->
