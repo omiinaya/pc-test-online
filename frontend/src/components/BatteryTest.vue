@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import StatePanel from './StatePanel.vue';
 import { useTestResults } from '../composables/useTestResults';
 import { useComponentLifecycle } from '../composables/useComponentLifecycle';
@@ -42,19 +42,6 @@ export default {
             shouldShowSuccess: batterySupported.value && testPhase.value === 'complete',
             shouldShowTest: batterySupported.value && testPhase.value !== 'complete',
         }));
-
-        // Watch for changes in battery support
-        watch(
-            batterySupported,
-            (_newVal, _oldVal) => {
-                // Battery support status changed
-            },
-            { immediate: true }
-        );
-
-        watch(testPhase, (_newVal, _oldVal) => {
-            // Test phase changed
-        });
 
         // Methods
         const setupBatteryListeners = () => {

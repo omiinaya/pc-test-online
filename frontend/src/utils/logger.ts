@@ -82,7 +82,7 @@ export function sanitizeLogData(data: unknown): unknown {
  */
 export function sanitizeLogMessage(message: string): string {
     // Remove potentially dangerous characters that could be used for log injection
-    return message.replace(/[\r\n\t%]+/g, ' ');
+    return message.replace(/[\r\n\t]+/g, ' ');
 }
 
 /**

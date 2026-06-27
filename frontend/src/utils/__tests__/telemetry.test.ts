@@ -119,7 +119,7 @@ describe('Telemetry Service', () => {
 
             const rejectionEvent = new PromiseRejectionEvent('unhandledrejection', {
                 reason: 'Promise failed',
-                promise: Promise.reject('oops'),
+                promise: Promise.reject('oops').catch(() => {}),
             });
             window.dispatchEvent(rejectionEvent);
 
