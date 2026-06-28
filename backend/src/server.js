@@ -488,6 +488,7 @@ process.on('uncaughtException', error => {
     console.error(error.stack);
 
     // Exit with non-zero code after logging (throwing inside handler causes infinite loop)
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
 });
 
