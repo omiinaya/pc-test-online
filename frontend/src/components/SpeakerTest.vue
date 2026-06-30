@@ -90,7 +90,7 @@ export default {
                     try {
                         await (
                             audioContext.value as AudioContext & {
-                                setSinkId?: (id: string) => Promise<void>;
+                                setSinkId: (id: string) => Promise<void>;
                             }
                         ).setSinkId(deviceTest.selectedDeviceId.value);
                     } catch (sinkError) {
@@ -129,7 +129,7 @@ export default {
                     try {
                         await (
                             audioContext.value as AudioContext & {
-                                setSinkId?: (id: string) => Promise<void>;
+                                setSinkId: (id: string) => Promise<void>;
                             }
                         ).setSinkId(deviceId);
                     } catch (sinkError) {

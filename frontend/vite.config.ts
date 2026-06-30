@@ -1,5 +1,6 @@
 import { defineConfig, type PluginOption } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import WindiCSS from 'vite-plugin-windicss';
 import { VitePWA } from 'vite-plugin-pwa';
 import { type UserConfig } from 'vite';
@@ -10,6 +11,7 @@ export default defineConfig({
     // Use '/' as base for production deployments to ensure assets load correctly
     base: process.env.NODE_ENV === 'production' ? '/' : process.env.VITE_BASE_URL || '',
     plugins: [
+        basicSsl(),
         vue(),
         WindiCSS(),
         // Progressive Web App support with service worker
@@ -80,7 +82,8 @@ export default defineConfig({
     },
 
     server: {
-        port: 5173,
+        port: 5200,
+        https: true,
         allowedHosts: true,
         host: '0.0.0.0',
         fs: {
