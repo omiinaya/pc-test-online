@@ -948,7 +948,7 @@ interface ElectronWindow extends Window {
 
 const isElectron = (): boolean => {
     const win = window as ElectronWindow;
-    const proc = typeof process !== 'undefined' ? (process as Record<string, unknown>) : undefined;
+    const proc = typeof process !== 'undefined' ? (process as unknown as Record<string, unknown>) : undefined;
     return !!(
         win.electronAPI ||
         win.electron ||
